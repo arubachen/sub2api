@@ -38,6 +38,10 @@
           <span>{{ t('nav.docs') }}</span>
         </a>
 
+        <!-- Theme Toggle -->
+        <ThemeToggleButton
+          button-class="hidden sm:inline-flex border border-gray-200 bg-white px-3 py-2 text-gray-600 hover:border-gray-300 hover:text-gray-900 dark:border-dark-700 dark:bg-dark-900 dark:text-dark-300 dark:hover:border-dark-600 dark:hover:text-white"
+        />
 
         <!-- Subscription Progress (for users with active subscriptions) -->
         <SubscriptionProgressMini v-if="user" />
@@ -194,6 +198,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAppStore, useAuthStore, useOnboardingStore } from '@/stores'
 import { useAdminSettingsStore } from '@/stores/adminSettings'
+import ThemeToggleButton from '@/components/common/ThemeToggleButton.vue'
 import SubscriptionProgressMini from '@/components/common/SubscriptionProgressMini.vue'
 import AnnouncementBell from '@/components/common/AnnouncementBell.vue'
 import Icon from '@/components/icons/Icon.vue'
