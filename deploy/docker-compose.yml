@@ -27,7 +27,7 @@ services:
       - "${BIND_HOST:-0.0.0.0}:${SERVER_PORT:-8080}:8080"
     volumes:
       # Data persistence (config.yaml will be auto-generated here)
-      - sub2api_data:/app/data
+      - ../../docker-data/sub2api/data:/app/data
       # Optional: Mount custom config.yaml (uncomment and create the file first)
       # Copy config.example.yaml to config.yaml, modify it, then uncomment:
       # - ./config.yaml:/app/data/config.yaml
@@ -178,7 +178,7 @@ services:
         soft: 100000
         hard: 100000
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ../../docker-data/sub2api/postgres:/var/lib/postgresql/data
     environment:
       # postgres:18-alpine 默认 PGDATA=/var/lib/postgresql/18/docker（位于镜像声明的匿名卷 /var/lib/postgresql 内）。
       # 若不显式设置 PGDATA，则即使挂载了 postgres_data 到 /var/lib/postgresql/data，数据也不会落盘到该命名卷，
@@ -217,7 +217,7 @@ services:
         soft: 100000
         hard: 100000
     volumes:
-      - redis_data:/data
+      - ../../docker-data/sub2api/redis:/data
     command: >
       sh -c '
         redis-server
@@ -239,16 +239,8 @@ services:
       start_period: 5s
     ports:
       - 6379:6379
-# =============================================================================
-# Volumes
-# =============================================================================
-volumes:
-  sub2api_data:
-    driver: local
-  postgres_data:
-    driver: local
-  redis_data:
-    driver: local
+
+# No longer needed - using bind mounts to docker-data/
 
 # =============================================================================
 # Networks

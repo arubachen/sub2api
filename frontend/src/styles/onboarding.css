@@ -1,17 +1,12 @@
-/* Sub2API Interactive Tour Styles - DOM Restructured Version */
+/* Token Hub Interactive Tour Styles — cyan/slate visual system */
 
 /* 1. Overlay & Highlight */
 .driver-overlay {
   position: fixed !important;
   inset: 0 !important;
   z-index: 99999998 !important;
-  background-color: transparent !important;
-  /*
-   * 关键修复：让 overlay 不拦截点击事件
-   * 因为已设置 allowClose: false，用户不能通过点击遮罩关闭引导
-   * 这样 Select 下拉菜单等脱离高亮区域的元素才能正常交互
-   * 视觉遮罩效果保持不变（SVG 仍然渲染，pointer-events 只影响交互不影响渲染）
-   */
+  background: rgba(2, 6, 23, 0.42) !important;
+  backdrop-filter: blur(6px) saturate(110%) !important;
   pointer-events: none !important;
 }
 
@@ -22,207 +17,332 @@
 .driver-active-element {
   position: relative !important;
   z-index: 99999999 !important;
-  outline: 4px solid rgba(20, 184, 166, 0.2) !important;
-  border-radius: 4px !important;
+  outline: 1px solid rgba(34, 211, 238, 0.55) !important;
+  box-shadow:
+    0 0 0 8px rgba(34, 211, 238, 0.14),
+    0 24px 70px -40px rgba(6, 182, 212, 0.32) !important;
+  border-radius: 18px !important;
 }
 
 /* 2. Popover Container */
 .driver-popover.theme-tour-popover {
   position: fixed !important;
   z-index: 100000000 !important;
-  background-color: #ffffff !important;
-  border: 1px solid #e5e7eb !important;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
-  border-radius: 12px !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.94)) !important;
+  border: 1px solid rgba(226, 232, 240, 0.92) !important;
+  box-shadow:
+    0 32px 90px -40px rgba(15, 23, 42, 0.32),
+    0 10px 30px -18px rgba(6, 182, 212, 0.18) !important;
+  border-radius: 28px !important;
   padding: 0 !important;
-  max-width: min(440px, 90vw) !important; /* Responsive on small screens */
-  color: #1f2937 !important;
+  max-width: min(460px, 92vw) !important;
+  color: #0f172a !important;
   font-family: ui-sans-serif, system-ui, sans-serif !important;
   overflow: hidden !important;
+  backdrop-filter: blur(20px) saturate(135%) !important;
+}
+
+.driver-popover.theme-tour-popover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at top right, rgba(34, 211, 238, 0.18), transparent 34%),
+    radial-gradient(circle at bottom left, rgba(20, 184, 166, 0.1), transparent 28%);
 }
 
 .dark .driver-popover.theme-tour-popover {
-  background-color: #1e293b !important;
-  border-color: #334155 !important;
-  color: #f3f4f6 !important;
+  background:
+    linear-gradient(180deg, rgba(2, 6, 23, 0.98), rgba(2, 6, 23, 0.95)) !important;
+  border-color: rgba(30, 41, 59, 0.96) !important;
+  box-shadow:
+    0 36px 90px -42px rgba(2, 6, 23, 0.8),
+    0 12px 32px -18px rgba(6, 182, 212, 0.18) !important;
+  color: #e2e8f0 !important;
+}
+
+.dark .driver-popover.theme-tour-popover::before {
+  background:
+    radial-gradient(circle at top right, rgba(6, 182, 212, 0.16), transparent 34%),
+    radial-gradient(circle at bottom left, rgba(20, 184, 166, 0.09), transparent 30%);
 }
 
 /* 3. Header Area */
 .theme-tour-popover .driver-popover-title {
   display: flex !important;
   align-items: center !important;
-  padding: 20px 24px 12px 24px !important; 
+  padding: 24px 26px 14px 26px !important;
   margin: 0 !important;
   background-color: transparent !important;
   position: relative !important;
 }
 
-.driver-popover-title-text {
-  font-size: 18px !important;
-  font-weight: 700 !important;
-  color: #111827 !important;
-  line-height: 1.3 !important;
-  padding-right: 100px !important; /* Ensure title doesn't overlap Skip/Close */
+.theme-tour-popover .driver-popover-title::after {
+  content: '';
+  position: absolute;
+  left: 26px;
+  right: 26px;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(34, 211, 238, 0.34), rgba(34, 211, 238, 0));
 }
-.dark .driver-popover-title-text { color: #ffffff !important; }
+
+.driver-popover-title-text {
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  line-height: 1.25 !important;
+  padding-right: 108px !important;
+  letter-spacing: -0.02em !important;
+}
+
+.dark .driver-popover-title-text {
+  color: #f8fafc !important;
+}
 
 /* Close Button */
 .theme-tour-popover .driver-popover-close-btn {
   position: absolute !important;
   top: 18px !important;
-  right: 20px !important;
-  width: 28px !important;
-  height: 28px !important;
+  right: 18px !important;
+  width: 34px !important;
+  height: 34px !important;
   padding: 0 !important;
-  color: #9ca3af !important;
-  background-color: transparent !important;
-  border: none !important;
+  color: #94a3b8 !important;
+  background: rgba(255, 255, 255, 0.74) !important;
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
   z-index: 20 !important;
-  border-radius: 4px !important;
+  border-radius: 999px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  box-shadow: 0 8px 22px -18px rgba(15, 23, 42, 0.32) !important;
 }
-.theme-tour-popover .driver-popover-close-btn:hover { background-color: #f3f4f6 !important; color: #4b5563 !important; }
-.dark .theme-tour-popover .driver-popover-close-btn:hover { background-color: #334155 !important; }
+
+.theme-tour-popover .driver-popover-close-btn:hover {
+  background: #ffffff !important;
+  color: #334155 !important;
+  border-color: rgba(148, 163, 184, 0.8) !important;
+}
+
+.dark .theme-tour-popover .driver-popover-close-btn {
+  background: rgba(15, 23, 42, 0.92) !important;
+  border-color: rgba(51, 65, 85, 0.96) !important;
+  color: #94a3b8 !important;
+}
+
+.dark .theme-tour-popover .driver-popover-close-btn:hover {
+  background: rgba(15, 23, 42, 1) !important;
+  color: #e2e8f0 !important;
+  border-color: rgba(71, 85, 105, 0.96) !important;
+}
 
 /* 4. Body Content */
 .theme-tour-popover .driver-popover-description {
   display: block !important;
   font-size: 14px !important;
   font-weight: 400 !important;
-  color: #4b5563 !important;
-  padding: 0 24px 24px 24px !important;
+  color: #475569 !important;
+  padding: 16px 26px 24px 26px !important;
   margin: 0 !important;
-  line-height: 1.6 !important;
+  line-height: 1.72 !important;
   background-color: transparent !important;
 }
-.dark .theme-tour-popover .driver-popover-description { color: #cbd5e1 !important; }
 
-/* 5. Footer Area - Flex Row with Left/Right Containers */
+.dark .theme-tour-popover .driver-popover-description {
+  color: #cbd5e1 !important;
+}
+
+.driver-popover-description-hint {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin-top: 14px !important;
+  padding: 8px 12px !important;
+  border-radius: 999px !important;
+  background: rgba(6, 182, 212, 0.08) !important;
+  color: #0f766e !important;
+}
+
+.dark .driver-popover-description-hint {
+  background: rgba(6, 182, 212, 0.14) !important;
+  color: #99f6e4 !important;
+}
+
+/* 5. Footer Area */
 .theme-tour-popover .driver-popover-footer {
   display: flex !important;
   align-items: center !important;
-  justify-content: space-between !important; /* Push Left and Right apart */
-  padding: 16px 24px !important;
-  background-color: #f9fafb !important;
-  border-top: 1px solid #f3f4f6 !important;
+  justify-content: space-between !important;
+  padding: 18px 26px !important;
+  background:
+    linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(241, 245, 249, 0.98)) !important;
+  border-top: 1px solid rgba(226, 232, 240, 0.92) !important;
   margin: 0 !important;
 }
+
 .dark .theme-tour-popover .driver-popover-footer {
-  background-color: #0f172a !important;
-  border-top-color: #1e293b !important;
+  background:
+    linear-gradient(180deg, rgba(2, 6, 23, 0.96), rgba(15, 23, 42, 0.98)) !important;
+  border-top-color: rgba(30, 41, 59, 0.96) !important;
 }
 
-/* Left Container: Progress + Shortcuts */
 .footer-left {
   display: flex !important;
   align-items: center !important;
   gap: 16px !important;
 }
 
-/* Right Container: Buttons */
 .footer-right {
   display: flex !important;
   align-items: center !important;
   gap: 8px !important;
 }
 
-/* Progress */
 .theme-tour-popover .driver-popover-progress-text {
-  font-size: 13px !important;
-  color: #6b7280 !important;
+  font-size: 12px !important;
+  color: #64748b !important;
   margin: 0 !important;
-  font-weight: 500 !important;
+  font-weight: 700 !important;
   white-space: nowrap !important;
+  letter-spacing: 0.02em !important;
 }
-.dark .theme-tour-popover .driver-popover-progress-text { color: #9ca3af !important; }
 
-/* Shortcuts (Divider + Keys) */
+.dark .theme-tour-popover .driver-popover-progress-text {
+  color: #94a3b8 !important;
+}
+
 .footer-shortcuts {
   display: flex !important;
   align-items: center !important;
   gap: 12px !important;
   padding-left: 16px !important;
-  border-left: 1px solid #e5e7eb !important;
-  height: 20px !important;
+  border-left: 1px solid rgba(226, 232, 240, 0.92) !important;
+  height: 22px !important;
 }
-.dark .footer-shortcuts { border-left-color: #334155 !important; }
+
+.dark .footer-shortcuts {
+  border-left-color: rgba(51, 65, 85, 0.96) !important;
+}
 
 .shortcut-item {
   display: flex !important;
   align-items: center !important;
   gap: 4px !important;
   font-size: 12px !important;
-  color: #6b7280 !important;
+  color: #64748b !important;
   white-space: nowrap !important;
 }
-.dark .shortcut-item { color: #94a3b8 !important; }
+
+.dark .shortcut-item {
+  color: #94a3b8 !important;
+}
 
 .shortcut-item kbd {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace !important;
-  background-color: #ffffff !important;
-  border: 1px solid #e5e7eb !important;
-  border-radius: 4px !important;
-  padding: 1px 6px !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid rgba(226, 232, 240, 0.92) !important;
+  border-radius: 8px !important;
+  padding: 2px 7px !important;
   font-size: 11px !important;
-  font-weight: 600 !important;
-  color: #4b5563 !important;
-  box-shadow: 0 1px 0 rgba(0,0,0,0.05) !important;
+  font-weight: 700 !important;
+  color: #475569 !important;
+  box-shadow: 0 8px 20px -18px rgba(15, 23, 42, 0.26) !important;
   min-width: 20px !important;
   text-align: center !important;
   display: inline-block !important;
 }
+
 .dark .shortcut-item kbd {
-  background-color: #1e293b !important;
-  border-color: #475569 !important;
+  background: rgba(15, 23, 42, 0.92) !important;
+  border-color: rgba(51, 65, 85, 0.96) !important;
   color: #cbd5e1 !important;
 }
 
-/* Nav Buttons */
+/* Buttons */
 .theme-tour-popover button {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  padding: 8px 16px !important;
+  padding: 10px 16px !important;
   font-size: 13px !important;
-  font-weight: 500 !important;
-  border-radius: 6px !important;
+  font-weight: 600 !important;
+  border-radius: 999px !important;
   cursor: pointer !important;
   transition: all 0.2s !important;
   border: 1px solid transparent !important;
   line-height: 1.2 !important;
-  white-space: nowrap !important; /* Force no wrap */
+  white-space: nowrap !important;
 }
 
-.theme-tour-popover .driver-popover-next-btn {
-  background-color: #14b8a6 !important;
+.theme-tour-popover .driver-popover-next-btn,
+.theme-tour-popover .driver-popover-done-btn {
+  background: linear-gradient(135deg, #22d3ee, #06b6d4 50%, #0e7490) !important;
   color: #ffffff !important;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 16px 32px -22px rgba(6, 182, 212, 0.52) !important;
 }
-.theme-tour-popover .driver-popover-next-btn:hover { background-color: #0d9488 !important; }
 
-.theme-tour-popover .driver-popover-prev-btn {
-  background-color: white !important;
-  color: #6b7280 !important;
-  border: 1px solid #e5e7eb !important;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+.theme-tour-popover .driver-popover-next-btn:hover,
+.theme-tour-popover .driver-popover-done-btn:hover {
+  filter: brightness(1.03) !important;
+  transform: translateY(-1px) !important;
 }
-.theme-tour-popover .driver-popover-prev-btn:hover { background-color: #f9fafb !important; color: #374151 !important; }
-.dark .theme-tour-popover .driver-popover-prev-btn { 
-  background-color: #1e293b !important; 
-  border-color: #475569 !important; 
-  color: #9ca3af !important; 
+
+.theme-tour-popover .driver-popover-prev-btn,
+.theme-tour-popover .driver-popover-close-btn.driver-popover-prev-btn {
+  background: rgba(255, 255, 255, 0.92) !important;
+  color: #475569 !important;
+  border: 1px solid rgba(226, 232, 240, 0.92) !important;
+  box-shadow: 0 8px 24px -20px rgba(15, 23, 42, 0.26) !important;
+}
+
+.theme-tour-popover .driver-popover-prev-btn:hover {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: rgba(148, 163, 184, 0.82) !important;
+}
+
+.dark .theme-tour-popover .driver-popover-prev-btn {
+  background: rgba(15, 23, 42, 0.92) !important;
+  border-color: rgba(51, 65, 85, 0.96) !important;
+  color: #cbd5e1 !important;
+}
+
+.dark .theme-tour-popover .driver-popover-prev-btn:hover {
+  background: rgba(15, 23, 42, 1) !important;
+  border-color: rgba(71, 85, 105, 0.96) !important;
+  color: #f8fafc !important;
 }
 
 /* Arrows */
-.driver-popover-arrow { z-index: 100000001 !important; }
-.driver-popover-arrow-side-left.driver-popover-arrow { border-left-color: #ffffff !important; }
-.driver-popover-arrow-side-right.driver-popover-arrow { border-right-color: #ffffff !important; }
-.driver-popover-arrow-side-top.driver-popover-arrow { border-top-color: #ffffff !important; }
-.driver-popover-arrow-side-bottom.driver-popover-arrow { border-bottom-color: #ffffff !important; }
+.driver-popover-arrow {
+  z-index: 100000001 !important;
+}
 
-.dark .driver-popover-arrow-side-left.driver-popover-arrow { border-left-color: #1e293b !important; }
-.dark .driver-popover-arrow-side-right.driver-popover-arrow { border-right-color: #1e293b !important; }
-.dark .driver-popover-arrow-side-top.driver-popover-arrow { border-top-color: #1e293b !important; }
-.dark .driver-popover-arrow-side-bottom.driver-popover-arrow { border-bottom-color: #1e293b !important; }
+.driver-popover-arrow-side-left.driver-popover-arrow {
+  border-left-color: rgba(255, 255, 255, 0.96) !important;
+}
+.driver-popover-arrow-side-right.driver-popover-arrow {
+  border-right-color: rgba(255, 255, 255, 0.96) !important;
+}
+.driver-popover-arrow-side-top.driver-popover-arrow {
+  border-top-color: rgba(255, 255, 255, 0.96) !important;
+}
+.driver-popover-arrow-side-bottom.driver-popover-arrow {
+  border-bottom-color: rgba(255, 255, 255, 0.96) !important;
+}
+
+.dark .driver-popover-arrow-side-left.driver-popover-arrow {
+  border-left-color: rgba(2, 6, 23, 0.98) !important;
+}
+.dark .driver-popover-arrow-side-right.driver-popover-arrow {
+  border-right-color: rgba(2, 6, 23, 0.98) !important;
+}
+.dark .driver-popover-arrow-side-top.driver-popover-arrow {
+  border-top-color: rgba(2, 6, 23, 0.98) !important;
+}
+.dark .driver-popover-arrow-side-bottom.driver-popover-arrow {
+  border-bottom-color: rgba(2, 6, 23, 0.98) !important;
+}

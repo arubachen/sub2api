@@ -17,3 +17,8 @@ redis_data/
 # Temporary files
 *.tmp
 *.log
+# Local redesign stacks
+.env.*.local
+data-juliu-redesign/
+postgres_data-juliu-redesign/
+redis_data-juliu-redesign/

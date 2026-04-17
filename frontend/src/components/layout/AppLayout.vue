@@ -1,7 +1,13 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-dark-950">
-    <!-- Background Decoration -->
-    <div class="pointer-events-none fixed inset-0 bg-mesh-gradient"></div>
+  <div class="min-h-screen bg-slate-50 dark:bg-dark-950">
+    <div
+      class="pointer-events-none fixed inset-0 opacity-80"
+      style="
+        background-image:
+          radial-gradient(circle at top, rgba(6, 182, 212, 0.08), transparent 24%),
+          radial-gradient(circle at bottom right, rgba(52, 211, 153, 0.06), transparent 28%);
+      "
+    ></div>
 
     <!-- Sidebar -->
     <AppSidebar />
@@ -16,7 +22,9 @@
 
       <!-- Main Content -->
       <main class="p-4 md:p-6 lg:p-8">
-        <slot />
+        <div class="mx-auto w-full max-w-[1560px]">
+          <slot />
+        </div>
       </main>
     </div>
   </div>

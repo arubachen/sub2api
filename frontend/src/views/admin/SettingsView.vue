@@ -2826,6 +2826,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { DEFAULT_SITE_NAME, DEFAULT_SITE_SUBTITLE } from '@/constants/branding'
 import { adminAPI } from '@/api'
 import type {
   SystemSettings,
@@ -2974,9 +2975,9 @@ const form = reactive<SettingsForm>({
   default_balance: 0,
   default_concurrency: 1,
   default_subscriptions: [],
-  site_name: 'Sub2API',
+  site_name: DEFAULT_SITE_NAME,
   site_logo: '',
-  site_subtitle: 'Subscription to API Conversion Platform',
+  site_subtitle: DEFAULT_SITE_SUBTITLE,
   api_base_url: '',
   contact_info: '',
   doc_url: '',

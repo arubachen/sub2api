@@ -105,8 +105,74 @@ export default {
       description: '注册即可获得免费试用额度，体验一站式 AI 服务',
       button: '免费注册'
     },
+
     footer: {
       allRightsReserved: '保留所有权利。'
+    },
+    juliu: {
+      nav: {
+        features: '能力',
+        flow: '流程',
+        models: '模型'
+      },
+      heroBadge: 'Juliu Token Hub',
+      fallbackSubtitle: '一站式大模型 API Token 汇聚平台。连接全球顶尖模型，聚沙成塔，汇流成海。',
+      primaryCta: '立即开始',
+      secondaryCta: '浏览能力',
+      scrollCta: '向下浏览',
+      capabilityEyebrow: 'Capability',
+      capabilityTitle: '把分散的模型入口，汇成一条稳定的生产链路',
+      flowEyebrow: 'Flow',
+      flowTitle: '从接入、聚合到分发，每一步都更清晰',
+      flowDescription: '用统一入口接住 GPT、Claude、Gemini 等上游账号与额度，把路由、鉴权、计费、监控全部收拢到一个后台里。',
+      modelsEyebrow: 'Models',
+      modelsTitle: '为常用模型提供统一出口',
+      modelsDescription: '适合把多账号池、订阅额度和不同上游协议整合进同一套 OpenAI 兼容入口，减少前端与业务层的切换成本。',
+      finalEyebrow: 'Start now',
+      finalTitle: '准备好把你的 AI 调用入口整合成聚流了吗？',
+      finalDescription: '把模型接入、额度管理、用户发放和调用统计汇成一套可运营的系统，直接开始上线使用。',
+      finalPrimaryCta: '免费加入',
+      tags: {
+        unifiedAccess: '统一入口',
+        stableRouting: '稳定路由',
+        usageBilling: '精细计费'
+      },
+      features: {
+        speed: {
+          title: '极速响应',
+          desc: '为多上游账号池提供统一入口，把模型请求快速汇总到稳定的 OpenAI 兼容出口。'
+        },
+        stability: {
+          title: '安全稳定',
+          desc: '集中管理账号状态、可用额度与调用策略，让高频生产流量更可控。'
+        },
+        aggregation: {
+          title: '模型汇聚',
+          desc: '把 GPT、Claude、Gemini 等主流大模型统一到一套接入方式中。'
+        },
+        analytics: {
+          title: '精细统计',
+          desc: '把调用量、消耗与用户发放收拢到同一后台，让运营和计费一眼可见。'
+        }
+      },
+      flowSteps: {
+        connect: {
+          title: '接入上游账号与额度',
+          desc: '把订阅、Token、账号池与代理能力接入后台，统一管理不同来源的资源。'
+        },
+        orchestrate: {
+          title: '聚合路由、鉴权与计费',
+          desc: '在一个系统里处理鉴权、分组、配额、限流和成本统计，减少额外拼装。'
+        },
+        serve: {
+          title: '对外输出统一 API',
+          desc: '给前端、自动化脚本和业务系统提供一致的 OpenAI 风格接口，降低集成复杂度。'
+        }
+      },
+      providers: {
+        openaiCompatible: 'OpenAI-Compatible',
+        multiAccountPool: '多账号池'
+      }
     }
   },
 
@@ -182,8 +248,8 @@ export default {
 
   // Setup Wizard
   setup: {
-    title: 'Sub2API 安装向导',
-    description: '配置您的 Sub2API 实例',
+    title: 'Token Hub 安装向导',
+    description: '配置您的 Token Hub 实例',
     database: {
       title: '数据库配置',
       description: '连接到您的 PostgreSQL 数据库',
@@ -2300,6 +2366,10 @@ export default {
         codeAssist: 'Code Assist',
         antigravityOauth: 'Antigravity OAuth',
         antigravityApikey: '通过 Base URL + API Key 连接',
+        soraApiKey: 'API Key / 上游透传',
+        soraApiKeyHint: '连接另一个 Token Hub 或兼容 API',
+        soraBaseUrlRequired: 'Sora apikey 账号必须设置上游地址（Base URL）',
+        soraBaseUrlInvalidScheme: 'Base URL 必须以 http:// 或 https:// 开头',
         upstream: '对接上游',
         upstreamDesc: '通过 Base URL + API Key 连接上游',
         api_key: 'API Key',
@@ -3062,6 +3132,11 @@ export default {
       geminiImageTestMode: '模式：Gemini 生图测试',
       geminiImagePreview: '生成结果：',
       geminiImageReceived: '已收到第 {count} 张测试图片',
+      soraUpstreamBaseUrlHint: '上游 Sora 服务地址（另一个 Token Hub 实例或兼容 API）',
+      soraTestHint: 'Sora 测试将执行连通性与能力检测（/backend/me、订阅信息、Sora2 邀请码与剩余额度）。',
+      soraTestTarget: '检测目标：Sora 账号能力',
+      soraTestMode: '模式：连通性 + 能力探测',
+      soraTestingFlow: '执行 Sora 连通性与能力检测...',
       // Stats Modal
       viewStats: '查看统计',
       usageStatistics: '使用统计',
@@ -4478,7 +4553,7 @@ export default {
       },
       linuxdo: {
         title: 'LinuxDo Connect 登录',
-        description: '配置 LinuxDo Connect OAuth，用于 Sub2API 用户登录',
+        description: '配置 LinuxDo Connect OAuth，用于 Token Hub 用户登录',
         enable: '启用 LinuxDo 登录',
         enableHint: '在登录/注册页面显示 LinuxDo 登录入口',
         clientId: 'Client ID',
@@ -4629,10 +4704,10 @@ export default {
           '禁用用户注册、公开页面和自助服务功能。仅管理员可以登录和管理平台。',
         siteName: '站点名称',
         siteNameHint: '显示在邮件和页面标题中',
-        siteNamePlaceholder: 'Sub2API',
+        siteNamePlaceholder: 'Token Hub',
         siteSubtitle: '站点副标题',
         siteSubtitleHint: '显示在登录和注册页面',
-        siteSubtitlePlaceholder: '订阅转 API 转换平台',
+        siteSubtitlePlaceholder: 'Juliu Token Hub',
         apiBaseUrl: 'API 端点地址',
         apiBaseUrlHint: '用于"使用密钥"和"导入到 CC Switch"功能，留空则使用当前站点地址',
         apiBaseUrlPlaceholder: 'https://api.example.com',
@@ -4862,7 +4937,7 @@ export default {
         fromEmail: '发件人邮箱',
         fromEmailPlaceholder: "noreply{'@'}example.com",
         fromName: '发件人名称',
-        fromNamePlaceholder: 'Sub2API',
+        fromNamePlaceholder: 'Token Hub',
         useTls: '使用 TLS',
         useTlsHint: '为 SMTP 连接启用 TLS 加密'
       },
@@ -5359,16 +5434,16 @@ export default {
     // Admin tour steps
     admin: {
       welcome: {
-        title: '👋 欢迎使用 Sub2API',
+        title: '👋 欢迎使用 Token Hub',
         description:
-          '<div style="line-height: 1.8;"><p style="margin-bottom: 16px;">Sub2API 是一个强大的 AI 服务中转平台，让您轻松管理和分发 AI 服务。</p><p style="margin-bottom: 12px;"><b>🎯 核心功能：</b></p><ul style="margin-left: 20px; margin-bottom: 16px;"><li>📦 <b>分组管理</b> - 创建不同的服务套餐（VIP、免费试用等）</li><li>🔗 <b>账号池</b> - 连接多个上游 AI 服务商账号</li><li>🔑 <b>密钥分发</b> - 为用户生成独立的 API Key</li><li>💰 <b>计费管理</b> - 灵活的费率和配额控制</li></ul><p style="color: #10b981; font-weight: 600;">接下来，我们将用 3 分钟带您完成首次配置 →</p></div>',
+          '<div style="line-height: 1.8;"><p style="margin-bottom: 16px;">Token Hub 是一个强大的 AI 服务中转平台，让您轻松管理和分发 AI 服务。</p><p style="margin-bottom: 12px;"><b>🎯 核心功能：</b></p><ul style="margin-left: 20px; margin-bottom: 16px;"><li>📦 <b>分组管理</b> - 创建不同的服务套餐（VIP、免费试用等）</li><li>🔗 <b>账号池</b> - 连接多个上游 AI 服务商账号</li><li>🔑 <b>密钥分发</b> - 为用户生成独立的 API Key</li><li>💰 <b>计费管理</b> - 灵活的费率和配额控制</li></ul><p style="color: #10b981; font-weight: 600;">接下来，我们将用 3 分钟带您完成首次配置 →</p></div>',
         nextBtn: '开始配置 🚀',
         prevBtn: '跳过'
       },
       groupManage: {
         title: '📦 第一步：分组管理',
         description:
-          '<div style="line-height: 1.7;"><p style="margin-bottom: 12px;"><b>什么是分组？</b></p><p style="margin-bottom: 12px;">分组是 Sub2API 的核心概念，它就像一个"服务套餐"：</p><ul style="margin-left: 20px; margin-bottom: 12px; font-size: 13px;"><li>🎯 每个分组可以包含多个上游账号</li><li>💰 每个分组有独立的计费倍率</li><li>👥 可以设置为公开或专属分组</li></ul><p style="margin-top: 12px; padding: 8px 12px; background: #f0fdf4; border-left: 3px solid #10b981; border-radius: 4px; font-size: 13px;"><b>💡 示例：</b>您可以创建"VIP专线"（高倍率）和"免费试用"（低倍率）两个分组</p><p style="margin-top: 16px; color: #10b981; font-weight: 600;">👉 点击左侧的"分组管理"开始</p></div>'
+          '<div style="line-height: 1.7;"><p style="margin-bottom: 12px;"><b>什么是分组？</b></p><p style="margin-bottom: 12px;">分组是 Token Hub 的核心概念，它就像一个"服务套餐"：</p><ul style="margin-left: 20px; margin-bottom: 12px; font-size: 13px;"><li>🎯 每个分组可以包含多个上游账号</li><li>💰 每个分组有独立的计费倍率</li><li>👥 可以设置为公开或专属分组</li></ul><p style="margin-top: 12px; padding: 8px 12px; background: #f0fdf4; border-left: 3px solid #10b981; border-radius: 4px; font-size: 13px;"><b>💡 示例：</b>您可以创建"VIP专线"（高倍率）和"免费试用"（低倍率）两个分组</p><p style="margin-top: 16px; color: #10b981; font-weight: 600;">👉 点击左侧的"分组管理"开始</p></div>'
       },
       createGroup: {
         title: '➕ 创建新分组',
@@ -5480,9 +5555,9 @@ export default {
     // User tour steps
     user: {
       welcome: {
-        title: '👋 欢迎使用 Sub2API',
+        title: '👋 欢迎使用 Token Hub',
         description:
-          '<div style="line-height: 1.8;"><p style="margin-bottom: 16px;">您好！欢迎来到 Sub2API AI 服务平台。</p><p style="margin-bottom: 12px;"><b>🎯 快速开始：</b></p><ul style="margin-left: 20px; margin-bottom: 16px;"><li>🔑 创建 API 密钥</li><li>📋 复制密钥到您的应用</li><li>🚀 开始使用 AI 服务</li></ul><p style="color: #10b981; font-weight: 600;">只需 1 分钟，让我们开始吧 →</p></div>',
+          '<div style="line-height: 1.8;"><p style="margin-bottom: 16px;">您好！欢迎来到 Token Hub AI 服务平台。</p><p style="margin-bottom: 12px;"><b>🎯 快速开始：</b></p><ul style="margin-left: 20px; margin-bottom: 16px;"><li>🔑 创建 API 密钥</li><li>📋 复制密钥到您的应用</li><li>🚀 开始使用 AI 服务</li></ul><p style="color: #10b981; font-weight: 600;">只需 1 分钟，让我们开始吧 →</p></div>',
         nextBtn: '开始 🚀',
         prevBtn: '跳过'
       },

@@ -105,8 +105,74 @@ export default {
       description: 'Sign up now and get free trial credits to experience seamless AI access',
       button: 'Sign Up Free'
     },
+
     footer: {
       allRightsReserved: 'All rights reserved.'
+    },
+    juliu: {
+      nav: {
+        features: 'Capabilities',
+        flow: 'Flow',
+        models: 'Models'
+      },
+      heroBadge: 'Juliu Token Hub',
+      fallbackSubtitle: 'A one-stop AI token hub connecting leading models worldwide. Gather access, unify routing, and scale with confidence.',
+      primaryCta: 'Start now',
+      secondaryCta: 'Explore capabilities',
+      scrollCta: 'Scroll down',
+      capabilityEyebrow: 'Capability',
+      capabilityTitle: 'Bring scattered model access into one stable production flow',
+      flowEyebrow: 'Flow',
+      flowTitle: 'From access to orchestration to delivery, every step stays clearer',
+      flowDescription: 'Use one entrypoint for GPT, Claude, Gemini, and other upstream accounts, then keep routing, auth, billing, and monitoring in a single control plane.',
+      modelsEyebrow: 'Models',
+      modelsTitle: 'Offer one unified gateway for everyday models',
+      modelsDescription: 'Ideal for combining multi-account pools, subscription quotas, and different upstream protocols behind a single OpenAI-compatible endpoint.',
+      finalEyebrow: 'Start now',
+      finalTitle: 'Ready to turn your AI access layer into Juliu?',
+      finalDescription: 'Bring model onboarding, quota control, user provisioning, and usage analytics into one operational system you can ship with immediately.',
+      finalPrimaryCta: 'Join free',
+      tags: {
+        unifiedAccess: 'Unified access',
+        stableRouting: 'Stable routing',
+        usageBilling: 'Granular billing'
+      },
+      features: {
+        speed: {
+          title: 'Fast response',
+          desc: 'Give multi-account upstream pools one shared entry and move requests quickly through a stable OpenAI-compatible gateway.'
+        },
+        stability: {
+          title: 'Safe and reliable',
+          desc: 'Centralize account status, available quota, and call policies so high-frequency production traffic stays controllable.'
+        },
+        aggregation: {
+          title: 'Model aggregation',
+          desc: 'Unify GPT, Claude, Gemini, and other major model families behind the same integration surface.'
+        },
+        analytics: {
+          title: 'Detailed analytics',
+          desc: 'Bring usage, cost, and user distribution into one backend so operations and billing are visible at a glance.'
+        }
+      },
+      flowSteps: {
+        connect: {
+          title: 'Connect upstream accounts and quota',
+          desc: 'Bring subscriptions, tokens, account pools, and proxy capabilities into one backend and manage different sources together.'
+        },
+        orchestrate: {
+          title: 'Unify routing, auth, and billing',
+          desc: 'Handle auth, grouping, quotas, rate limits, and cost analytics in one system instead of stitching extra layers together.'
+        },
+        serve: {
+          title: 'Expose one consistent API',
+          desc: 'Provide frontend apps, automation scripts, and business systems with a single OpenAI-style interface that is easier to integrate.'
+        }
+      },
+      providers: {
+        openaiCompatible: 'OpenAI-Compatible',
+        multiAccountPool: 'Multi-account Pool'
+      }
     }
   },
 
@@ -182,8 +248,8 @@ export default {
 
   // Setup Wizard
   setup: {
-    title: 'Sub2API Setup',
-    description: 'Configure your Sub2API instance',
+    title: 'Token Hub Setup',
+    description: 'Configure your Token Hub instance',
     database: {
       title: 'Database Configuration',
       description: 'Connect to your PostgreSQL database',
@@ -2113,6 +2179,10 @@ export default {
         codeAssist: 'Code Assist',
         antigravityOauth: 'Antigravity OAuth',
         antigravityApikey: 'Connect via Base URL + API Key',
+        soraApiKey: 'API Key / Upstream',
+        soraApiKeyHint: 'Connect to another Token Hub or compatible API',
+        soraBaseUrlRequired: 'Sora API Key account requires a Base URL',
+        soraBaseUrlInvalidScheme: 'Base URL must start with http:// or https://',
         upstream: 'Upstream',
         upstreamDesc: 'Connect via Base URL + API Key'
       },
@@ -2932,6 +3002,11 @@ export default {
       geminiImageTestMode: 'Mode: Gemini image generation test',
       geminiImagePreview: 'Generated images:',
       geminiImageReceived: 'Received test image #{count}',
+      soraUpstreamBaseUrlHint: 'Upstream Sora service URL (another Token Hub instance or compatible API)',
+      soraTestHint: 'Sora test runs connectivity and capability checks (/backend/me, subscription, Sora2 invite and remaining quota).',
+      soraTestTarget: 'Target: Sora account capability',
+      soraTestMode: 'Mode: Connectivity + Capability checks',
+      soraTestingFlow: 'Running Sora connectivity and capability checks...',
       // Stats Modal
       viewStats: 'View Stats',
       usageStatistics: 'Usage Statistics',
@@ -4312,7 +4387,7 @@ export default {
         secretKeyConfiguredHint: 'Secret key configured. Leave empty to keep the current value.'      },
       linuxdo: {
         title: 'LinuxDo Connect Login',
-        description: 'Configure LinuxDo Connect OAuth for Sub2API end-user login',
+        description: 'Configure LinuxDo Connect OAuth for Token Hub end-user login',
         enable: 'Enable LinuxDo Login',
         enableHint: 'Show LinuxDo login on the login/register pages',
         clientId: 'Client ID',
@@ -4466,10 +4541,10 @@ export default {
         backendModeDescription:
           'Disables user registration, public site, and self-service features. Only admin can log in and manage the platform.',
         siteName: 'Site Name',
-        siteNamePlaceholder: 'Sub2API',
+        siteNamePlaceholder: 'Token Hub',
         siteNameHint: 'Displayed in emails and page titles',
         siteSubtitle: 'Site Subtitle',
-        siteSubtitlePlaceholder: 'Subscription to API Conversion Platform',
+        siteSubtitlePlaceholder: 'Juliu Token Hub',
         siteSubtitleHint: 'Displayed on login and register pages',
         apiBaseUrl: 'API Base URL',
         apiBaseUrlPlaceholder: 'https://api.example.com',
@@ -4698,7 +4773,7 @@ export default {
         fromEmail: 'From Email',
         fromEmailPlaceholder: "noreply{'@'}example.com",
         fromName: 'From Name',
-        fromNamePlaceholder: 'Sub2API',
+        fromNamePlaceholder: 'Token Hub',
         useTls: 'Use TLS',
         useTlsHint: 'Enable TLS encryption for SMTP connection'
       },
@@ -5198,14 +5273,14 @@ export default {
     // Admin tour steps
     admin: {
       welcome: {
-        title: '👋 Welcome to Sub2API',
-        description: '<div style="line-height: 1.8;"><p style="margin-bottom: 16px;">Sub2API is a powerful AI service gateway platform that helps you easily manage and distribute AI services.</p><p style="margin-bottom: 12px;"><b>🎯 Core Features:</b></p><ul style="margin-left: 20px; margin-bottom: 16px;"><li>📦 <b>Group Management</b> - Create service tiers (VIP, Free Trial, etc.)</li><li>🔗 <b>Account Pool</b> - Connect multiple upstream AI service accounts</li><li>🔑 <b>Key Distribution</b> - Generate independent API Keys for users</li><li>💰 <b>Billing Control</b> - Flexible rate and quota management</li></ul><p style="color: #10b981; font-weight: 600;">Let\'s complete the initial setup in 3 minutes →</p></div>',
+        title: '👋 Welcome to Token Hub',
+        description: '<div style="line-height: 1.8;"><p style="margin-bottom: 16px;">Token Hub is a powerful AI service gateway platform that helps you easily manage and distribute AI services.</p><p style="margin-bottom: 12px;"><b>🎯 Core Features:</b></p><ul style="margin-left: 20px; margin-bottom: 16px;"><li>📦 <b>Group Management</b> - Create service tiers (VIP, Free Trial, etc.)</li><li>🔗 <b>Account Pool</b> - Connect multiple upstream AI service accounts</li><li>🔑 <b>Key Distribution</b> - Generate independent API Keys for users</li><li>💰 <b>Billing Control</b> - Flexible rate and quota management</li></ul><p style="color: #10b981; font-weight: 600;">Let\'s complete the initial setup in 3 minutes →</p></div>',
         nextBtn: 'Start Setup 🚀',
         prevBtn: 'Skip'
       },
       groupManage: {
         title: '📦 Step 1: Group Management',
-        description: '<div style="line-height: 1.7;"><p style="margin-bottom: 12px;"><b>What is a Group?</b></p><p style="margin-bottom: 12px;">Groups are the core concept of Sub2API, like a "service package":</p><ul style="margin-left: 20px; margin-bottom: 12px; font-size: 13px;"><li>🎯 Each group can contain multiple upstream accounts</li><li>💰 Each group has independent billing multiplier</li><li>👥 Can be set as public or exclusive</li></ul><p style="margin-top: 12px; padding: 8px 12px; background: #f0fdf4; border-left: 3px solid #10b981; border-radius: 4px; font-size: 13px;"><b>💡 Example:</b> You can create "VIP Premium" (high rate) and "Free Trial" (low rate) groups</p><p style="margin-top: 16px; color: #10b981; font-weight: 600;">👉 Click "Group Management" on the left sidebar</p></div>'
+        description: '<div style="line-height: 1.7;"><p style="margin-bottom: 12px;"><b>What is a Group?</b></p><p style="margin-bottom: 12px;">Groups are the core concept of Token Hub, like a "service package":</p><ul style="margin-left: 20px; margin-bottom: 12px; font-size: 13px;"><li>🎯 Each group can contain multiple upstream accounts</li><li>💰 Each group has independent billing multiplier</li><li>👥 Can be set as public or exclusive</li></ul><p style="margin-top: 12px; padding: 8px 12px; background: #f0fdf4; border-left: 3px solid #10b981; border-radius: 4px; font-size: 13px;"><b>💡 Example:</b> You can create "VIP Premium" (high rate) and "Free Trial" (low rate) groups</p><p style="margin-top: 16px; color: #10b981; font-weight: 600;">👉 Click "Group Management" on the left sidebar</p></div>'
       },
       createGroup: {
         title: '➕ Create New Group',
@@ -5298,8 +5373,8 @@ export default {
     // User tour steps
     user: {
       welcome: {
-        title: '👋 Welcome to Sub2API',
-        description: '<div style="line-height: 1.8;"><p style="margin-bottom: 16px;">Hello! Welcome to the Sub2API AI service platform.</p><p style="margin-bottom: 12px;"><b>🎯 Quick Start:</b></p><ul style="margin-left: 20px; margin-bottom: 16px;"><li>🔑 Create API Key</li><li>📋 Copy key to your application</li><li>🚀 Start using AI services</li></ul><p style="color: #10b981; font-weight: 600;">Just 1 minute, let\'s get started →</p></div>',
+        title: '👋 Welcome to Token Hub',
+        description: '<div style="line-height: 1.8;"><p style="margin-bottom: 16px;">Hello! Welcome to the Token Hub AI service platform.</p><p style="margin-bottom: 12px;"><b>🎯 Quick Start:</b></p><ul style="margin-left: 20px; margin-bottom: 16px;"><li>🔑 Create API Key</li><li>📋 Copy key to your application</li><li>🚀 Start using AI services</li></ul><p style="color: #10b981; font-weight: 600;">Just 1 minute, let\'s get started →</p></div>',
         nextBtn: 'Start 🚀',
         prevBtn: 'Skip'
       },

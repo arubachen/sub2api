@@ -427,13 +427,13 @@ onUnmounted(() => {
 <style scoped>
 .select-trigger {
   @apply flex w-full items-center justify-between gap-2;
-  @apply rounded-xl px-4 py-2.5 text-sm;
-  @apply bg-white dark:bg-dark-800;
-  @apply border border-gray-200 dark:border-dark-600;
+  @apply rounded-2xl px-4 py-2.5 text-sm;
+  @apply bg-white/95 dark:bg-dark-900;
+  @apply border border-gray-200/90 dark:border-dark-700;
   @apply text-gray-900 dark:text-gray-100;
   @apply transition-all duration-200;
-  @apply focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30;
-  @apply hover:border-gray-300 dark:hover:border-dark-500;
+  @apply focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/10;
+  @apply hover:border-gray-300 dark:hover:border-dark-600;
   @apply cursor-pointer;
 }
 
@@ -461,17 +461,17 @@ onUnmounted(() => {
 <style>
 .select-dropdown-portal {
   @apply w-max min-w-[200px];
-  @apply bg-white dark:bg-dark-800;
-  @apply rounded-xl;
-  @apply border border-gray-200 dark:border-dark-700;
-  @apply shadow-lg shadow-black/10 dark:shadow-black/30;
+  @apply bg-white/95 dark:bg-dark-900;
+  @apply rounded-2xl;
+  @apply border border-gray-200/80 dark:border-dark-800;
+  @apply shadow-[0_30px_80px_-36px_rgba(17,17,17,0.3)];
   @apply overflow-hidden;
   pointer-events: auto !important;
 }
 
 .select-dropdown-portal .select-search {
   @apply flex items-center gap-2 px-3 py-2;
-  @apply border-b border-gray-100 dark:border-dark-700;
+  @apply border-b border-gray-100 dark:border-dark-800;
 }
 
 .select-dropdown-portal .select-search-input {
@@ -490,7 +490,7 @@ onUnmounted(() => {
   @apply px-4 py-2.5 text-sm;
   @apply text-gray-700 dark:text-gray-300;
   @apply cursor-pointer transition-colors duration-150;
-  @apply hover:bg-gray-50 dark:hover:bg-dark-700;
+  @apply hover:bg-black/5 dark:hover:bg-white/5;
   pointer-events: auto !important;
 }
 
@@ -500,7 +500,7 @@ onUnmounted(() => {
 }
 
 .select-dropdown-portal .select-option-focused {
-  @apply bg-gray-100 dark:bg-dark-700;
+  @apply bg-black/5 dark:bg-white/5;
 }
 
 .select-dropdown-portal .select-option-disabled {
