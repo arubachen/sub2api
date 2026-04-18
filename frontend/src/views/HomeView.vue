@@ -9,19 +9,37 @@
     <div v-else v-html="homeContent"></div>
   </div>
 
-  <div v-else class="juliu-home relative min-h-screen overflow-hidden bg-slate-950 text-white">
+  <div
+    v-else
+    :class="[
+      'juliu-home relative min-h-screen overflow-hidden transition-colors duration-300',
+      isDark ? 'theme-dark bg-slate-950 text-white' : 'theme-light bg-slate-50 text-slate-950'
+    ]"
+  >
     <div class="pointer-events-none absolute inset-0">
-      <div class="hero-grid absolute inset-0 opacity-40"></div>
-      <div class="hero-noise absolute inset-0 opacity-20"></div>
+      <div class="hero-grid absolute inset-0"></div>
+      <div class="hero-noise absolute inset-0"></div>
       <div class="hero-orb hero-orb-cyan absolute left-1/2 top-24 h-[28rem] w-[28rem] -translate-x-1/2 rounded-full"></div>
       <div class="hero-orb hero-orb-emerald absolute bottom-0 right-[-8rem] h-[24rem] w-[24rem] rounded-full"></div>
       <div class="hero-beam absolute left-1/2 top-1/2 h-[22rem] w-[22rem] -translate-x-1/2 -translate-y-1/2 rounded-full"></div>
     </div>
 
-    <header class="fixed inset-x-0 top-0 z-30 border-b border-white/10 bg-slate-950/70 backdrop-blur-xl">
+    <header
+      :class="[
+        'fixed inset-x-0 top-0 z-30 border-b backdrop-blur-xl transition-colors duration-300',
+        isDark
+          ? 'border-white/10 bg-slate-950/70'
+          : 'border-slate-200/80 bg-white/70'
+      ]"
+    >
       <nav class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <router-link to="/home" class="flex items-center gap-3">
-          <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/5 ring-1 ring-white/10">
+          <div
+            :class="[
+              'flex h-11 w-11 items-center justify-center rounded-2xl ring-1 transition-colors duration-300',
+              isDark ? 'bg-white/5 ring-white/10' : 'bg-white/90 ring-slate-200 shadow-sm'
+            ]"
+          >
             <img
               v-if="siteLogo"
               :src="siteLogo"
@@ -31,31 +49,36 @@
             <JuliuFlowLogo v-else class="h-8 w-8" />
           </div>
           <div>
-            <p class="text-sm font-semibold tracking-[0.28em] text-cyan-300/80">JULIU</p>
-            <p class="text-base font-semibold text-white">{{ headerBrandName }}</p>
+            <p :class="['text-sm font-semibold tracking-[0.28em]', isDark ? 'text-cyan-300/80' : 'text-cyan-700']">JULIU</p>
+            <p :class="['text-base font-semibold transition-colors duration-300', isDark ? 'text-white' : 'text-slate-900']">{{ headerBrandName }}</p>
           </div>
         </router-link>
 
-        <div class="hidden items-center gap-8 text-sm text-slate-300 md:flex">
-          <a href="#features" class="transition-colors hover:text-white">{{ t('home.juliu.nav.features') }}</a>
-          <a href="#flow" class="transition-colors hover:text-white">{{ t('home.juliu.nav.flow') }}</a>
-          <a href="#providers" class="transition-colors hover:text-white">{{ t('home.juliu.nav.models') }}</a>
+        <div :class="['hidden items-center gap-8 text-sm md:flex', isDark ? 'text-slate-300' : 'text-slate-600']">
+          <a href="#features" :class="navLinkClass">{{ t('home.juliu.nav.features') }}</a>
+          <a href="#flow" :class="navLinkClass">{{ t('home.juliu.nav.flow') }}</a>
+          <a href="#providers" :class="navLinkClass">{{ t('home.juliu.nav.models') }}</a>
         </div>
 
         <div class="flex items-center gap-3">
-          <ThemeToggleButton button-class="border-white/15 bg-white/5 text-slate-300 hover:border-white/30 hover:bg-white/10" />
+          <ThemeToggleButton :button-class="themeToggleButtonClass" />
           <a
             v-if="docUrl"
             :href="docUrl"
             target="_blank"
             rel="noopener noreferrer"
-            class="hidden text-sm font-medium text-slate-300 transition-colors hover:text-white sm:inline-flex"
+            :class="['hidden text-sm font-medium transition-colors sm:inline-flex', isDark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900']"
           >
             {{ t('home.docs') }}
           </a>
           <router-link
             :to="isAuthenticated ? dashboardPath : '/login'"
-            class="inline-flex items-center rounded-full border border-cyan-400/30 bg-cyan-400/10 px-4 py-2 text-sm font-semibold text-cyan-100 transition-all hover:border-cyan-300 hover:bg-cyan-400/20"
+            :class="[
+              'inline-flex items-center rounded-full border px-4 py-2 text-sm font-semibold transition-all',
+              isDark
+                ? 'border-cyan-400/30 bg-cyan-400/10 text-cyan-100 hover:border-cyan-300 hover:bg-cyan-400/20'
+                : 'border-cyan-500/20 bg-cyan-50 text-cyan-700 hover:border-cyan-500/40 hover:bg-cyan-100'
+            ]"
           >
             {{ isAuthenticated ? t('home.dashboard') : t('home.login') }}
           </router-link>
@@ -66,7 +89,14 @@
     <main class="relative z-10">
       <section class="flex min-h-screen items-center justify-center px-6 pb-20 pt-28 text-center">
         <div class="mx-auto flex max-w-5xl flex-col items-center">
-          <div class="signal-shell mb-10 flex h-40 w-40 items-center justify-center rounded-full border border-white/10 bg-white/5 shadow-[0_0_120px_rgba(34,211,238,0.14)] backdrop-blur-md md:h-48 md:w-48">
+          <div
+            :class="[
+              'signal-shell mb-10 flex h-40 w-40 items-center justify-center rounded-full border backdrop-blur-md transition-colors duration-300 md:h-48 md:w-48',
+              isDark
+                ? 'border-white/10 bg-white/5 shadow-[0_0_120px_rgba(34,211,238,0.14)]'
+                : 'border-white/80 bg-white/80 shadow-[0_18px_60px_-30px_rgba(34,211,238,0.22)]'
+            ]"
+          >
             <img
               v-if="siteLogo"
               :src="siteLogo"
@@ -76,13 +106,13 @@
             <JuliuFlowLogo v-else class="h-24 w-24 md:h-28 md:w-28" />
           </div>
 
-          <p class="mb-5 text-xs font-semibold uppercase tracking-[0.55em] text-cyan-300/75">
+          <p :class="['mb-5 text-xs font-semibold uppercase tracking-[0.55em]', isDark ? 'text-cyan-300/75' : 'text-cyan-700']">
             {{ t('home.juliu.heroBadge') }}
           </p>
-          <h1 class="max-w-4xl text-5xl font-semibold tracking-tight text-white md:text-7xl">
+          <h1 :class="['max-w-4xl text-5xl font-semibold tracking-tight md:text-7xl', isDark ? 'text-white' : 'text-slate-950']">
             {{ brandName }}
           </h1>
-          <p class="mt-6 max-w-3xl text-lg leading-8 text-slate-300 md:text-2xl md:leading-10">
+          <p :class="['mt-6 max-w-3xl text-lg leading-8 md:text-2xl md:leading-10', isDark ? 'text-slate-300' : 'text-slate-600']">
             {{ heroSubtitle }}
           </p>
 
@@ -99,7 +129,12 @@
               :href="secondaryActionHref"
               :target="secondaryActionTarget"
               :rel="secondaryActionTarget ? 'noopener noreferrer' : undefined"
-              class="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 px-8 py-4 text-base font-semibold text-white transition-all hover:border-white/30 hover:bg-white/10"
+              :class="[
+                'inline-flex items-center justify-center rounded-full border px-8 py-4 text-base font-semibold transition-all',
+                isDark
+                  ? 'border-white/15 bg-white/5 text-white hover:border-white/30 hover:bg-white/10'
+                  : 'border-slate-200 bg-white/90 text-slate-800 hover:border-slate-300 hover:bg-white'
+              ]"
             >
               {{ secondaryActionLabel }}
             </a>
@@ -109,7 +144,12 @@
             <span
               v-for="tag in valueTags"
               :key="tag"
-              class="rounded-full border border-white/12 bg-white/5 px-4 py-2 text-sm text-slate-200 backdrop-blur-sm"
+              :class="[
+                'rounded-full border px-4 py-2 text-sm backdrop-blur-sm transition-colors duration-300',
+                isDark
+                  ? 'border-white/12 bg-white/5 text-slate-200'
+                  : 'border-white/80 bg-white/80 text-slate-700 shadow-sm'
+              ]"
             >
               {{ tag }}
             </span>
@@ -117,7 +157,7 @@
 
           <a
             href="#features"
-            class="mt-14 inline-flex items-center gap-2 text-sm font-medium text-slate-300 transition-colors hover:text-white"
+            :class="['mt-14 inline-flex items-center gap-2 text-sm font-medium transition-colors', isDark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900']"
           >
             {{ t('home.juliu.scrollCta') }}
             <Icon name="arrowDown" size="sm" />
@@ -125,35 +165,42 @@
         </div>
       </section>
 
-      <section id="features" class="border-t border-white/8 px-6 py-20">
+      <section :class="['border-t px-6 py-20', isDark ? 'border-white/8' : 'border-slate-200/80']" id="features">
         <div class="mx-auto max-w-6xl">
           <div class="mx-auto max-w-2xl text-center">
-            <p class="text-sm font-semibold uppercase tracking-[0.4em] text-cyan-300/70">{{ t('home.juliu.capabilityEyebrow') }}</p>
-            <h2 class="mt-4 text-3xl font-semibold text-white md:text-5xl">{{ t('home.juliu.capabilityTitle') }}</h2>
+            <p :class="['text-sm font-semibold uppercase tracking-[0.4em]', isDark ? 'text-cyan-300/70' : 'text-cyan-700']">{{ t('home.juliu.capabilityEyebrow') }}</p>
+            <h2 :class="['mt-4 text-3xl font-semibold md:text-5xl', isDark ? 'text-white' : 'text-slate-950']">{{ t('home.juliu.capabilityTitle') }}</h2>
           </div>
 
           <div class="mt-16 grid gap-10 md:grid-cols-2 xl:grid-cols-4">
             <article
               v-for="feature in features"
               :key="feature.title"
-              class="group border-t border-white/12 pt-6"
+              :class="['group border-t pt-6 transition-colors duration-300', isDark ? 'border-white/12' : 'border-slate-200']"
             >
-              <div class="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-cyan-300 transition-all group-hover:border-cyan-300/40 group-hover:bg-cyan-400/10 group-hover:text-cyan-100">
+              <div
+                :class="[
+                  'mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl border transition-all',
+                  isDark
+                    ? 'border-white/10 bg-white/5 text-cyan-300 group-hover:border-cyan-300/40 group-hover:bg-cyan-400/10 group-hover:text-cyan-100'
+                    : 'border-white/80 bg-white/90 text-cyan-700 shadow-sm group-hover:border-cyan-200 group-hover:bg-cyan-50 group-hover:text-cyan-800'
+                ]"
+              >
                 <Icon :name="feature.icon" size="lg" />
               </div>
-              <h3 class="text-xl font-semibold text-white">{{ feature.title }}</h3>
-              <p class="mt-3 text-sm leading-7 text-slate-300">{{ feature.desc }}</p>
+              <h3 :class="['text-xl font-semibold', isDark ? 'text-white' : 'text-slate-900']">{{ feature.title }}</h3>
+              <p :class="['mt-3 text-sm leading-7', isDark ? 'text-slate-300' : 'text-slate-600']">{{ feature.desc }}</p>
             </article>
           </div>
         </div>
       </section>
 
-      <section id="flow" class="border-t border-white/8 px-6 py-20">
+      <section :class="['border-t px-6 py-20', isDark ? 'border-white/8' : 'border-slate-200/80']" id="flow">
         <div class="mx-auto grid max-w-6xl gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
           <div>
-            <p class="text-sm font-semibold uppercase tracking-[0.4em] text-emerald-300/70">{{ t('home.juliu.flowEyebrow') }}</p>
-            <h2 class="mt-4 text-3xl font-semibold text-white md:text-5xl">{{ t('home.juliu.flowTitle') }}</h2>
-            <p class="mt-6 max-w-xl text-base leading-8 text-slate-300">
+            <p :class="['text-sm font-semibold uppercase tracking-[0.4em]', isDark ? 'text-emerald-300/70' : 'text-emerald-700']">{{ t('home.juliu.flowEyebrow') }}</p>
+            <h2 :class="['mt-4 text-3xl font-semibold md:text-5xl', isDark ? 'text-white' : 'text-slate-950']">{{ t('home.juliu.flowTitle') }}</h2>
+            <p :class="['mt-6 max-w-xl text-base leading-8', isDark ? 'text-slate-300' : 'text-slate-600']">
               {{ t('home.juliu.flowDescription') }}
             </p>
           </div>
@@ -162,13 +209,18 @@
             <article
               v-for="step in flowSteps"
               :key="step.index"
-              class="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all hover:border-cyan-300/30 hover:bg-white/[0.07]"
+              :class="[
+                'rounded-3xl border p-6 backdrop-blur-sm transition-all',
+                isDark
+                  ? 'border-white/10 bg-white/5 hover:border-cyan-300/30 hover:bg-white/[0.07]'
+                  : 'border-white/80 bg-white/90 shadow-sm hover:border-cyan-200 hover:bg-cyan-50/60'
+              ]"
             >
               <div class="flex flex-col gap-4 sm:flex-row sm:items-start">
-                <span class="text-sm font-semibold tracking-[0.35em] text-cyan-300">{{ step.index }}</span>
+                <span :class="['text-sm font-semibold tracking-[0.35em]', isDark ? 'text-cyan-300' : 'text-cyan-700']">{{ step.index }}</span>
                 <div>
-                  <h3 class="text-xl font-semibold text-white">{{ step.title }}</h3>
-                  <p class="mt-3 text-sm leading-7 text-slate-300">{{ step.desc }}</p>
+                  <h3 :class="['text-xl font-semibold', isDark ? 'text-white' : 'text-slate-900']">{{ step.title }}</h3>
+                  <p :class="['mt-3 text-sm leading-7', isDark ? 'text-slate-300' : 'text-slate-600']">{{ step.desc }}</p>
                 </div>
               </div>
             </article>
@@ -176,14 +228,14 @@
         </div>
       </section>
 
-      <section id="providers" class="border-t border-white/8 px-6 py-20">
+      <section :class="['border-t px-6 py-20', isDark ? 'border-white/8' : 'border-slate-200/80']" id="providers">
         <div class="mx-auto max-w-6xl">
           <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
-              <p class="text-sm font-semibold uppercase tracking-[0.4em] text-cyan-300/70">{{ t('home.juliu.modelsEyebrow') }}</p>
-              <h2 class="mt-4 text-3xl font-semibold text-white md:text-5xl">{{ t('home.juliu.modelsTitle') }}</h2>
+              <p :class="['text-sm font-semibold uppercase tracking-[0.4em]', isDark ? 'text-cyan-300/70' : 'text-cyan-700']">{{ t('home.juliu.modelsEyebrow') }}</p>
+              <h2 :class="['mt-4 text-3xl font-semibold md:text-5xl', isDark ? 'text-white' : 'text-slate-950']">{{ t('home.juliu.modelsTitle') }}</h2>
             </div>
-            <p class="max-w-xl text-sm leading-7 text-slate-300">
+            <p :class="['max-w-xl text-sm leading-7', isDark ? 'text-slate-300' : 'text-slate-600']">
               {{ t('home.juliu.modelsDescription') }}
             </p>
           </div>
@@ -192,7 +244,12 @@
             <span
               v-for="provider in providers"
               :key="provider"
-              class="rounded-full border border-white/12 bg-white/5 px-5 py-3 text-sm text-slate-100 backdrop-blur-sm"
+              :class="[
+                'rounded-full border px-5 py-3 text-sm backdrop-blur-sm transition-colors duration-300',
+                isDark
+                  ? 'border-white/12 bg-white/5 text-slate-100'
+                  : 'border-white/80 bg-white/90 text-slate-700 shadow-sm'
+              ]"
             >
               {{ provider }}
             </span>
@@ -232,28 +289,9 @@
       </section>
     </main>
 
-    <footer class="relative z-10 border-t border-white/8 px-6 py-8">
-      <div class="mx-auto flex max-w-6xl flex-col gap-4 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between">
-        <p>&copy; {{ currentYear }} {{ brandName }}. {{ t('home.footer.allRightsReserved') }}</p>
-        <div class="flex items-center gap-5">
-          <a
-            v-if="docUrl"
-            :href="docUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="transition-colors hover:text-white"
-          >
-            {{ t('home.docs') }}
-          </a>
-          <a
-            :href="githubUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="transition-colors hover:text-white"
-          >
-            GitHub
-          </a>
-        </div>
+    <footer :class="['relative z-10 border-t px-6 py-8', isDark ? 'border-white/8' : 'border-slate-200/80']">
+      <div class="mx-auto flex max-w-6xl items-center justify-center text-center text-sm">
+        <p :class="[isDark ? 'text-slate-400' : 'text-slate-500']">&copy; {{ currentYear }} {{ brandName }}. {{ t('home.footer.allRightsReserved') }}</p>
       </div>
     </footer>
   </div>
@@ -267,11 +305,13 @@ import ThemeToggleButton from '@/components/common/ThemeToggleButton.vue'
 import JuliuFlowLogo from '@/components/common/JuliuFlowLogo.vue'
 import Icon from '@/components/icons/Icon.vue'
 import { DEFAULT_SITE_NAME, DEFAULT_SITE_SUBTITLE } from '@/constants/branding'
+import { useTheme } from '@/composables/useTheme'
 
 const { t } = useI18n()
 
 const authStore = useAuthStore()
 const appStore = useAppStore()
+const { isDark } = useTheme()
 
 const siteName = computed(() => appStore.cachedPublicSettings?.site_name || appStore.siteName || DEFAULT_SITE_NAME)
 const siteLogo = computed(() => appStore.cachedPublicSettings?.site_logo || appStore.siteLogo || '')
@@ -283,8 +323,6 @@ const isHomeContentUrl = computed(() => {
   const content = homeContent.value.trim()
   return content.startsWith('http://') || content.startsWith('https://')
 })
-
-const githubUrl = 'https://github.com/Wei-Shaw/sub2api'
 
 const isAuthenticated = computed(() => authStore.isAuthenticated)
 const isAdmin = computed(() => authStore.isAdmin)
@@ -315,6 +353,16 @@ const heroSubtitle = computed(() => {
 const secondaryActionHref = computed(() => docUrl.value || '#features')
 const secondaryActionTarget = computed(() => (docUrl.value ? '_blank' : undefined))
 const secondaryActionLabel = computed(() => (docUrl.value ? t('home.docs') : t('home.juliu.secondaryCta')))
+
+const navLinkClass = computed(() =>
+  isDark.value ? 'transition-colors hover:text-white' : 'transition-colors hover:text-slate-900'
+)
+
+const themeToggleButtonClass = computed(() =>
+  isDark.value
+    ? 'border-white/15 bg-white/5 text-slate-300 hover:border-white/30 hover:bg-white/10'
+    : 'border-slate-200 bg-white/90 text-slate-600 shadow-sm hover:border-slate-300 hover:bg-white hover:text-slate-900'
+)
 
 const valueTags = computed(() => [
   t('home.juliu.tags.unifiedAccess'),
@@ -392,16 +440,38 @@ onMounted(() => {
   mask-image: radial-gradient(circle at center, black 35%, transparent 85%);
 }
 
-.hero-noise {
+.theme-dark .hero-grid {
+  opacity: 0.4;
+}
+
+.theme-light .hero-grid {
+  opacity: 0.65;
+}
+
+.theme-dark .hero-noise {
   background:
     radial-gradient(circle at top, rgba(34, 211, 238, 0.22), transparent 38%),
     radial-gradient(circle at 20% 80%, rgba(16, 185, 129, 0.15), transparent 28%),
     linear-gradient(180deg, rgba(15, 23, 42, 0.25), rgba(2, 6, 23, 0.95));
 }
 
+.theme-light .hero-noise {
+  background:
+    radial-gradient(circle at top, rgba(34, 211, 238, 0.18), transparent 38%),
+    radial-gradient(circle at 20% 80%, rgba(16, 185, 129, 0.12), transparent 28%),
+    linear-gradient(180deg, rgba(248, 250, 252, 0.65), rgba(255, 255, 255, 0.96));
+}
+
 .hero-orb {
   filter: blur(90px);
+}
+
+.theme-dark .hero-orb {
   opacity: 0.9;
+}
+
+.theme-light .hero-orb {
+  opacity: 0.5;
 }
 
 .hero-orb-cyan {
@@ -414,10 +484,17 @@ onMounted(() => {
   animation: driftFloat 22s ease-in-out infinite reverse;
 }
 
-.hero-beam {
+.theme-dark .hero-beam {
   border: 1px solid rgba(103, 232, 249, 0.1);
   background: radial-gradient(circle, rgba(34, 211, 238, 0.12), transparent 62%);
   box-shadow: 0 0 140px rgba(34, 211, 238, 0.12);
+  animation: pulseGlow 5s ease-in-out infinite;
+}
+
+.theme-light .hero-beam {
+  border: 1px solid rgba(103, 232, 249, 0.22);
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.08), transparent 62%);
+  box-shadow: 0 0 120px rgba(34, 211, 238, 0.08);
   animation: pulseGlow 5s ease-in-out infinite;
 }
 
@@ -442,6 +519,10 @@ onMounted(() => {
   inset: -38px;
   border-color: rgba(255, 255, 255, 0.06);
   animation: spinSlow 28s linear infinite reverse;
+}
+
+.theme-light .signal-shell::after {
+  border-color: rgba(148, 163, 184, 0.18);
 }
 
 @keyframes driftCentered {

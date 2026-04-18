@@ -190,6 +190,11 @@ describe('HomeView', () => {
       removeItem: vi.fn(),
       clear: vi.fn()
     })
+    vi.stubGlobal('matchMedia', vi.fn().mockImplementation(() => ({
+      matches: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn()
+    })))
   })
 
   afterEach(() => {
