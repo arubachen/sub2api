@@ -54,9 +54,11 @@
             {{ t('customPage.openInNewTab') }}
           </a>
           <iframe
-            :src="embeddedUrl"
+            ref="iframeRef"
+            :src="frameSrc"
             class="custom-embed-frame"
             allowfullscreen
+            @load="handleIframeLoad"
           ></iframe>
         </div>
       </div>
@@ -65,7 +67,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAppStore } from '@/stores'
@@ -82,8 +84,11 @@ const authStore = useAuthStore()
 const adminSettingsStore = useAdminSettingsStore()
 
 const loading = ref(false)
-const pageTheme = ref<'light' | 'dark'>('light')
+const pageTheme = ref<'light' | 'dark'>(detectTheme())
+const iframeRef = ref<HTMLIFrameElement | null>(null)
+const frameSrc = ref('')
 let themeObserver: MutationObserver | null = null
+const EMBEDDED_THEME_MESSAGE_TYPE = 'CHECK_CX_EMBED_THEME'
 
 const menuItemId = computed(() => route.params.id as string)
 
@@ -112,12 +117,60 @@ const embeddedUrl = computed(() => {
 })
 
 const isValidUrl = computed(() => {
-  const url = embeddedUrl.value
+  const url = frameSrc.value || embeddedUrl.value
   return url.startsWith('http://') || url.startsWith('https://')
+})
+
+const iframeOrigin = computed(() => {
+  const src = frameSrc.value || embeddedUrl.value
+  if (!src) return '*'
+
+  try {
+    return new URL(src).origin
+  } catch {
+    return '*'
+  }
+})
+
+const refreshFrameSrc = () => {
+  frameSrc.value = embeddedUrl.value
+}
+
+const postThemeToIframe = (theme: 'light' | 'dark') => {
+  iframeRef.value?.contentWindow?.postMessage(
+    {
+      type: EMBEDDED_THEME_MESSAGE_TYPE,
+      theme,
+    },
+    iframeOrigin.value,
+  )
+}
+
+const handleIframeLoad = () => {
+  postThemeToIframe(pageTheme.value)
+}
+
+watch(
+  [
+    () => menuItem.value?.url,
+    () => authStore.user?.id,
+    () => authStore.token,
+    () => locale.value,
+  ],
+  () => {
+    refreshFrameSrc()
+  },
+  { immediate: true },
+)
+
+watch(pageTheme, (theme, previousTheme) => {
+  if (!previousTheme || theme === previousTheme) return
+  postThemeToIframe(theme)
 })
 
 onMounted(async () => {
   pageTheme.value = detectTheme()
+  refreshFrameSrc()
 
   if (typeof document !== 'undefined') {
     themeObserver = new MutationObserver(() => {

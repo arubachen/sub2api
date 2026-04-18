@@ -7,7 +7,11 @@
     ]"
   >
     <!-- Logo/Brand -->
-    <div class="sidebar-header" :class="{ 'sidebar-header-collapsed': sidebarCollapsed }">
+    <router-link
+      to="/home"
+      class="sidebar-header"
+      :class="{ 'sidebar-header-collapsed': sidebarCollapsed }"
+    >
       <!-- Custom Logo or Default Logo -->
       <div class="sidebar-logo flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-dark-800 dark:bg-dark-900">
         <img v-if="settingsLoaded" :src="siteLogo || '/logo-light.svg'" alt="Logo" class="h-full w-full object-contain p-1.5" />
@@ -19,7 +23,7 @@
         <!-- Version Badge -->
         <VersionBadge :version="siteVersion" />
       </div>
-    </div>
+    </router-link>
 
     <!-- Navigation -->
     <nav class="sidebar-nav scrollbar-hide">

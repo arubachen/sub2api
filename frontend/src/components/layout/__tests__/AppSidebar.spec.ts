@@ -11,6 +11,7 @@ const styleSource = readFileSync(stylePath, 'utf8')
 
 describe('AppSidebar custom SVG styles', () => {
   it('recolors uploaded SVG icons to match the sidebar icon palette', () => {
+    expect(componentSource).toContain('to="/home"')
     expect(componentSource).toContain('.sidebar-svg-icon {')
     expect(componentSource).toContain('color: currentColor;')
     expect(componentSource).toContain('display: block;')
