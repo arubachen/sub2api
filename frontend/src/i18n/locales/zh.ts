@@ -430,6 +430,7 @@ export default {
     promoCodeMaxUsed: '此优惠码已达到使用上限',
     promoCodeAlreadyUsed: '您已使用过此优惠码',
     promoCodeEmailSuffixNotAllowed: '该优惠码不适用于当前邮箱域名',
+    promoCodeRemainingUses: '剩余可用次数：{count}',
     promoCodeValidating: '优惠码正在验证中，请稍候',
     promoCodeInvalidCannotRegister: '优惠码无效，请检查后重试或清空优惠码',
     invitationCodeLabel: '邀请码',
