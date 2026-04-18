@@ -59,6 +59,7 @@ func (r *userRepository) Create(ctx context.Context, userIn *service.User) error
 		SetEmail(userIn.Email).
 		SetUsername(userIn.Username).
 		SetNotes(userIn.Notes).
+		SetAvatarURL(userIn.AvatarURL).
 		SetPasswordHash(userIn.PasswordHash).
 		SetRole(userIn.Role).
 		SetBalance(userIn.Balance).
@@ -141,6 +142,7 @@ func (r *userRepository) Update(ctx context.Context, userIn *service.User) error
 		SetEmail(userIn.Email).
 		SetUsername(userIn.Username).
 		SetNotes(userIn.Notes).
+		SetAvatarURL(userIn.AvatarURL).
 		SetPasswordHash(userIn.PasswordHash).
 		SetRole(userIn.Role).
 		SetBalance(userIn.Balance).
@@ -560,6 +562,7 @@ func applyUserEntityToService(dst *service.User, src *dbent.User) {
 	dst.ID = src.ID
 	dst.CreatedAt = src.CreatedAt
 	dst.UpdatedAt = src.UpdatedAt
+	dst.AvatarURL = src.AvatarURL
 }
 
 // marshalExtraEmails serializes notify email entries to JSON for storage.

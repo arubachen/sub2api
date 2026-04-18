@@ -6,7 +6,50 @@
       </h2>
     </div>
     <div class="px-6 py-6">
-      <form @submit.prevent="handleUpdateProfile" class="space-y-4">
+      <form @submit.prevent="handleUpdateProfile" class="space-y-5">
+        <div class="space-y-3">
+          <label class="input-label">
+            {{ t('profile.avatar') }}
+          </label>
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <UserAvatar
+              :avatar-url="avatarPreviewUrl"
+              :username="username"
+              :email="authStore.user?.email"
+              size-class="h-20 w-20"
+              text-class="text-2xl font-bold"
+              rounded-class="rounded-2xl"
+              shadow-class="shadow-lg shadow-primary-500/20"
+            />
+            <div class="flex flex-wrap gap-2">
+              <label class="btn btn-secondary cursor-pointer">
+                <input
+                  ref="fileInputRef"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  class="hidden"
+                  @change="handleAvatarSelected"
+                />
+                {{ avatarValue ? t('profile.changeAvatar') : t('profile.uploadAvatar') }}
+              </label>
+              <button
+                v-if="avatarValue"
+                type="button"
+                class="btn btn-secondary text-red-600 dark:text-red-400"
+                @click="removeAvatar"
+              >
+                {{ t('profile.removeAvatar') }}
+              </button>
+            </div>
+          </div>
+          <p class="input-hint">
+            {{ t('profile.avatarHint') }}
+          </p>
+          <p v-if="avatarError" class="input-error-text">
+            {{ avatarError }}
+          </p>
+        </div>
+
         <div>
           <label for="username" class="input-label">
             {{ t('profile.username') }}
@@ -28,17 +71,28 @@
       </form>
     </div>
   </div>
+
+  <AvatarCropDialog
+    :show="showAvatarCropDialog"
+    :image-url="avatarCropSource"
+    @close="closeCropDialog"
+    @apply="handleAvatarApplied"
+  />
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useAppStore } from '@/stores/app'
 import { userAPI } from '@/api'
+import UserAvatar from '@/components/common/UserAvatar.vue'
+import AvatarCropDialog from '@/components/user/profile/AvatarCropDialog.vue'
+import { loadImageDataUrl, validateAvatarFile } from '@/utils/avatar'
 
 const props = defineProps<{
   initialUsername: string
+  initialAvatarUrl?: string
 }>()
 
 const { t } = useI18n()
@@ -46,11 +100,84 @@ const authStore = useAuthStore()
 const appStore = useAppStore()
 
 const username = ref(props.initialUsername)
+const avatarValue = ref(props.initialAvatarUrl || '')
+const avatarCropSource = ref('')
+const avatarError = ref('')
 const loading = ref(false)
+const showAvatarCropDialog = ref(false)
+const fileInputRef = ref<HTMLInputElement | null>(null)
 
-watch(() => props.initialUsername, (val) => {
-  username.value = val
-})
+const avatarPreviewUrl = computed(() => avatarValue.value || authStore.user?.avatar_url || '')
+
+watch(
+  () => props.initialUsername,
+  (val) => {
+    username.value = val
+  },
+)
+
+watch(
+  () => props.initialAvatarUrl,
+  (val) => {
+    avatarValue.value = val || ''
+  },
+)
+
+const translateAvatarError = (code: string) => {
+  switch (code) {
+    case 'invalid-type':
+      return t('profile.avatarInvalidType')
+    case 'too-large':
+      return t('profile.avatarTooLarge')
+    default:
+      return t('profile.avatarReadFailed')
+  }
+}
+
+const handleAvatarSelected = async (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  avatarError.value = ''
+
+  if (!file) return
+
+  const validationError = validateAvatarFile(file)
+  if (validationError) {
+    avatarError.value = translateAvatarError(validationError)
+    input.value = ''
+    return
+  }
+
+  try {
+    avatarCropSource.value = await loadImageDataUrl(file)
+    showAvatarCropDialog.value = true
+  } catch {
+    avatarError.value = t('profile.avatarReadFailed')
+  } finally {
+    input.value = ''
+  }
+}
+
+const handleAvatarApplied = (value: string) => {
+  avatarValue.value = value
+  avatarCropSource.value = ''
+  showAvatarCropDialog.value = false
+  avatarError.value = ''
+}
+
+const closeCropDialog = () => {
+  avatarCropSource.value = ''
+  showAvatarCropDialog.value = false
+}
+
+const removeAvatar = () => {
+  avatarValue.value = ''
+  avatarError.value = ''
+  closeCropDialog()
+  if (fileInputRef.value) {
+    fileInputRef.value.value = ''
+  }
+}
 
 const handleUpdateProfile = async () => {
   if (!username.value.trim()) {
@@ -61,9 +188,10 @@ const handleUpdateProfile = async () => {
   loading.value = true
   try {
     const updatedUser = await userAPI.updateProfile({
-      username: username.value
+      username: username.value,
+      avatar_url: avatarValue.value,
     })
-    authStore.user = updatedUser
+    authStore.updateCurrentUser(updatedUser)
     appStore.showSuccess(t('profile.updateSuccess'))
   } catch (error: any) {
     appStore.showError(error.response?.data?.detail || t('profile.updateFailed'))

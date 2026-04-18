@@ -61,6 +61,9 @@ func (User) Fields() []ent.Field {
 		field.String("notes").
 			SchemaType(map[string]string{dialect.Postgres: "text"}).
 			Default(""),
+		field.String("avatar_url").
+			SchemaType(map[string]string{dialect.Postgres: "text"}).
+			Default(""),
 
 		// TOTP 双因素认证字段
 		field.String("totp_secret_encrypted").

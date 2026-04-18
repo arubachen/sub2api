@@ -38,6 +38,7 @@ export interface User {
   id: number
   username: string
   email: string
+  avatar_url: string
   role: 'admin' | 'user' // User role for authorization
   balance: number // User balance for API usage
   concurrency: number // Allowed concurrent requests

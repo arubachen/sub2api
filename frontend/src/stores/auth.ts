@@ -363,6 +363,11 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  function updateCurrentUser(nextUser: User): void {
+    user.value = nextUser
+    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(nextUser))
+  }
+
   /**
    * Clear all authentication state
    * Internal helper function
@@ -403,6 +408,7 @@ export const useAuthStore = defineStore('auth', () => {
     setToken,
     logout,
     checkAuth,
-    refreshUser
+    refreshUser,
+    updateCurrentUser
   }
 })

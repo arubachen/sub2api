@@ -10,6 +10,7 @@ type User struct {
 	ID            int64     `json:"id"`
 	Email         string    `json:"email"`
 	Username      string    `json:"username"`
+	AvatarURL     string    `json:"avatar_url"`
 	Role          string    `json:"role"`
 	Balance       float64   `json:"balance"`
 	Concurrency   int       `json:"concurrency"`

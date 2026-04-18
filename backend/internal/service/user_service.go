@@ -1,6 +1,7 @@
 package service
 
 import (
+	"encoding/base64"
 	"context"
 	"crypto/subtle"
 	"fmt"
@@ -71,6 +72,7 @@ type UserRepository interface {
 type UpdateProfileRequest struct {
 	Email                  *string  `json:"email"`
 	Username               *string  `json:"username"`
+	AvatarURL              *string  `json:"avatar_url"`
 	Concurrency            *int     `json:"concurrency"`
 	BalanceNotifyEnabled   *bool    `json:"balance_notify_enabled"`
 	BalanceNotifyThreshold *float64 `json:"balance_notify_threshold"`
@@ -143,6 +145,14 @@ func (s *UserService) UpdateProfile(ctx context.Context, userID int64, req Updat
 		user.Username = *req.Username
 	}
 
+	if req.AvatarURL != nil {
+		normalizedAvatarURL, err := normalizeAvatarURL(*req.AvatarURL)
+		if err != nil {
+			return nil, err
+		}
+		user.AvatarURL = normalizedAvatarURL
+	}
+
 	if req.Concurrency != nil {
 		user.Concurrency = *req.Concurrency
 	}
@@ -166,6 +176,52 @@ func (s *UserService) UpdateProfile(ctx context.Context, userID int64, req Updat
 	}
 
 	return user, nil
+}
+
+const (
+	maxAvatarImageBytes = 512 * 1024
+)
+
+var allowedAvatarPrefixes = []string{
+	"data:image/jpeg;base64,",
+	"data:image/png;base64,",
+	"data:image/webp;base64,",
+}
+
+func normalizeAvatarURL(raw string) (string, error) {
+	trimmed := strings.TrimSpace(raw)
+	if trimmed == "" {
+		return "", nil
+	}
+
+	var payload string
+	validPrefix := false
+	for _, prefix := range allowedAvatarPrefixes {
+		if strings.HasPrefix(trimmed, prefix) {
+			payload = strings.TrimPrefix(trimmed, prefix)
+			validPrefix = true
+			break
+		}
+	}
+
+	if !validPrefix {
+		return "", infraerrors.BadRequest("INVALID_AVATAR_TYPE", "avatar must be a PNG, JPEG, or WebP image")
+	}
+
+	decoded, err := base64.StdEncoding.DecodeString(payload)
+	if err != nil {
+		return "", infraerrors.BadRequest("INVALID_AVATAR_DATA", "avatar data is invalid")
+	}
+
+	if len(decoded) == 0 {
+		return "", infraerrors.BadRequest("INVALID_AVATAR_DATA", "avatar data is empty")
+	}
+
+	if len(decoded) > maxAvatarImageBytes {
+		return "", infraerrors.BadRequest("AVATAR_TOO_LARGE", "avatar image is too large")
+	}
+
+	return trimmed, nil
 }
 
 // ChangePassword 修改密码

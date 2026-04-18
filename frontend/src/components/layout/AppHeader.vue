@@ -76,11 +76,15 @@
             class="flex items-center gap-2 rounded-full border border-transparent p-1.5 pr-2 transition-colors hover:border-gray-200 hover:bg-white dark:hover:border-dark-700 dark:hover:bg-dark-900"
             aria-label="User Menu"
           >
-            <div
-              class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-primary text-sm font-semibold text-white shadow-glow"
-            >
-              {{ userInitials }}
-            </div>
+            <UserAvatar
+              :avatar-url="user?.avatar_url"
+              :username="user?.username"
+              :email="user?.email"
+              size-class="h-9 w-9"
+              text-class="text-sm font-semibold"
+              rounded-class="rounded-full"
+              shadow-class="shadow-glow"
+            />
             <div class="hidden text-left md:block">
               <div class="text-sm font-semibold text-gray-900 dark:text-white">
                 {{ displayName }}
@@ -201,6 +205,7 @@ import { useAdminSettingsStore } from '@/stores/adminSettings'
 import ThemeToggleButton from '@/components/common/ThemeToggleButton.vue'
 import SubscriptionProgressMini from '@/components/common/SubscriptionProgressMini.vue'
 import AnnouncementBell from '@/components/common/AnnouncementBell.vue'
+import UserAvatar from '@/components/common/UserAvatar.vue'
 import Icon from '@/components/icons/Icon.vue'
 
 const router = useRouter()
@@ -220,20 +225,6 @@ const docUrl = computed(() => appStore.docUrl)
 // 只在标准模式的管理员下显示新手引导按钮
 const showOnboardingButton = computed(() => {
   return !authStore.isSimpleMode && user.value?.role === 'admin'
-})
-
-const userInitials = computed(() => {
-  if (!user.value) return ''
-  // Prefer username, fallback to email
-  if (user.value.username) {
-    return user.value.username.substring(0, 2).toUpperCase()
-  }
-  if (user.value.email) {
-    // Get the part before @ and take first 2 chars
-    const localPart = user.value.email.split('@')[0]
-    return localPart.substring(0, 2).toUpperCase()
-  }
-  return ''
 })
 
 const displayName = computed(() => {
