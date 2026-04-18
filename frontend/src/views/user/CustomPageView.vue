@@ -148,6 +148,7 @@ watch(
     () => authStore.user?.id,
     () => authStore.token,
     () => locale.value,
+    () => pageTheme.value,
   ],
   () => {
     refreshFrameSrc()
@@ -157,6 +158,7 @@ watch(
 
 watch(pageTheme, (theme, previousTheme) => {
   if (!previousTheme || theme === previousTheme) return
+  refreshFrameSrc()
   postThemeToIframe(theme)
 })
 
