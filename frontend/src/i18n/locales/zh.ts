@@ -3619,7 +3619,7 @@ export default {
       maxUses: '最大使用次数',
       zeroUnlimited: '0 = 无限制',
       allowedEmailSuffixes: '允许邮箱域名',
-      allowedEmailSuffixesPlaceholder: '@company.com, @example.org',
+      allowedEmailSuffixesPlaceholder: 'company.com, example.org',
       allowedEmailSuffixesHint: '留空表示不限制邮箱域名。多个域名可用逗号、空格或换行分隔。',
       allowedEmailSuffixesAll: '全部域名',
       expiresAt: '过期时间',
