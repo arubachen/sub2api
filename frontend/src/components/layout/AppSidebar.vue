@@ -13,8 +13,8 @@
       :class="{ 'sidebar-header-collapsed': sidebarCollapsed }"
     >
       <!-- Custom Logo or Default Logo -->
-      <div class="sidebar-logo flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-dark-800 dark:bg-dark-900">
-        <img v-if="settingsLoaded" :src="siteLogo || '/logo-light.svg'" alt="Logo" class="max-h-full max-w-full object-contain p-1.5" />
+      <div class="sidebar-logo flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-dark-800 dark:bg-dark-900">
+        <img v-if="settingsLoaded" :src="siteLogo || '/logo-light.svg'" alt="Logo" class="max-h-full max-w-full object-contain p-1" />
       </div>
       <div class="sidebar-brand" :class="{ 'sidebar-brand-collapsed': sidebarCollapsed }" :aria-hidden="sidebarCollapsed ? 'true' : 'false'">
         <span class="sidebar-brand-title text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
@@ -785,8 +785,8 @@ onMounted(() => {
 
 <style scoped>
 .sidebar-logo {
-  flex: 0 0 2.25rem;
-  min-width: 2.25rem;
+  flex: 0 0 2.75rem;
+  min-width: 2.75rem;
 }
 
 .sidebar-header-collapsed {
