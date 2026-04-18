@@ -32,11 +32,11 @@
           : 'border-slate-300/80 bg-white/88'
       ]"
     >
-      <nav class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <router-link to="/home" class="flex min-h-11 items-center gap-3 rounded-full px-1 py-1.5">
+      <nav class="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
+        <router-link to="/home" class="flex min-h-10 items-center gap-3 rounded-full px-1 py-1">
           <div
             :class="[
-              'flex h-11 w-11 items-center justify-center rounded-2xl ring-1 transition-colors duration-300',
+              'flex h-10 w-10 items-center justify-center rounded-2xl ring-1 transition-colors duration-300',
               isDark ? 'bg-white/5 ring-white/10' : 'bg-white ring-slate-300 shadow-[0_12px_32px_-20px_rgba(15,23,42,0.18)]'
             ]"
           >
@@ -44,11 +44,11 @@
               v-if="siteLogo"
               :src="siteLogo"
               alt="Logo"
-              class="h-8 w-8 object-contain"
+              class="h-7 w-7 object-contain"
             />
-            <JuliuFlowLogo v-else class="h-8 w-8" />
+            <JuliuFlowLogo v-else class="h-7 w-7" />
           </div>
-          <div class="flex min-h-11 items-center">
+          <div class="flex min-h-10 items-center">
             <p :class="['text-base font-semibold leading-none transition-colors duration-300', isDark ? 'text-white' : 'text-slate-950']">{{ headerBrandName }}</p>
           </div>
         </router-link>
@@ -65,14 +65,14 @@
             :href="docUrl"
             target="_blank"
             rel="noopener noreferrer"
-            :class="['hidden text-sm font-medium transition-colors sm:inline-flex', isDark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900']"
+            :class="['hidden h-10 items-center rounded-full px-4 text-sm font-medium transition-colors sm:inline-flex', isDark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900']"
           >
             {{ t('home.docs') }}
           </a>
           <router-link
             :to="isAuthenticated ? dashboardPath : '/login'"
             :class="[
-              'inline-flex items-center rounded-full border px-4 py-2 text-sm font-semibold transition-all',
+              'inline-flex h-10 items-center rounded-full border px-4 text-sm font-semibold transition-all',
               isDark
                 ? 'border-cyan-400/30 bg-cyan-400/10 text-cyan-100 hover:border-cyan-300 hover:bg-cyan-400/20'
                 : 'border-cyan-500/20 bg-cyan-50 text-cyan-700 hover:border-cyan-500/40 hover:bg-cyan-100'
