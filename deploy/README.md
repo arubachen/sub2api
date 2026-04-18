@@ -97,6 +97,51 @@ docker compose -f docker-compose.local.yml logs -f sub2api
 # http://localhost:8080
 ```
 
+### Method 3: GHCR Image Deployment (Recommended for Forks / Custom Builds)
+
+If you maintain your own fork and custom features, a better production path is:
+
+1. GitHub Actions builds your image on every push to `main`
+2. The image is pushed to GHCR
+3. The server only needs `docker compose pull && docker compose up -d`
+
+This avoids compiling on the production server every release.
+
+#### One-time setup
+
+1. In your fork, enable the workflow `.github/workflows/ghcr-image.yml`
+2. Push to `main`
+3. Make sure the published GHCR package is visible to the server pull user
+   - For public repos, set the package visibility to **public** if GitHub does not inherit it automatically
+
+#### Compose configuration
+
+Set `SUB2API_IMAGE` in `.env`:
+
+```bash
+SUB2API_IMAGE=ghcr.io/<your-github-user>/sub2api:main
+```
+
+Or pin to a specific build:
+
+```bash
+SUB2API_IMAGE=ghcr.io/<your-github-user>/sub2api:sha-<commit>
+```
+
+Then deploy/update with:
+
+```bash
+docker compose pull sub2api
+docker compose up -d sub2api
+docker compose logs -f sub2api
+```
+
+**Recommended tag strategy**
+
+- `:main` → convenient “latest from main”
+- `:sha-<commit>` → reproducible production deploys and easy rollback
+- `:vX.Y.Z` → release/tag builds
+
 ### Deployment Version Comparison
 
 | Version | Data Storage | Migration | Best For |
@@ -203,6 +248,14 @@ docker compose up -d
 
 # Remove all data (caution!)
 docker compose down -v
+```
+
+If you use a custom GHCR image:
+
+```bash
+# Pull only the app image configured by SUB2API_IMAGE
+docker compose pull sub2api
+docker compose up -d sub2api
 ```
 
 ### Environment Variables
