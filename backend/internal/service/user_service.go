@@ -1,9 +1,9 @@
 package service
 
 import (
-	"encoding/base64"
 	"context"
 	"crypto/subtle"
+	"encoding/base64"
 	"fmt"
 	"log/slog"
 	"strings"
