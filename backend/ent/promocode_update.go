@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/Wei-Shaw/sub2api/ent/predicate"
 	"github.com/Wei-Shaw/sub2api/ent/promocode"
@@ -40,6 +41,24 @@ func (_u *PromoCodeUpdate) SetNillableCode(v *string) *PromoCodeUpdate {
 	if v != nil {
 		_u.SetCode(*v)
 	}
+	return _u
+}
+
+// SetAllowedEmailSuffixes sets the "allowed_email_suffixes" field.
+func (_u *PromoCodeUpdate) SetAllowedEmailSuffixes(v []string) *PromoCodeUpdate {
+	_u.mutation.SetAllowedEmailSuffixes(v)
+	return _u
+}
+
+// AppendAllowedEmailSuffixes appends value to the "allowed_email_suffixes" field.
+func (_u *PromoCodeUpdate) AppendAllowedEmailSuffixes(v []string) *PromoCodeUpdate {
+	_u.mutation.AppendAllowedEmailSuffixes(v)
+	return _u
+}
+
+// ClearAllowedEmailSuffixes clears the value of the "allowed_email_suffixes" field.
+func (_u *PromoCodeUpdate) ClearAllowedEmailSuffixes() *PromoCodeUpdate {
+	_u.mutation.ClearAllowedEmailSuffixes()
 	return _u
 }
 
@@ -273,6 +292,17 @@ func (_u *PromoCodeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.Code(); ok {
 		_spec.SetField(promocode.FieldCode, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.AllowedEmailSuffixes(); ok {
+		_spec.SetField(promocode.FieldAllowedEmailSuffixes, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedAllowedEmailSuffixes(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, promocode.FieldAllowedEmailSuffixes, value)
+		})
+	}
+	if _u.mutation.AllowedEmailSuffixesCleared() {
+		_spec.ClearField(promocode.FieldAllowedEmailSuffixes, field.TypeJSON)
+	}
 	if value, ok := _u.mutation.BonusAmount(); ok {
 		_spec.SetField(promocode.FieldBonusAmount, field.TypeFloat64, value)
 	}
@@ -385,6 +415,24 @@ func (_u *PromoCodeUpdateOne) SetNillableCode(v *string) *PromoCodeUpdateOne {
 	if v != nil {
 		_u.SetCode(*v)
 	}
+	return _u
+}
+
+// SetAllowedEmailSuffixes sets the "allowed_email_suffixes" field.
+func (_u *PromoCodeUpdateOne) SetAllowedEmailSuffixes(v []string) *PromoCodeUpdateOne {
+	_u.mutation.SetAllowedEmailSuffixes(v)
+	return _u
+}
+
+// AppendAllowedEmailSuffixes appends value to the "allowed_email_suffixes" field.
+func (_u *PromoCodeUpdateOne) AppendAllowedEmailSuffixes(v []string) *PromoCodeUpdateOne {
+	_u.mutation.AppendAllowedEmailSuffixes(v)
+	return _u
+}
+
+// ClearAllowedEmailSuffixes clears the value of the "allowed_email_suffixes" field.
+func (_u *PromoCodeUpdateOne) ClearAllowedEmailSuffixes() *PromoCodeUpdateOne {
+	_u.mutation.ClearAllowedEmailSuffixes()
 	return _u
 }
 
@@ -647,6 +695,17 @@ func (_u *PromoCodeUpdateOne) sqlSave(ctx context.Context) (_node *PromoCode, er
 	}
 	if value, ok := _u.mutation.Code(); ok {
 		_spec.SetField(promocode.FieldCode, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.AllowedEmailSuffixes(); ok {
+		_spec.SetField(promocode.FieldAllowedEmailSuffixes, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedAllowedEmailSuffixes(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, promocode.FieldAllowedEmailSuffixes, value)
+		})
+	}
+	if _u.mutation.AllowedEmailSuffixesCleared() {
+		_spec.ClearField(promocode.FieldAllowedEmailSuffixes, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.BonusAmount(); ok {
 		_spec.SetField(promocode.FieldBonusAmount, field.TypeFloat64, value)

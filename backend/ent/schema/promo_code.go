@@ -37,6 +37,9 @@ func (PromoCode) Fields() []ent.Field {
 			NotEmpty().
 			Unique().
 			Comment("优惠码"),
+		field.JSON("allowed_email_suffixes", []string{}).
+			Optional().
+			Comment("允许使用该优惠码注册的邮箱后缀列表，空数组表示不限制"),
 		field.Float("bonus_amount").
 			SchemaType(map[string]string{dialect.Postgres: "decimal(20,8)"}).
 			Default(0).

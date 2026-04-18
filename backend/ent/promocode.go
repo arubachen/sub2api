@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -19,6 +20,8 @@ type PromoCode struct {
 	ID int64 `json:"id,omitempty"`
 	// 优惠码
 	Code string `json:"code,omitempty"`
+	// 允许使用该优惠码注册的邮箱后缀列表，空数组表示不限制
+	AllowedEmailSuffixes []string `json:"allowed_email_suffixes,omitempty"`
 	// 赠送余额金额
 	BonusAmount float64 `json:"bonus_amount,omitempty"`
 	// 最大使用次数，0表示无限制
@@ -64,6 +67,8 @@ func (*PromoCode) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case promocode.FieldAllowedEmailSuffixes:
+			values[i] = new([]byte)
 		case promocode.FieldBonusAmount:
 			values[i] = new(sql.NullFloat64)
 		case promocode.FieldID, promocode.FieldMaxUses, promocode.FieldUsedCount:
@@ -98,6 +103,14 @@ func (_m *PromoCode) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field code", values[i])
 			} else if value.Valid {
 				_m.Code = value.String
+			}
+		case promocode.FieldAllowedEmailSuffixes:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field allowed_email_suffixes", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.AllowedEmailSuffixes); err != nil {
+					return fmt.Errorf("unmarshal field allowed_email_suffixes: %w", err)
+				}
 			}
 		case promocode.FieldBonusAmount:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
@@ -192,6 +205,9 @@ func (_m *PromoCode) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("code=")
 	builder.WriteString(_m.Code)
+	builder.WriteString(", ")
+	builder.WriteString("allowed_email_suffixes=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AllowedEmailSuffixes))
 	builder.WriteString(", ")
 	builder.WriteString("bonus_amount=")
 	builder.WriteString(fmt.Sprintf("%v", _m.BonusAmount))

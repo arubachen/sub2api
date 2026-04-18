@@ -165,6 +165,16 @@ func CodeContainsFold(v string) predicate.PromoCode {
 	return predicate.PromoCode(sql.FieldContainsFold(FieldCode, v))
 }
 
+// AllowedEmailSuffixesIsNil applies the IsNil predicate on the "allowed_email_suffixes" field.
+func AllowedEmailSuffixesIsNil() predicate.PromoCode {
+	return predicate.PromoCode(sql.FieldIsNull(FieldAllowedEmailSuffixes))
+}
+
+// AllowedEmailSuffixesNotNil applies the NotNil predicate on the "allowed_email_suffixes" field.
+func AllowedEmailSuffixesNotNil() predicate.PromoCode {
+	return predicate.PromoCode(sql.FieldNotNull(FieldAllowedEmailSuffixes))
+}
+
 // BonusAmountEQ applies the EQ predicate on the "bonus_amount" field.
 func BonusAmountEQ(v float64) predicate.PromoCode {
 	return predicate.PromoCode(sql.FieldEQ(FieldBonusAmount, v))

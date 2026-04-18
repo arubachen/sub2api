@@ -16,6 +16,8 @@ const (
 	FieldID = "id"
 	// FieldCode holds the string denoting the code field in the database.
 	FieldCode = "code"
+	// FieldAllowedEmailSuffixes holds the string denoting the allowed_email_suffixes field in the database.
+	FieldAllowedEmailSuffixes = "allowed_email_suffixes"
 	// FieldBonusAmount holds the string denoting the bonus_amount field in the database.
 	FieldBonusAmount = "bonus_amount"
 	// FieldMaxUses holds the string denoting the max_uses field in the database.
@@ -49,6 +51,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldCode,
+	FieldAllowedEmailSuffixes,
 	FieldBonusAmount,
 	FieldMaxUses,
 	FieldUsedCount,

@@ -757,16 +757,17 @@ func PromoCodeFromService(pc *service.PromoCode) *PromoCode {
 		return nil
 	}
 	return &PromoCode{
-		ID:          pc.ID,
-		Code:        pc.Code,
-		BonusAmount: pc.BonusAmount,
-		MaxUses:     pc.MaxUses,
-		UsedCount:   pc.UsedCount,
-		Status:      pc.Status,
-		ExpiresAt:   pc.ExpiresAt,
-		Notes:       pc.Notes,
-		CreatedAt:   pc.CreatedAt,
-		UpdatedAt:   pc.UpdatedAt,
+		ID:                   pc.ID,
+		Code:                 pc.Code,
+		AllowedEmailSuffixes: append(make([]string, 0, len(pc.AllowedEmailSuffixes)), pc.AllowedEmailSuffixes...),
+		BonusAmount:          pc.BonusAmount,
+		MaxUses:              pc.MaxUses,
+		UsedCount:            pc.UsedCount,
+		Status:               pc.Status,
+		ExpiresAt:            pc.ExpiresAt,
+		Notes:                pc.Notes,
+		CreatedAt:            pc.CreatedAt,
+		UpdatedAt:            pc.UpdatedAt,
 	}
 }
 

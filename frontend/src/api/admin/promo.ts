@@ -17,6 +17,7 @@ export async function list(
   filters?: {
     status?: string
     search?: string
+    allowed_email_suffix?: string
     sort_by?: string
     sort_order?: 'asc' | 'desc'
   },

@@ -14,12 +14,13 @@ import (
 )
 
 var (
-	ErrPromoCodeNotFound    = infraerrors.NotFound("PROMO_CODE_NOT_FOUND", "promo code not found")
-	ErrPromoCodeExpired     = infraerrors.BadRequest("PROMO_CODE_EXPIRED", "promo code has expired")
-	ErrPromoCodeDisabled    = infraerrors.BadRequest("PROMO_CODE_DISABLED", "promo code is disabled")
-	ErrPromoCodeMaxUsed     = infraerrors.BadRequest("PROMO_CODE_MAX_USED", "promo code has reached maximum uses")
-	ErrPromoCodeAlreadyUsed = infraerrors.Conflict("PROMO_CODE_ALREADY_USED", "you have already used this promo code")
-	ErrPromoCodeInvalid     = infraerrors.BadRequest("PROMO_CODE_INVALID", "invalid promo code")
+	ErrPromoCodeNotFound              = infraerrors.NotFound("PROMO_CODE_NOT_FOUND", "promo code not found")
+	ErrPromoCodeExpired               = infraerrors.BadRequest("PROMO_CODE_EXPIRED", "promo code has expired")
+	ErrPromoCodeDisabled              = infraerrors.BadRequest("PROMO_CODE_DISABLED", "promo code is disabled")
+	ErrPromoCodeMaxUsed               = infraerrors.BadRequest("PROMO_CODE_MAX_USED", "promo code has reached maximum uses")
+	ErrPromoCodeAlreadyUsed           = infraerrors.Conflict("PROMO_CODE_ALREADY_USED", "you have already used this promo code")
+	ErrPromoCodeEmailSuffixNotAllowed = infraerrors.BadRequest("PROMO_CODE_EMAIL_SUFFIX_NOT_ALLOWED", "promo code is not allowed for this email domain")
+	ErrPromoCodeInvalid               = infraerrors.BadRequest("PROMO_CODE_INVALID", "invalid promo code")
 )
 
 // PromoService 优惠码服务
@@ -51,6 +52,12 @@ func NewPromoService(
 // ValidatePromoCode 验证优惠码（注册前调用）
 // 返回 nil, nil 表示空码（不报错）
 func (s *PromoService) ValidatePromoCode(ctx context.Context, code string) (*PromoCode, error) {
+	return s.ValidatePromoCodeForEmail(ctx, code, "")
+}
+
+// ValidatePromoCodeForEmail 验证优惠码（注册前调用，可选校验邮箱域名）
+// 返回 nil, nil 表示空码（不报错）
+func (s *PromoService) ValidatePromoCodeForEmail(ctx context.Context, code, email string) (*PromoCode, error) {
 	code = strings.TrimSpace(code)
 	if code == "" {
 		return nil, nil // 空码不报错，直接返回
@@ -63,6 +70,9 @@ func (s *PromoService) ValidatePromoCode(ctx context.Context, code string) (*Pro
 	}
 
 	if err := s.validatePromoCodeStatus(promoCode); err != nil {
+		return nil, err
+	}
+	if err := s.validatePromoCodeEmailPolicy(promoCode, email); err != nil {
 		return nil, err
 	}
 
@@ -86,9 +96,40 @@ func (s *PromoService) validatePromoCodeStatus(promoCode *PromoCode) error {
 	return nil
 }
 
+func (s *PromoService) validatePromoCodeEmailPolicy(promoCode *PromoCode, email string) error {
+	allowed := normalizePromoAllowedEmailSuffixes(promoCode.AllowedEmailSuffixes)
+	if len(allowed) == 0 || strings.TrimSpace(email) == "" {
+		return nil
+	}
+	if IsRegistrationEmailSuffixAllowed(email, allowed) {
+		return nil
+	}
+	return buildPromoCodeEmailSuffixNotAllowedError(allowed)
+}
+
+func buildPromoCodeEmailSuffixNotAllowedError(whitelist []string) error {
+	if len(whitelist) == 0 {
+		return ErrPromoCodeEmailSuffixNotAllowed
+	}
+	allowed := strings.Join(whitelist, ", ")
+	return infraerrors.BadRequest(
+		"PROMO_CODE_EMAIL_SUFFIX_NOT_ALLOWED",
+		fmt.Sprintf("promo code is not allowed for this email domain, allowed suffixes: %s", allowed),
+	).WithMetadata(map[string]string{
+		"allowed_suffixes":     strings.Join(whitelist, ","),
+		"allowed_suffix_count": fmt.Sprintf("%d", len(whitelist)),
+	})
+}
+
 // ApplyPromoCode 应用优惠码（注册成功后调用）
 // 使用事务和行锁确保并发安全
 func (s *PromoService) ApplyPromoCode(ctx context.Context, userID int64, code string) error {
+	return s.ApplyPromoCodeForEmail(ctx, userID, "", code)
+}
+
+// ApplyPromoCodeForEmail 应用优惠码（注册成功后调用）
+// 使用事务和行锁确保并发安全
+func (s *PromoService) ApplyPromoCodeForEmail(ctx context.Context, userID int64, email, code string) error {
 	code = strings.TrimSpace(code)
 	if code == "" {
 		return nil
@@ -109,57 +150,55 @@ func (s *PromoService) ApplyPromoCode(ctx context.Context, userID int64, code st
 		return err
 	}
 
-	// 在事务中验证优惠码状态
-	if err := s.validatePromoCodeStatus(promoCode); err != nil {
+	if _, err := s.applyPromoCodeTx(txCtx, userID, email, promoCode); err != nil {
 		return err
-	}
-
-	// 在事务中检查用户是否已使用过此优惠码
-	existing, err := s.promoRepo.GetUsageByPromoCodeAndUser(txCtx, promoCode.ID, userID)
-	if err != nil {
-		return fmt.Errorf("check existing usage: %w", err)
-	}
-	if existing != nil {
-		return ErrPromoCodeAlreadyUsed
-	}
-
-	// 增加用户余额
-	if err := s.userRepo.UpdateBalance(txCtx, userID, promoCode.BonusAmount); err != nil {
-		return fmt.Errorf("update user balance: %w", err)
-	}
-
-	// 创建使用记录
-	usage := &PromoCodeUsage{
-		PromoCodeID: promoCode.ID,
-		UserID:      userID,
-		BonusAmount: promoCode.BonusAmount,
-		UsedAt:      time.Now(),
-	}
-	if err := s.promoRepo.CreateUsage(txCtx, usage); err != nil {
-		return fmt.Errorf("create usage record: %w", err)
-	}
-
-	// 增加使用次数
-	if err := s.promoRepo.IncrementUsedCount(txCtx, promoCode.ID); err != nil {
-		return fmt.Errorf("increment used count: %w", err)
 	}
 
 	if err := tx.Commit(); err != nil {
 		return fmt.Errorf("commit transaction: %w", err)
 	}
 
-	s.invalidatePromoCaches(ctx, userID, promoCode.BonusAmount)
+	s.postApplyPromoCode(ctx, userID, promoCode.BonusAmount)
+	return nil
+}
 
-	// 失效余额缓存
-	if s.billingCacheService != nil {
-		go func() {
-			cacheCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			defer cancel()
-			_ = s.billingCacheService.InvalidateUserBalance(cacheCtx, userID)
-		}()
+func (s *PromoService) applyPromoCodeTx(ctx context.Context, userID int64, email string, promoCode *PromoCode) (*PromoCodeUsage, error) {
+	if promoCode == nil {
+		return nil, ErrPromoCodeInvalid
+	}
+	if err := s.validatePromoCodeStatus(promoCode); err != nil {
+		return nil, err
+	}
+	if err := s.validatePromoCodeEmailPolicy(promoCode, email); err != nil {
+		return nil, err
 	}
 
-	return nil
+	existing, err := s.promoRepo.GetUsageByPromoCodeAndUser(ctx, promoCode.ID, userID)
+	if err != nil {
+		return nil, fmt.Errorf("check existing usage: %w", err)
+	}
+	if existing != nil {
+		return nil, ErrPromoCodeAlreadyUsed
+	}
+
+	if err := s.userRepo.UpdateBalance(ctx, userID, promoCode.BonusAmount); err != nil {
+		return nil, fmt.Errorf("update user balance: %w", err)
+	}
+
+	usage := &PromoCodeUsage{
+		PromoCodeID: promoCode.ID,
+		UserID:      userID,
+		BonusAmount: promoCode.BonusAmount,
+		UsedAt:      time.Now(),
+	}
+	if err := s.promoRepo.CreateUsage(ctx, usage); err != nil {
+		return nil, fmt.Errorf("create usage record: %w", err)
+	}
+
+	if err := s.promoRepo.IncrementUsedCount(ctx, promoCode.ID); err != nil {
+		return nil, fmt.Errorf("increment used count: %w", err)
+	}
+	return usage, nil
 }
 
 func (s *PromoService) invalidatePromoCaches(ctx context.Context, userID int64, bonusAmount float64) {
@@ -167,6 +206,17 @@ func (s *PromoService) invalidatePromoCaches(ctx context.Context, userID int64, 
 		return
 	}
 	s.authCacheInvalidator.InvalidateAuthCacheByUserID(ctx, userID)
+}
+
+func (s *PromoService) postApplyPromoCode(ctx context.Context, userID int64, bonusAmount float64) {
+	s.invalidatePromoCaches(ctx, userID, bonusAmount)
+	if s.billingCacheService != nil {
+		go func() {
+			cacheCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			_ = s.billingCacheService.InvalidateUserBalance(cacheCtx, userID)
+		}()
+	}
 }
 
 // GenerateRandomCode 生成随机优惠码
@@ -199,6 +249,11 @@ func (s *PromoService) Create(ctx context.Context, input *CreatePromoCodeInput) 
 		ExpiresAt:   input.ExpiresAt,
 		Notes:       input.Notes,
 	}
+	allowedEmailSuffixes, err := normalizePromoAllowedEmailSuffixesStrict(input.AllowedEmailSuffixes)
+	if err != nil {
+		return nil, infraerrors.BadRequest("INVALID_PROMO_ALLOWED_EMAIL_SUFFIXES", err.Error())
+	}
+	promoCode.AllowedEmailSuffixes = allowedEmailSuffixes
 
 	if err := s.promoRepo.Create(ctx, promoCode); err != nil {
 		return nil, fmt.Errorf("create promo code: %w", err)
@@ -226,6 +281,13 @@ func (s *PromoService) Update(ctx context.Context, id int64, input *UpdatePromoC
 	if input.Code != nil {
 		promoCode.Code = strings.ToUpper(strings.TrimSpace(*input.Code))
 	}
+	if input.AllowedEmailSuffixes != nil {
+		allowedEmailSuffixes, err := normalizePromoAllowedEmailSuffixesStrict(*input.AllowedEmailSuffixes)
+		if err != nil {
+			return nil, infraerrors.BadRequest("INVALID_PROMO_ALLOWED_EMAIL_SUFFIXES", err.Error())
+		}
+		promoCode.AllowedEmailSuffixes = allowedEmailSuffixes
+	}
 	if input.BonusAmount != nil {
 		promoCode.BonusAmount = *input.BonusAmount
 	}
@@ -249,6 +311,25 @@ func (s *PromoService) Update(ctx context.Context, id int64, input *UpdatePromoC
 	return promoCode, nil
 }
 
+func normalizePromoAllowedEmailSuffixes(raw []string) []string {
+	normalized, err := NormalizeRegistrationEmailSuffixWhitelist(raw)
+	if err != nil || len(normalized) == 0 {
+		return []string{}
+	}
+	return normalized
+}
+
+func normalizePromoAllowedEmailSuffixesStrict(raw []string) ([]string, error) {
+	normalized, err := NormalizeRegistrationEmailSuffixWhitelist(raw)
+	if err != nil {
+		return nil, err
+	}
+	if len(normalized) == 0 {
+		return []string{}, nil
+	}
+	return normalized, nil
+}
+
 // Delete 删除优惠码
 func (s *PromoService) Delete(ctx context.Context, id int64) error {
 	if err := s.promoRepo.Delete(ctx, id); err != nil {
@@ -258,8 +339,8 @@ func (s *PromoService) Delete(ctx context.Context, id int64) error {
 }
 
 // List 获取优惠码列表
-func (s *PromoService) List(ctx context.Context, params pagination.PaginationParams, status, search string) ([]PromoCode, *pagination.PaginationResult, error) {
-	return s.promoRepo.ListWithFilters(ctx, params, status, search)
+func (s *PromoService) List(ctx context.Context, params pagination.PaginationParams, status, search, allowedEmailSuffix string) ([]PromoCode, *pagination.PaginationResult, error) {
+	return s.promoRepo.ListWithFilters(ctx, params, status, search, allowedEmailSuffix)
 }
 
 // ListUsages 获取使用记录

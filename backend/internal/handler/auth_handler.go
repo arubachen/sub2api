@@ -305,7 +305,8 @@ func (h *AuthHandler) GetCurrentUser(c *gin.Context) {
 
 // ValidatePromoCodeRequest 验证优惠码请求
 type ValidatePromoCodeRequest struct {
-	Code string `json:"code" binding:"required"`
+	Code  string `json:"code" binding:"required"`
+	Email string `json:"email" binding:"omitempty,email"`
 }
 
 // ValidatePromoCodeResponse 验证优惠码响应
@@ -334,7 +335,7 @@ func (h *AuthHandler) ValidatePromoCode(c *gin.Context) {
 		return
 	}
 
-	promoCode, err := h.promoService.ValidatePromoCode(c.Request.Context(), req.Code)
+	promoCode, err := h.promoService.ValidatePromoCodeForEmail(c.Request.Context(), req.Code, req.Email)
 	if err != nil {
 		// 根据错误类型返回对应的错误码
 		errorCode := "PROMO_CODE_INVALID"
@@ -349,6 +350,8 @@ func (h *AuthHandler) ValidatePromoCode(c *gin.Context) {
 			errorCode = "PROMO_CODE_MAX_USED"
 		case service.ErrPromoCodeAlreadyUsed:
 			errorCode = "PROMO_CODE_ALREADY_USED"
+		case service.ErrPromoCodeEmailSuffixNotAllowed:
+			errorCode = "PROMO_CODE_EMAIL_SUFFIX_NOT_ALLOWED"
 		}
 
 		response.Success(c, ValidatePromoCodeResponse{

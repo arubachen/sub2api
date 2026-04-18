@@ -29,6 +29,12 @@ func (_c *PromoCodeCreate) SetCode(v string) *PromoCodeCreate {
 	return _c
 }
 
+// SetAllowedEmailSuffixes sets the "allowed_email_suffixes" field.
+func (_c *PromoCodeCreate) SetAllowedEmailSuffixes(v []string) *PromoCodeCreate {
+	_c.mutation.SetAllowedEmailSuffixes(v)
+	return _c
+}
+
 // SetBonusAmount sets the "bonus_amount" field.
 func (_c *PromoCodeCreate) SetBonusAmount(v float64) *PromoCodeCreate {
 	_c.mutation.SetBonusAmount(v)
@@ -281,6 +287,10 @@ func (_c *PromoCodeCreate) createSpec() (*PromoCode, *sqlgraph.CreateSpec) {
 		_spec.SetField(promocode.FieldCode, field.TypeString, value)
 		_node.Code = value
 	}
+	if value, ok := _c.mutation.AllowedEmailSuffixes(); ok {
+		_spec.SetField(promocode.FieldAllowedEmailSuffixes, field.TypeJSON, value)
+		_node.AllowedEmailSuffixes = value
+	}
 	if value, ok := _c.mutation.BonusAmount(); ok {
 		_spec.SetField(promocode.FieldBonusAmount, field.TypeFloat64, value)
 		_node.BonusAmount = value
@@ -390,6 +400,24 @@ func (u *PromoCodeUpsert) SetCode(v string) *PromoCodeUpsert {
 // UpdateCode sets the "code" field to the value that was provided on create.
 func (u *PromoCodeUpsert) UpdateCode() *PromoCodeUpsert {
 	u.SetExcluded(promocode.FieldCode)
+	return u
+}
+
+// SetAllowedEmailSuffixes sets the "allowed_email_suffixes" field.
+func (u *PromoCodeUpsert) SetAllowedEmailSuffixes(v []string) *PromoCodeUpsert {
+	u.Set(promocode.FieldAllowedEmailSuffixes, v)
+	return u
+}
+
+// UpdateAllowedEmailSuffixes sets the "allowed_email_suffixes" field to the value that was provided on create.
+func (u *PromoCodeUpsert) UpdateAllowedEmailSuffixes() *PromoCodeUpsert {
+	u.SetExcluded(promocode.FieldAllowedEmailSuffixes)
+	return u
+}
+
+// ClearAllowedEmailSuffixes clears the value of the "allowed_email_suffixes" field.
+func (u *PromoCodeUpsert) ClearAllowedEmailSuffixes() *PromoCodeUpsert {
+	u.SetNull(promocode.FieldAllowedEmailSuffixes)
 	return u
 }
 
@@ -563,6 +591,27 @@ func (u *PromoCodeUpsertOne) SetCode(v string) *PromoCodeUpsertOne {
 func (u *PromoCodeUpsertOne) UpdateCode() *PromoCodeUpsertOne {
 	return u.Update(func(s *PromoCodeUpsert) {
 		s.UpdateCode()
+	})
+}
+
+// SetAllowedEmailSuffixes sets the "allowed_email_suffixes" field.
+func (u *PromoCodeUpsertOne) SetAllowedEmailSuffixes(v []string) *PromoCodeUpsertOne {
+	return u.Update(func(s *PromoCodeUpsert) {
+		s.SetAllowedEmailSuffixes(v)
+	})
+}
+
+// UpdateAllowedEmailSuffixes sets the "allowed_email_suffixes" field to the value that was provided on create.
+func (u *PromoCodeUpsertOne) UpdateAllowedEmailSuffixes() *PromoCodeUpsertOne {
+	return u.Update(func(s *PromoCodeUpsert) {
+		s.UpdateAllowedEmailSuffixes()
+	})
+}
+
+// ClearAllowedEmailSuffixes clears the value of the "allowed_email_suffixes" field.
+func (u *PromoCodeUpsertOne) ClearAllowedEmailSuffixes() *PromoCodeUpsertOne {
+	return u.Update(func(s *PromoCodeUpsert) {
+		s.ClearAllowedEmailSuffixes()
 	})
 }
 
@@ -921,6 +970,27 @@ func (u *PromoCodeUpsertBulk) SetCode(v string) *PromoCodeUpsertBulk {
 func (u *PromoCodeUpsertBulk) UpdateCode() *PromoCodeUpsertBulk {
 	return u.Update(func(s *PromoCodeUpsert) {
 		s.UpdateCode()
+	})
+}
+
+// SetAllowedEmailSuffixes sets the "allowed_email_suffixes" field.
+func (u *PromoCodeUpsertBulk) SetAllowedEmailSuffixes(v []string) *PromoCodeUpsertBulk {
+	return u.Update(func(s *PromoCodeUpsert) {
+		s.SetAllowedEmailSuffixes(v)
+	})
+}
+
+// UpdateAllowedEmailSuffixes sets the "allowed_email_suffixes" field to the value that was provided on create.
+func (u *PromoCodeUpsertBulk) UpdateAllowedEmailSuffixes() *PromoCodeUpsertBulk {
+	return u.Update(func(s *PromoCodeUpsert) {
+		s.UpdateAllowedEmailSuffixes()
+	})
+}
+
+// ClearAllowedEmailSuffixes clears the value of the "allowed_email_suffixes" field.
+func (u *PromoCodeUpsertBulk) ClearAllowedEmailSuffixes() *PromoCodeUpsertBulk {
+	return u.Update(func(s *PromoCodeUpsert) {
+		s.ClearAllowedEmailSuffixes()
 	})
 }
 

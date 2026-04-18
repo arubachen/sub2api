@@ -13,6 +13,15 @@
               @input="handleSearch"
             />
           </div>
+          <div class="flex-1 sm:max-w-56">
+            <input
+              v-model="filters.allowed_email_suffix"
+              type="text"
+              :placeholder="t('admin.promo.filterByAllowedEmailSuffix')"
+              class="input font-mono"
+              @input="handleSearch"
+            />
+          </div>
           <Select
             v-model="filters.status"
             :options="filterStatusOptions"
@@ -84,6 +93,21 @@
             <span class="text-sm text-gray-600 dark:text-gray-300">
               {{ row.used_count }} / {{ row.max_uses === 0 ? '∞' : row.max_uses }}
             </span>
+          </template>
+
+          <template #cell-allowed_email_suffixes="{ value }">
+            <div v-if="!value || value.length === 0" class="text-sm text-gray-500 dark:text-gray-400">
+              {{ t('admin.promo.allowedEmailSuffixesAll') }}
+            </div>
+            <div v-else class="flex flex-wrap gap-1.5">
+              <span
+                v-for="suffix in value"
+                :key="suffix"
+                class="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-mono text-blue-700 dark:bg-blue-900/20 dark:text-blue-300"
+              >
+                {{ suffix }}
+              </span>
+            </div>
           </template>
 
           <template #cell-status="{ value, row }">
@@ -201,6 +225,21 @@
         </div>
         <div>
           <label class="input-label">
+            {{ t('admin.promo.allowedEmailSuffixes') }}
+            <span class="ml-1 text-xs font-normal text-gray-400">({{ t('common.optional') }})</span>
+          </label>
+          <textarea
+            v-model="createForm.allowed_email_suffixes_text"
+            rows="3"
+            class="input font-mono"
+            :placeholder="t('admin.promo.allowedEmailSuffixesPlaceholder')"
+          ></textarea>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            {{ t('admin.promo.allowedEmailSuffixesHint') }}
+          </p>
+        </div>
+        <div>
+          <label class="input-label">
             {{ t('admin.promo.expiresAt') }}
             <span class="ml-1 text-xs font-normal text-gray-400">({{ t('common.optional') }})</span>
           </label>
@@ -273,6 +312,21 @@
             min="0"
             class="input"
           />
+        </div>
+        <div>
+          <label class="input-label">
+            {{ t('admin.promo.allowedEmailSuffixes') }}
+            <span class="ml-1 text-xs font-normal text-gray-400">({{ t('common.optional') }})</span>
+          </label>
+          <textarea
+            v-model="editForm.allowed_email_suffixes_text"
+            rows="3"
+            class="input font-mono"
+            :placeholder="t('admin.promo.allowedEmailSuffixesPlaceholder')"
+          ></textarea>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            {{ t('admin.promo.allowedEmailSuffixesHint') }}
+          </p>
         </div>
         <div>
           <label class="input-label">{{ t('admin.promo.status') }}</label>
@@ -403,6 +457,7 @@ import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import Select from '@/components/common/Select.vue'
 import Icon from '@/components/icons/Icon.vue'
+import { normalizeRegistrationEmailSuffixWhitelist } from '@/utils/registrationEmailPolicy'
 
 const { t } = useI18n()
 const appStore = useAppStore()
@@ -417,7 +472,8 @@ const searchQuery = ref('')
 const copiedCode = ref<string | null>(null)
 
 const filters = reactive({
-  status: ''
+  status: '',
+  allowed_email_suffix: ''
 })
 
 const pagination = reactive({
@@ -452,6 +508,7 @@ const createForm = reactive({
   code: '',
   bonus_amount: 1,
   max_uses: 0,
+  allowed_email_suffixes_text: '',
   expires_at_str: '',
   notes: ''
 })
@@ -460,6 +517,7 @@ const editForm = reactive({
   code: '',
   bonus_amount: 0,
   max_uses: 0,
+  allowed_email_suffixes_text: '',
   status: 'active' as 'active' | 'disabled',
   expires_at_str: '',
   notes: ''
@@ -481,6 +539,7 @@ const columns = computed<Column[]>(() => [
   { key: 'code', label: t('admin.promo.columns.code') },
   { key: 'bonus_amount', label: t('admin.promo.columns.bonusAmount'), sortable: true },
   { key: 'usage', label: t('admin.promo.columns.usage') },
+  { key: 'allowed_email_suffixes', label: t('admin.promo.columns.allowedEmailSuffixes') },
   { key: 'status', label: t('admin.promo.columns.status'), sortable: true },
   { key: 'expires_at', label: t('admin.promo.columns.expiresAt'), sortable: true },
   { key: 'created_at', label: t('admin.promo.columns.createdAt'), sortable: true },
@@ -508,6 +567,17 @@ const getStatusLabel = (status: string, row: PromoCode) => {
   return status === 'active' ? t('admin.promo.statusActive') : t('admin.promo.statusDisabled')
 }
 
+const splitAllowedEmailSuffixes = (value: string): string[] =>
+  String(value || '')
+    .split(/[\s,，]+/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+
+const normalizeAllowedEmailSuffixFilter = (value: string): string | undefined => {
+  const normalized = normalizeRegistrationEmailSuffixWhitelist([value])
+  return normalized[0] || undefined
+}
+
 // API calls
 let abortController: AbortController | null = null
 
@@ -526,6 +596,7 @@ const loadCodes = async () => {
       {
         status: filters.status || undefined,
         search: searchQuery.value || undefined,
+        allowed_email_suffix: normalizeAllowedEmailSuffixFilter(filters.allowed_email_suffix),
         sort_by: sortState.sort_by,
         sort_order: sortState.sort_order
       },
@@ -597,6 +668,7 @@ const handleCreate = async () => {
   try {
     await adminAPI.promo.create({
       code: createForm.code || undefined,
+      allowed_email_suffixes: splitAllowedEmailSuffixes(createForm.allowed_email_suffixes_text),
       bonus_amount: createForm.bonus_amount,
       max_uses: createForm.max_uses,
       expires_at: createForm.expires_at_str ? Math.floor(new Date(createForm.expires_at_str).getTime() / 1000) : undefined,
@@ -617,6 +689,7 @@ const resetCreateForm = () => {
   createForm.code = ''
   createForm.bonus_amount = 1
   createForm.max_uses = 0
+  createForm.allowed_email_suffixes_text = ''
   createForm.expires_at_str = ''
   createForm.notes = ''
 }
@@ -627,6 +700,7 @@ const handleEdit = (code: PromoCode) => {
   editForm.code = code.code
   editForm.bonus_amount = code.bonus_amount
   editForm.max_uses = code.max_uses
+  editForm.allowed_email_suffixes_text = (code.allowed_email_suffixes || []).join('\n')
   editForm.status = code.status
   editForm.expires_at_str = code.expires_at ? new Date(code.expires_at).toISOString().slice(0, 16) : ''
   editForm.notes = code.notes || ''
@@ -645,6 +719,7 @@ const handleUpdate = async () => {
   try {
     await adminAPI.promo.update(editingCode.value.id, {
       code: editForm.code,
+      allowed_email_suffixes: splitAllowedEmailSuffixes(editForm.allowed_email_suffixes_text),
       bonus_amount: editForm.bonus_amount,
       max_uses: editForm.max_uses,
       status: editForm.status,

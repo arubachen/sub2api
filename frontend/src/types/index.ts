@@ -1520,6 +1520,7 @@ export interface UserAttributeValuesMap {
 export interface PromoCode {
   id: number
   code: string
+  allowed_email_suffixes: string[]
   bonus_amount: number
   max_uses: number
   used_count: number
@@ -1541,6 +1542,7 @@ export interface PromoCodeUsage {
 
 export interface CreatePromoCodeRequest {
   code?: string
+  allowed_email_suffixes?: string[]
   bonus_amount: number
   max_uses?: number
   expires_at?: number | null
@@ -1549,6 +1551,7 @@ export interface CreatePromoCodeRequest {
 
 export interface UpdatePromoCodeRequest {
   code?: string
+  allowed_email_suffixes?: string[]
   bonus_amount?: number
   max_uses?: number
   status?: 'active' | 'disabled'
