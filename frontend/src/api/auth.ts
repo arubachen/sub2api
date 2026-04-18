@@ -481,10 +481,15 @@ export interface ValidatePromoCodeResponse {
 /**
  * Validate promo code (public endpoint, no auth required)
  * @param code - Promo code to validate
+ * @param email - Optional registration email for domain-restricted promo validation
  * @returns Validation result with bonus amount if valid
  */
-export async function validatePromoCode(code: string): Promise<ValidatePromoCodeResponse> {
-  const { data } = await apiClient.post<ValidatePromoCodeResponse>('/auth/validate-promo-code', { code })
+export async function validatePromoCode(code: string, email?: string): Promise<ValidatePromoCodeResponse> {
+  const payload: { code: string; email?: string } = { code }
+  if (email) {
+    payload.email = email
+  }
+  const { data } = await apiClient.post<ValidatePromoCodeResponse>('/auth/validate-promo-code', payload)
   return data
 }
 

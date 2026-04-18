@@ -422,6 +422,15 @@ onUnmounted(() => {
   }
 })
 
+watch(
+  () => formData.email,
+  () => {
+    if (formData.promo_code.trim()) {
+      handlePromoCodeInput()
+    }
+  }
+)
+
 // ==================== Promo Code Validation ====================
 
 function handlePromoCodeInput(): void {
@@ -454,7 +463,8 @@ async function validatePromoCodeDebounced(code: string): Promise<void> {
   promoValidating.value = true
 
   try {
-    const result = await validatePromoCode(code)
+    const promoEmail = validateEmail(formData.email) ? formData.email.trim() : undefined
+    const result = await validatePromoCode(code, promoEmail)
 
     if (result.valid) {
       promoValidation.valid = true
@@ -490,6 +500,8 @@ function getPromoErrorMessage(errorCode?: string): string {
       return t('auth.promoCodeMaxUsed')
     case 'PROMO_CODE_ALREADY_USED':
       return t('auth.promoCodeAlreadyUsed')
+    case 'PROMO_CODE_EMAIL_SUFFIX_NOT_ALLOWED':
+      return t('auth.promoCodeEmailSuffixNotAllowed')
     default:
       return t('auth.promoCodeInvalid')
   }
@@ -739,7 +751,10 @@ async function handleRegister(): Promise<void> {
 
     // Handle registration error
     errorMessage.value = buildAuthErrorMessage(error, {
-      fallback: t('auth.registrationFailed')
+      fallback: t('auth.registrationFailed'),
+      reasonMap: {
+        PROMO_CODE_EMAIL_SUFFIX_NOT_ALLOWED: t('auth.promoCodeEmailSuffixNotAllowed')
+      }
     })
 
     // Also show error toast

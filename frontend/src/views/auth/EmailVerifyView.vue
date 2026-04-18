@@ -538,7 +538,10 @@ async function handleVerify(): Promise<void> {
     await router.push(pendingRedirect.value || '/dashboard')
   } catch (error: unknown) {
     errorMessage.value = buildAuthErrorMessage(error, {
-      fallback: t('auth.verifyFailed')
+      fallback: t('auth.verifyFailed'),
+      reasonMap: {
+        PROMO_CODE_EMAIL_SUFFIX_NOT_ALLOWED: t('auth.promoCodeEmailSuffixNotAllowed')
+      }
     })
 
     appStore.showError(errorMessage.value)

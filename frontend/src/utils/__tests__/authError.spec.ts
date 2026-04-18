@@ -44,4 +44,25 @@ describe('buildAuthErrorMessage', () => {
   it('uses fallback when no message can be extracted', () => {
     expect(buildAuthErrorMessage({}, { fallback: 'fallback' })).toBe('fallback')
   })
+
+  it('prefers reasonMap when a mapped reason is available', () => {
+    const message = buildAuthErrorMessage(
+      {
+        response: {
+          data: {
+            reason: 'PROMO_CODE_EMAIL_SUFFIX_NOT_ALLOWED',
+            detail: 'backend message'
+          }
+        },
+      },
+      {
+        fallback: 'fallback',
+        reasonMap: {
+          PROMO_CODE_EMAIL_SUFFIX_NOT_ALLOWED: 'localized message'
+        }
+      }
+    )
+
+    expect(message).toBe('localized message')
+  })
 })

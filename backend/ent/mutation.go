@@ -21005,28 +21005,30 @@ func (m *PendingAuthSessionMutation) ResetEdge(name string) error {
 // PromoCodeMutation represents an operation that mutates the PromoCode nodes in the graph.
 type PromoCodeMutation struct {
 	config
-	op                   Op
-	typ                  string
-	id                   *int64
-	code                 *string
-	bonus_amount         *float64
-	addbonus_amount      *float64
-	max_uses             *int
-	addmax_uses          *int
-	used_count           *int
-	addused_count        *int
-	status               *string
-	expires_at           *time.Time
-	notes                *string
-	created_at           *time.Time
-	updated_at           *time.Time
-	clearedFields        map[string]struct{}
-	usage_records        map[int64]struct{}
-	removedusage_records map[int64]struct{}
-	clearedusage_records bool
-	done                 bool
-	oldValue             func(context.Context) (*PromoCode, error)
-	predicates           []predicate.PromoCode
+	op                           Op
+	typ                          string
+	id                           *int64
+	code                         *string
+	allowed_email_suffixes       *[]string
+	appendallowed_email_suffixes []string
+	bonus_amount                 *float64
+	addbonus_amount              *float64
+	max_uses                     *int
+	addmax_uses                  *int
+	used_count                   *int
+	addused_count                *int
+	status                       *string
+	expires_at                   *time.Time
+	notes                        *string
+	created_at                   *time.Time
+	updated_at                   *time.Time
+	clearedFields                map[string]struct{}
+	usage_records                map[int64]struct{}
+	removedusage_records         map[int64]struct{}
+	clearedusage_records         bool
+	done                         bool
+	oldValue                     func(context.Context) (*PromoCode, error)
+	predicates                   []predicate.PromoCode
 }
 
 var _ ent.Mutation = (*PromoCodeMutation)(nil)
@@ -21161,6 +21163,71 @@ func (m *PromoCodeMutation) OldCode(ctx context.Context) (v string, err error) {
 // ResetCode resets all changes to the "code" field.
 func (m *PromoCodeMutation) ResetCode() {
 	m.code = nil
+}
+
+// SetAllowedEmailSuffixes sets the "allowed_email_suffixes" field.
+func (m *PromoCodeMutation) SetAllowedEmailSuffixes(s []string) {
+	m.allowed_email_suffixes = &s
+	m.appendallowed_email_suffixes = nil
+}
+
+// AllowedEmailSuffixes returns the value of the "allowed_email_suffixes" field in the mutation.
+func (m *PromoCodeMutation) AllowedEmailSuffixes() (r []string, exists bool) {
+	v := m.allowed_email_suffixes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAllowedEmailSuffixes returns the old "allowed_email_suffixes" field's value of the PromoCode entity.
+// If the PromoCode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PromoCodeMutation) OldAllowedEmailSuffixes(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAllowedEmailSuffixes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAllowedEmailSuffixes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAllowedEmailSuffixes: %w", err)
+	}
+	return oldValue.AllowedEmailSuffixes, nil
+}
+
+// AppendAllowedEmailSuffixes adds s to the "allowed_email_suffixes" field.
+func (m *PromoCodeMutation) AppendAllowedEmailSuffixes(s []string) {
+	m.appendallowed_email_suffixes = append(m.appendallowed_email_suffixes, s...)
+}
+
+// AppendedAllowedEmailSuffixes returns the list of values that were appended to the "allowed_email_suffixes" field in this mutation.
+func (m *PromoCodeMutation) AppendedAllowedEmailSuffixes() ([]string, bool) {
+	if len(m.appendallowed_email_suffixes) == 0 {
+		return nil, false
+	}
+	return m.appendallowed_email_suffixes, true
+}
+
+// ClearAllowedEmailSuffixes clears the value of the "allowed_email_suffixes" field.
+func (m *PromoCodeMutation) ClearAllowedEmailSuffixes() {
+	m.allowed_email_suffixes = nil
+	m.appendallowed_email_suffixes = nil
+	m.clearedFields[promocode.FieldAllowedEmailSuffixes] = struct{}{}
+}
+
+// AllowedEmailSuffixesCleared returns if the "allowed_email_suffixes" field was cleared in this mutation.
+func (m *PromoCodeMutation) AllowedEmailSuffixesCleared() bool {
+	_, ok := m.clearedFields[promocode.FieldAllowedEmailSuffixes]
+	return ok
+}
+
+// ResetAllowedEmailSuffixes resets all changes to the "allowed_email_suffixes" field.
+func (m *PromoCodeMutation) ResetAllowedEmailSuffixes() {
+	m.allowed_email_suffixes = nil
+	m.appendallowed_email_suffixes = nil
+	delete(m.clearedFields, promocode.FieldAllowedEmailSuffixes)
 }
 
 // SetBonusAmount sets the "bonus_amount" field.
@@ -21625,9 +21692,12 @@ func (m *PromoCodeMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PromoCodeMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 10)
 	if m.code != nil {
 		fields = append(fields, promocode.FieldCode)
+	}
+	if m.allowed_email_suffixes != nil {
+		fields = append(fields, promocode.FieldAllowedEmailSuffixes)
 	}
 	if m.bonus_amount != nil {
 		fields = append(fields, promocode.FieldBonusAmount)
@@ -21663,6 +21733,8 @@ func (m *PromoCodeMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case promocode.FieldCode:
 		return m.Code()
+	case promocode.FieldAllowedEmailSuffixes:
+		return m.AllowedEmailSuffixes()
 	case promocode.FieldBonusAmount:
 		return m.BonusAmount()
 	case promocode.FieldMaxUses:
@@ -21690,6 +21762,8 @@ func (m *PromoCodeMutation) OldField(ctx context.Context, name string) (ent.Valu
 	switch name {
 	case promocode.FieldCode:
 		return m.OldCode(ctx)
+	case promocode.FieldAllowedEmailSuffixes:
+		return m.OldAllowedEmailSuffixes(ctx)
 	case promocode.FieldBonusAmount:
 		return m.OldBonusAmount(ctx)
 	case promocode.FieldMaxUses:
@@ -21721,6 +21795,13 @@ func (m *PromoCodeMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCode(v)
+		return nil
+	case promocode.FieldAllowedEmailSuffixes:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAllowedEmailSuffixes(v)
 		return nil
 	case promocode.FieldBonusAmount:
 		v, ok := value.(float64)
@@ -21847,6 +21928,9 @@ func (m *PromoCodeMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *PromoCodeMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(promocode.FieldAllowedEmailSuffixes) {
+		fields = append(fields, promocode.FieldAllowedEmailSuffixes)
+	}
 	if m.FieldCleared(promocode.FieldExpiresAt) {
 		fields = append(fields, promocode.FieldExpiresAt)
 	}
@@ -21867,6 +21951,9 @@ func (m *PromoCodeMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *PromoCodeMutation) ClearField(name string) error {
 	switch name {
+	case promocode.FieldAllowedEmailSuffixes:
+		m.ClearAllowedEmailSuffixes()
+		return nil
 	case promocode.FieldExpiresAt:
 		m.ClearExpiresAt()
 		return nil
@@ -21883,6 +21970,9 @@ func (m *PromoCodeMutation) ResetField(name string) error {
 	switch name {
 	case promocode.FieldCode:
 		m.ResetCode()
+		return nil
+	case promocode.FieldAllowedEmailSuffixes:
+		m.ResetAllowedEmailSuffixes()
 		return nil
 	case promocode.FieldBonusAmount:
 		m.ResetBonusAmount()

@@ -188,6 +188,20 @@ func (s *AuthService) RegisterWithVerification(ctx context.Context, email, passw
 		return "", nil, ErrEmailExists
 	}
 
+	shouldApplyPromo := strings.TrimSpace(promoCode) != "" &&
+		s.promoService != nil &&
+		s.settingService != nil &&
+		s.settingService.IsPromoCodeEnabled(ctx)
+	if shouldApplyPromo {
+		if _, err := s.promoService.ValidatePromoCodeForEmail(ctx, promoCode, email); err != nil {
+			return "", nil, err
+		}
+		if s.entClient == nil {
+			return "", nil, ErrServiceUnavailable
+		}
+		return s.registerWithPromoCodeTx(ctx, email, password, promoCode, invitationRedeemCode)
+	}
+
 	// 密码哈希
 	hashedPassword, err := s.HashPassword(password)
 	if err != nil {
@@ -243,6 +257,87 @@ func (s *AuthService) RegisterWithVerification(ctx context.Context, email, passw
 		return "", nil, fmt.Errorf("generate token: %w", err)
 	}
 
+	return token, user, nil
+}
+
+func (s *AuthService) registerWithPromoCodeTx(ctx context.Context, email, password, promoCode string, invitationRedeemCode *RedeemCode) (string, *User, error) {
+	tx, err := s.entClient.Tx(ctx)
+	if err != nil {
+		logger.LegacyPrintf("service.auth", "[Auth] Failed to start registration transaction: %v", err)
+		return "", nil, ErrServiceUnavailable
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	txCtx := dbent.NewTxContext(ctx, tx)
+
+	existsEmail, err := s.userRepo.ExistsByEmail(txCtx, email)
+	if err != nil {
+		logger.LegacyPrintf("service.auth", "[Auth] Database error checking email exists in tx: %v", err)
+		return "", nil, ErrServiceUnavailable
+	}
+	if existsEmail {
+		return "", nil, ErrEmailExists
+	}
+
+	hashedPassword, err := s.HashPassword(password)
+	if err != nil {
+		return "", nil, fmt.Errorf("hash password: %w", err)
+	}
+
+	defaultBalance := s.cfg.Default.UserBalance
+	defaultConcurrency := s.cfg.Default.UserConcurrency
+	if s.settingService != nil {
+		defaultBalance = s.settingService.GetDefaultBalance(txCtx)
+		defaultConcurrency = s.settingService.GetDefaultConcurrency(txCtx)
+	}
+
+	user := &User{
+		Email:        email,
+		PasswordHash: hashedPassword,
+		Role:         RoleUser,
+		Balance:      defaultBalance,
+		Concurrency:  defaultConcurrency,
+		Status:       StatusActive,
+	}
+	if err := s.userRepo.Create(txCtx, user); err != nil {
+		if errors.Is(err, ErrEmailExists) {
+			return "", nil, ErrEmailExists
+		}
+		logger.LegacyPrintf("service.auth", "[Auth] Database error creating user in tx: %v", err)
+		return "", nil, ErrServiceUnavailable
+	}
+
+	if invitationRedeemCode != nil {
+		if err := s.redeemRepo.Use(txCtx, invitationRedeemCode.ID, user.ID); err != nil {
+			if errors.Is(err, ErrRedeemCodeUsed) {
+				return "", nil, ErrInvitationCodeInvalid
+			}
+			logger.LegacyPrintf("service.auth", "[Auth] Failed to mark invitation code as used in tx for user %d: %v", user.ID, err)
+			return "", nil, ErrServiceUnavailable
+		}
+	}
+
+	lockedPromo, err := s.promoService.promoRepo.GetByCodeForUpdate(txCtx, promoCode)
+	if err != nil {
+		return "", nil, err
+	}
+	if _, err := s.promoService.applyPromoCodeTx(txCtx, user.ID, email, lockedPromo); err != nil {
+		return "", nil, err
+	}
+	user.Balance += lockedPromo.BonusAmount
+
+	if err := tx.Commit(); err != nil {
+		logger.LegacyPrintf("service.auth", "[Auth] Failed to commit registration transaction: %v", err)
+		return "", nil, ErrServiceUnavailable
+	}
+
+	s.promoService.postApplyPromoCode(ctx, user.ID, lockedPromo.BonusAmount)
+	s.assignDefaultSubscriptions(ctx, user.ID)
+
+	token, err := s.GenerateToken(user)
+	if err != nil {
+		return "", nil, fmt.Errorf("generate token: %w", err)
+	}
 	return token, user, nil
 }
 

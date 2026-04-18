@@ -2,9 +2,11 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	dbent "github.com/Wei-Shaw/sub2api/ent"
+	dbpredicate "github.com/Wei-Shaw/sub2api/ent/predicate"
 	"github.com/Wei-Shaw/sub2api/ent/promocode"
 	"github.com/Wei-Shaw/sub2api/ent/promocodeusage"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/pagination"
@@ -25,6 +27,7 @@ func (r *promoCodeRepository) Create(ctx context.Context, code *service.PromoCod
 	client := clientFromContext(ctx, r.client)
 	builder := client.PromoCode.Create().
 		SetCode(code.Code).
+		SetAllowedEmailSuffixes(code.AllowedEmailSuffixes).
 		SetBonusAmount(code.BonusAmount).
 		SetMaxUses(code.MaxUses).
 		SetUsedCount(code.UsedCount).
@@ -47,7 +50,8 @@ func (r *promoCodeRepository) Create(ctx context.Context, code *service.PromoCod
 }
 
 func (r *promoCodeRepository) GetByID(ctx context.Context, id int64) (*service.PromoCode, error) {
-	m, err := r.client.PromoCode.Query().
+	client := clientFromContext(ctx, r.client)
+	m, err := client.PromoCode.Query().
 		Where(promocode.IDEQ(id)).
 		Only(ctx)
 	if err != nil {
@@ -60,7 +64,8 @@ func (r *promoCodeRepository) GetByID(ctx context.Context, id int64) (*service.P
 }
 
 func (r *promoCodeRepository) GetByCode(ctx context.Context, code string) (*service.PromoCode, error) {
-	m, err := r.client.PromoCode.Query().
+	client := clientFromContext(ctx, r.client)
+	m, err := client.PromoCode.Query().
 		Where(promocode.CodeEqualFold(code)).
 		Only(ctx)
 	if err != nil {
@@ -91,6 +96,7 @@ func (r *promoCodeRepository) Update(ctx context.Context, code *service.PromoCod
 	client := clientFromContext(ctx, r.client)
 	builder := client.PromoCode.UpdateOneID(code.ID).
 		SetCode(code.Code).
+		SetAllowedEmailSuffixes(code.AllowedEmailSuffixes).
 		SetBonusAmount(code.BonusAmount).
 		SetMaxUses(code.MaxUses).
 		SetUsedCount(code.UsedCount).
@@ -122,17 +128,27 @@ func (r *promoCodeRepository) Delete(ctx context.Context, id int64) error {
 }
 
 func (r *promoCodeRepository) List(ctx context.Context, params pagination.PaginationParams) ([]service.PromoCode, *pagination.PaginationResult, error) {
-	return r.ListWithFilters(ctx, params, "", "")
+	return r.ListWithFilters(ctx, params, "", "", "")
 }
 
-func (r *promoCodeRepository) ListWithFilters(ctx context.Context, params pagination.PaginationParams, status, search string) ([]service.PromoCode, *pagination.PaginationResult, error) {
-	q := r.client.PromoCode.Query()
+func (r *promoCodeRepository) ListWithFilters(ctx context.Context, params pagination.PaginationParams, status, search, allowedEmailSuffix string) ([]service.PromoCode, *pagination.PaginationResult, error) {
+	client := clientFromContext(ctx, r.client)
+	q := client.PromoCode.Query()
 
 	if status != "" {
 		q = q.Where(promocode.StatusEQ(status))
 	}
 	if search != "" {
 		q = q.Where(promocode.CodeContainsFold(search))
+	}
+	if normalizedSuffixes, err := service.NormalizeRegistrationEmailSuffixWhitelist([]string{allowedEmailSuffix}); err == nil && len(normalizedSuffixes) > 0 {
+		normalized := strings.ToLower(normalizedSuffixes[0])
+		q = q.Where(dbpredicate.PromoCode(func(s *entsql.Selector) {
+			s.Where(entsql.ExprP(
+				fmt.Sprintf("LOWER(CAST(%s AS TEXT)) LIKE ?", s.C(promocode.FieldAllowedEmailSuffixes)),
+				"%"+normalized+"%",
+			))
+		}))
 	}
 
 	total, err := q.Clone().Count(ctx)
@@ -200,7 +216,8 @@ func (r *promoCodeRepository) CreateUsage(ctx context.Context, usage *service.Pr
 }
 
 func (r *promoCodeRepository) GetUsageByPromoCodeAndUser(ctx context.Context, promoCodeID, userID int64) (*service.PromoCodeUsage, error) {
-	m, err := r.client.PromoCodeUsage.Query().
+	client := clientFromContext(ctx, r.client)
+	m, err := client.PromoCodeUsage.Query().
 		Where(
 			promocodeusage.PromoCodeIDEQ(promoCodeID),
 			promocodeusage.UserIDEQ(userID),
@@ -216,7 +233,8 @@ func (r *promoCodeRepository) GetUsageByPromoCodeAndUser(ctx context.Context, pr
 }
 
 func (r *promoCodeRepository) ListUsagesByPromoCode(ctx context.Context, promoCodeID int64, params pagination.PaginationParams) ([]service.PromoCodeUsage, *pagination.PaginationResult, error) {
-	q := r.client.PromoCodeUsage.Query().
+	client := clientFromContext(ctx, r.client)
+	q := client.PromoCodeUsage.Query().
 		Where(promocodeusage.PromoCodeIDEQ(promoCodeID))
 
 	total, err := q.Clone().Count(ctx)
@@ -254,16 +272,17 @@ func promoCodeEntityToService(m *dbent.PromoCode) *service.PromoCode {
 		return nil
 	}
 	return &service.PromoCode{
-		ID:          m.ID,
-		Code:        m.Code,
-		BonusAmount: m.BonusAmount,
-		MaxUses:     m.MaxUses,
-		UsedCount:   m.UsedCount,
-		Status:      m.Status,
-		ExpiresAt:   m.ExpiresAt,
-		Notes:       derefString(m.Notes),
-		CreatedAt:   m.CreatedAt,
-		UpdatedAt:   m.UpdatedAt,
+		ID:                   m.ID,
+		Code:                 m.Code,
+		AllowedEmailSuffixes: append(make([]string, 0, len(m.AllowedEmailSuffixes)), m.AllowedEmailSuffixes...),
+		BonusAmount:          m.BonusAmount,
+		MaxUses:              m.MaxUses,
+		UsedCount:            m.UsedCount,
+		Status:               m.Status,
+		ExpiresAt:            m.ExpiresAt,
+		Notes:                derefString(m.Notes),
+		CreatedAt:            m.CreatedAt,
+		UpdatedAt:            m.UpdatedAt,
 	}
 }
 

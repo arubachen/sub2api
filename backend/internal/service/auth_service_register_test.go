@@ -179,6 +179,10 @@ func (s *emailCacheStub) IncrNotifyCodeUserRate(ctx context.Context, userID int6
 }
 
 func newAuthService(repo *userRepoStub, settings map[string]string, emailCache EmailCache) *AuthService {
+	return newAuthServiceWithPromo(repo, settings, emailCache, nil)
+}
+
+func newAuthServiceWithPromo(repo *userRepoStub, settings map[string]string, emailCache EmailCache, promoService *PromoService) *AuthService {
 	cfg := &config.Config{
 		JWT: config.JWTConfig{
 			Secret:     "test-secret",
@@ -210,7 +214,7 @@ func newAuthService(repo *userRepoStub, settings map[string]string, emailCache E
 		emailService,
 		nil,
 		nil,
-		nil, // promoService
+		promoService,
 		nil, // defaultSubAssigner
 	)
 }
@@ -368,6 +372,28 @@ func TestAuthService_Register_CreateEmailExistsRace(t *testing.T) {
 
 	_, _, err := service.Register(context.Background(), "user@test.com", "password")
 	require.ErrorIs(t, err, ErrEmailExists)
+}
+
+func TestAuthService_Register_PromoEmailSuffixNotAllowed(t *testing.T) {
+	repo := &userRepoStub{}
+	promoRepo := &promoRepoUnitStub{
+		code: &PromoCode{
+			ID:                   1,
+			Code:                 "TEAM30",
+			AllowedEmailSuffixes: []string{"@company.com"},
+			BonusAmount:          100,
+			Status:               PromoCodeStatusActive,
+		},
+	}
+	promoService := NewPromoService(promoRepo, nil, nil, nil, nil)
+	service := newAuthServiceWithPromo(repo, map[string]string{
+		SettingKeyRegistrationEnabled: "true",
+		SettingKeyPromoCodeEnabled:    "true",
+	}, nil, promoService)
+
+	_, _, err := service.RegisterWithVerification(context.Background(), "user@gmail.com", "password", "", "TEAM30", "")
+	require.ErrorIs(t, err, ErrPromoCodeEmailSuffixNotAllowed)
+	require.Empty(t, repo.created)
 }
 
 func TestAuthService_Register_Success(t *testing.T) {
