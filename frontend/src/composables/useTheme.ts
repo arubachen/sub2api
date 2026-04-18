@@ -1,7 +1,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 
 const THEME_STORAGE_KEY = 'theme'
-const THEME_EVENT = 'sub2api-theme-change'
+export const THEME_EVENT = 'sub2api-theme-change'
 
 export type ThemeMode = 'light' | 'dark' | 'system'
 

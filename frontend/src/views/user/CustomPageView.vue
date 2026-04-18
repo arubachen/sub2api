@@ -67,6 +67,7 @@ import { useAdminSettingsStore } from '@/stores/adminSettings'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import Icon from '@/components/icons/Icon.vue'
 import { buildEmbeddedUrl, detectTheme } from '@/utils/embedded-url'
+import { THEME_EVENT } from '@/composables/useTheme'
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -171,6 +172,8 @@ onMounted(async () => {
       attributes: true,
       attributeFilter: ['class'],
     })
+
+    window.addEventListener(THEME_EVENT, handleThemeMessage)
   }
 
   if (appStore.publicSettingsLoaded) return
@@ -187,7 +190,16 @@ onUnmounted(() => {
     themeObserver.disconnect()
     themeObserver = null
   }
+  window.removeEventListener(THEME_EVENT, handleThemeMessage)
 })
+
+function handleThemeMessage(event: Event) {
+  const customEvent = event as CustomEvent<{ dark?: boolean }>
+  if (typeof customEvent.detail?.dark !== 'boolean') return
+  const nextTheme = customEvent.detail.dark ? 'dark' : 'light'
+  if (pageTheme.value === nextTheme) return
+  pageTheme.value = nextTheme
+}
 </script>
 
 <style scoped>

@@ -9,7 +9,10 @@
     :title="themeModeLabel"
     :aria-label="themeModeLabel"
   >
-    <Icon v-if="themeMode === 'system'" name="cog" size="md" />
+    <span
+      v-if="themeMode === 'system'"
+      class="h-5 w-5 rounded-full border border-current/25 bg-[linear-gradient(90deg,#111827_0_50%,#f8fafc_50_100%)]"
+    ></span>
     <Icon v-else-if="isDark" name="moon" size="md" />
     <Icon v-else name="sun" size="md" />
     <span v-if="showLabel" class="ml-2 text-sm font-medium">{{ themeModeLabel }}</span>
