@@ -13,7 +13,7 @@
     v-else
     :class="[
       'juliu-home relative min-h-screen overflow-hidden transition-colors duration-300',
-      isDark ? 'theme-dark bg-slate-950 text-white' : 'theme-light bg-slate-50 text-slate-950'
+      isDark ? 'theme-dark bg-slate-950 text-white' : 'theme-light bg-slate-100 text-slate-950'
     ]"
   >
     <div class="pointer-events-none absolute inset-0">
@@ -29,7 +29,7 @@
         'fixed inset-x-0 top-0 z-30 border-b backdrop-blur-xl transition-colors duration-300',
         isDark
           ? 'border-white/10 bg-slate-950/70'
-          : 'border-slate-200/80 bg-white/70'
+          : 'border-slate-300/80 bg-white/88'
       ]"
     >
       <nav class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
@@ -37,7 +37,7 @@
           <div
             :class="[
               'flex h-11 w-11 items-center justify-center rounded-2xl ring-1 transition-colors duration-300',
-              isDark ? 'bg-white/5 ring-white/10' : 'bg-white/90 ring-slate-200 shadow-sm'
+              isDark ? 'bg-white/5 ring-white/10' : 'bg-white ring-slate-300 shadow-[0_12px_32px_-20px_rgba(15,23,42,0.18)]'
             ]"
           >
             <img
@@ -49,8 +49,7 @@
             <JuliuFlowLogo v-else class="h-8 w-8" />
           </div>
           <div>
-            <p :class="['text-sm font-semibold tracking-[0.28em]', isDark ? 'text-cyan-300/80' : 'text-cyan-700']">JULIU</p>
-            <p :class="['text-base font-semibold transition-colors duration-300', isDark ? 'text-white' : 'text-slate-900']">{{ headerBrandName }}</p>
+            <p :class="['text-base font-semibold transition-colors duration-300', isDark ? 'text-white' : 'text-slate-950']">{{ headerBrandName }}</p>
           </div>
         </router-link>
 
@@ -133,7 +132,7 @@
                 'inline-flex items-center justify-center rounded-full border px-8 py-4 text-base font-semibold transition-all',
                 isDark
                   ? 'border-white/15 bg-white/5 text-white hover:border-white/30 hover:bg-white/10'
-                  : 'border-slate-200 bg-white/90 text-slate-800 hover:border-slate-300 hover:bg-white'
+                  : 'border-slate-300 bg-slate-200/80 text-slate-900 hover:border-slate-400 hover:bg-slate-200'
               ]"
             >
               {{ secondaryActionLabel }}
@@ -148,7 +147,7 @@
                 'rounded-full border px-4 py-2 text-sm backdrop-blur-sm transition-colors duration-300',
                 isDark
                   ? 'border-white/12 bg-white/5 text-slate-200'
-                  : 'border-white/80 bg-white/80 text-slate-700 shadow-sm'
+                  : 'border-slate-300 bg-slate-200/80 text-slate-800 shadow-sm'
               ]"
             >
               {{ tag }}
@@ -183,7 +182,7 @@
                   'mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl border transition-all',
                   isDark
                     ? 'border-white/10 bg-white/5 text-cyan-300 group-hover:border-cyan-300/40 group-hover:bg-cyan-400/10 group-hover:text-cyan-100'
-                    : 'border-white/80 bg-white/90 text-cyan-700 shadow-sm group-hover:border-cyan-200 group-hover:bg-cyan-50 group-hover:text-cyan-800'
+                    : 'border-slate-300 bg-slate-100 text-cyan-800 shadow-sm group-hover:border-cyan-300 group-hover:bg-cyan-100/80 group-hover:text-cyan-900'
                 ]"
               >
                 <Icon :name="feature.icon" size="lg" />
@@ -213,7 +212,7 @@
                 'rounded-3xl border p-6 backdrop-blur-sm transition-all',
                 isDark
                   ? 'border-white/10 bg-white/5 hover:border-cyan-300/30 hover:bg-white/[0.07]'
-                  : 'border-white/80 bg-white/90 shadow-sm hover:border-cyan-200 hover:bg-cyan-50/60'
+                  : 'border-slate-300 bg-slate-100/90 shadow-sm hover:border-cyan-300 hover:bg-cyan-100/70'
               ]"
             >
               <div class="flex flex-col gap-4 sm:flex-row sm:items-start">
@@ -248,7 +247,7 @@
                 'rounded-full border px-5 py-3 text-sm backdrop-blur-sm transition-colors duration-300',
                 isDark
                   ? 'border-white/12 bg-white/5 text-slate-100'
-                  : 'border-white/80 bg-white/90 text-slate-700 shadow-sm'
+                  : 'border-slate-300 bg-slate-100 text-slate-800 shadow-sm'
               ]"
             >
               {{ provider }}
@@ -291,7 +290,7 @@
 
     <footer :class="['relative z-10 border-t px-6 py-8', isDark ? 'border-white/8' : 'border-slate-200/80']">
       <div class="mx-auto flex max-w-6xl items-center justify-center text-center text-sm">
-        <p :class="[isDark ? 'text-slate-400' : 'text-slate-500']">&copy; {{ currentYear }} {{ brandName }}. {{ t('home.footer.allRightsReserved') }}</p>
+        <p :class="[isDark ? 'text-slate-400' : 'text-slate-600']">&copy; {{ currentYear }} {{ brandName }}. {{ t('home.footer.allRightsReserved') }}</p>
       </div>
     </footer>
   </div>
@@ -329,12 +328,8 @@ const isAdmin = computed(() => authStore.isAdmin)
 const dashboardPath = computed(() => (isAdmin.value ? '/admin/dashboard' : '/dashboard'))
 const currentYear = computed(() => new Date().getFullYear())
 
-const brandName = computed(() => (siteName.value === DEFAULT_SITE_NAME ? '聚流 Juliu' : siteName.value))
-const headerBrandName = computed(() => {
-  const trimmed = brandName.value.trim()
-  const withoutRomanization = trimmed.replace(/\s+Juliu$/i, '').trim()
-  return withoutRomanization || trimmed
-})
+const brandName = computed(() => (siteName.value === DEFAULT_SITE_NAME ? DEFAULT_SITE_NAME : siteName.value))
+const headerBrandName = computed(() => brandName.value.trim())
 
 const heroSubtitleFallbacks = [
   DEFAULT_SITE_SUBTITLE,
@@ -361,7 +356,7 @@ const navLinkClass = computed(() =>
 const themeToggleButtonClass = computed(() =>
   isDark.value
     ? 'border-white/15 bg-white/5 text-slate-300 hover:border-white/30 hover:bg-white/10'
-    : 'border-slate-200 bg-white/90 text-slate-600 shadow-sm hover:border-slate-300 hover:bg-white hover:text-slate-900'
+    : 'border-slate-300 bg-slate-100 text-slate-700 shadow-sm hover:border-slate-400 hover:bg-white hover:text-slate-950'
 )
 
 const valueTags = computed(() => [
@@ -457,9 +452,9 @@ onMounted(() => {
 
 .theme-light .hero-noise {
   background:
-    radial-gradient(circle at top, rgba(34, 211, 238, 0.18), transparent 38%),
-    radial-gradient(circle at 20% 80%, rgba(16, 185, 129, 0.12), transparent 28%),
-    linear-gradient(180deg, rgba(248, 250, 252, 0.65), rgba(255, 255, 255, 0.96));
+    radial-gradient(circle at top, rgba(34, 211, 238, 0.16), transparent 34%),
+    radial-gradient(circle at 20% 80%, rgba(16, 185, 129, 0.1), transparent 24%),
+    linear-gradient(180deg, rgba(226, 232, 240, 0.78), rgba(248, 250, 252, 0.98));
 }
 
 .hero-orb {
@@ -471,7 +466,7 @@ onMounted(() => {
 }
 
 .theme-light .hero-orb {
-  opacity: 0.5;
+  opacity: 0.38;
 }
 
 .hero-orb-cyan {

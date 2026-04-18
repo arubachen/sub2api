@@ -21,7 +21,7 @@ const i18nFixture = vi.hoisted(() => ({
             flow: '流程',
             models: '模型'
           },
-          heroBadge: 'Juliu Token Hub',
+          heroBadge: '聚流',
           fallbackSubtitle: '一站式大模型 API Token 汇聚平台。连接全球顶尖模型，聚沙成塔，汇流成海。',
           primaryCta: '立即开始',
           secondaryCta: '浏览能力',
@@ -97,7 +97,7 @@ const i18nFixture = vi.hoisted(() => ({
             flow: 'Flow',
             models: 'Models'
           },
-          heroBadge: 'Juliu Token Hub',
+          heroBadge: '聚流',
           fallbackSubtitle: 'A one-stop AI token hub connecting leading models worldwide. Gather access, unify routing, and scale with confidence.',
           primaryCta: 'Start now',
           secondaryCta: 'Explore capabilities',
@@ -111,7 +111,7 @@ const i18nFixture = vi.hoisted(() => ({
           modelsTitle: 'Offer one unified gateway for everyday models',
           modelsDescription: 'Ideal for combining multi-account pools, subscription quotas, and different upstream protocols behind a single OpenAI-compatible endpoint.',
           finalEyebrow: 'Start now',
-          finalTitle: 'Ready to turn your AI access layer into Juliu?',
+          finalTitle: 'Ready to turn your AI access layer into 聚流?',
           finalDescription: 'Bring model onboarding, quota control, user provisioning, and usage analytics into one operational system you can ship with immediately.',
           finalPrimaryCta: 'Join free',
           tags: {
@@ -227,8 +227,9 @@ describe('HomeView', () => {
       }
     })
 
-    expect(wrapper.text()).toContain('聚流 Juliu')
-    expect(wrapper.text()).toContain('Juliu Token Hub')
+    expect(wrapper.text()).toContain('聚流')
+    expect(wrapper.text()).not.toContain('聚流 Juliu')
+    expect(wrapper.text()).not.toContain('Juliu Token Hub')
     expect(wrapper.text()).toContain('把分散的模型入口，汇成一条稳定的生产链路')
     expect(wrapper.text()).not.toContain('Sora')
     expect(wrapper.text()).not.toContain('Linux DO')
@@ -263,7 +264,8 @@ describe('HomeView', () => {
       }
     })
 
-    expect(wrapper.text()).toContain('Juliu Token Hub')
+    expect(wrapper.text()).toContain('聚流')
+    expect(wrapper.text()).not.toContain('Juliu Token Hub')
     expect(wrapper.text()).toContain('Bring scattered model access into one stable production flow')
     expect(wrapper.text()).toContain('Capabilities')
     expect(wrapper.text()).toContain('Multi-account Pool')
@@ -289,7 +291,7 @@ describe('HomeView', () => {
       invitation_code_enabled: false,
       turnstile_enabled: false,
       turnstile_site_key: '',
-      site_name: '聚流 Juliu',
+      site_name: '聚流',
       site_logo: '',
       site_subtitle: '',
       api_base_url: '',
