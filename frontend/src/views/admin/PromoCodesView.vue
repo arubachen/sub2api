@@ -39,7 +39,7 @@
             >
               <Icon name="refresh" size="md" :class="loading ? 'animate-spin' : ''" />
             </button>
-            <button @click="showCreateDialog = true" class="btn btn-primary">
+            <button type="button" @click="showCreateDialog = true" class="btn btn-primary">
               <Icon name="plus" size="md" class="mr-1" />
               {{ t('admin.promo.createCode') }}
             </button>
