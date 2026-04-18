@@ -3461,7 +3461,7 @@ export default {
       maxUses: 'Max Uses',
       zeroUnlimited: '0 = unlimited',
       allowedEmailSuffixes: 'Allowed Email Domains',
-      allowedEmailSuffixesPlaceholder: '@company.com, @example.org',
+      allowedEmailSuffixesPlaceholder: 'company.com, example.org',
       allowedEmailSuffixesHint: 'Leave empty to allow all email domains. Separate multiple domains with commas, spaces, or new lines.',
       allowedEmailSuffixesAll: 'All domains',
       expiresAt: 'Expires At',
