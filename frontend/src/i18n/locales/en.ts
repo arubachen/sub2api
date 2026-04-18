@@ -495,6 +495,7 @@ export default {
     promoCodeMaxUsed: 'This promo code has reached its usage limit',
     promoCodeAlreadyUsed: 'You have already used this promo code',
     promoCodeEmailSuffixNotAllowed: 'This promo code is not available for this email domain',
+    promoCodeRemainingUses: 'Remaining uses: {count}',
     promoCodeValidating: 'Promo code is being validated, please wait',
     promoCodeInvalidCannotRegister: 'Invalid promo code. Please check and try again or clear the promo code field',
     invitationCodeLabel: 'Invitation Code',

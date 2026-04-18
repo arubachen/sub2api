@@ -207,9 +207,17 @@
           <transition name="fade">
             <div v-if="promoValidation.valid" class="mt-2 flex items-center gap-2 rounded-lg bg-green-50 px-3 py-2 dark:bg-green-900/20">
               <Icon name="gift" size="sm" class="text-green-600 dark:text-green-400" />
-              <span class="text-sm text-green-700 dark:text-green-400">
-                {{ t('auth.promoCodeValid', { amount: promoValidation.bonusAmount?.toFixed(2) }) }}
-              </span>
+              <div class="space-y-0.5">
+                <p class="text-sm text-green-700 dark:text-green-400">
+                  {{ t('auth.promoCodeValid', { amount: promoValidation.bonusAmount?.toFixed(2) }) }}
+                </p>
+                <p
+                  v-if="promoValidation.remainingUses !== null"
+                  class="text-xs text-green-700/90 dark:text-green-400/90"
+                >
+                  {{ t('auth.promoCodeRemainingUses', { count: promoValidation.remainingUses }) }}
+                </p>
+              </div>
             </div>
             <p v-else-if="promoValidation.invalid" class="input-error-text">
               {{ promoValidation.message }}
@@ -358,6 +366,7 @@ const promoValidation = reactive({
   valid: false,
   invalid: false,
   bonusAmount: null as number | null,
+  remainingUses: null as number | null,
   message: ''
 })
 let promoValidateTimeout: ReturnType<typeof setTimeout> | null = null
@@ -447,6 +456,7 @@ function handlePromoCodeInput(): void {
   promoValidation.valid = false
   promoValidation.invalid = false
   promoValidation.bonusAmount = null
+  promoValidation.remainingUses = null
   promoValidation.message = ''
 
   if (!code) {
@@ -477,11 +487,13 @@ async function validatePromoCodeDebounced(code: string): Promise<void> {
       promoValidation.valid = true
       promoValidation.invalid = false
       promoValidation.bonusAmount = result.bonus_amount || 0
+      promoValidation.remainingUses = result.remaining_uses ?? null
       promoValidation.message = ''
     } else {
       promoValidation.valid = false
       promoValidation.invalid = true
       promoValidation.bonusAmount = null
+      promoValidation.remainingUses = null
       // 根据错误码显示对应的翻译
       promoValidation.message = getPromoErrorMessage(result.error_code)
     }
@@ -489,6 +501,7 @@ async function validatePromoCodeDebounced(code: string): Promise<void> {
     console.error('Failed to validate promo code:', error)
     promoValidation.valid = false
     promoValidation.invalid = true
+    promoValidation.remainingUses = null
     promoValidation.message = t('auth.promoCodeInvalid')
   } finally {
     promoValidating.value = false
