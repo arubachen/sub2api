@@ -33,7 +33,7 @@
       ]"
     >
       <nav class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <router-link to="/home" class="flex items-center gap-3">
+        <router-link to="/home" class="flex min-h-11 items-center gap-3 rounded-full px-1 py-1.5">
           <div
             :class="[
               'flex h-11 w-11 items-center justify-center rounded-2xl ring-1 transition-colors duration-300',
@@ -48,8 +48,8 @@
             />
             <JuliuFlowLogo v-else class="h-8 w-8" />
           </div>
-          <div>
-            <p :class="['text-base font-semibold transition-colors duration-300', isDark ? 'text-white' : 'text-slate-950']">{{ headerBrandName }}</p>
+          <div class="flex min-h-11 items-center">
+            <p :class="['text-base font-semibold leading-none transition-colors duration-300', isDark ? 'text-white' : 'text-slate-950']">{{ headerBrandName }}</p>
           </div>
         </router-link>
 
