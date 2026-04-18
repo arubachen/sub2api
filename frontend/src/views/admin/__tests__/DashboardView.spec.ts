@@ -1,8 +1,14 @@
+import { readFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 
 import type { DashboardStats } from '@/types'
-import DashboardView from '../DashboardView.vue'
+
+const componentPath = resolve(dirname(fileURLToPath(import.meta.url)), '../DashboardView.vue')
+const componentSource = readFileSync(componentPath, 'utf8')
 
 const { getSnapshotV2, getUserUsageTrend, getUserSpendingRanking } = vi.hoisted(() => ({
   getSnapshotV2: vi.fn(),
@@ -71,6 +77,7 @@ const createDashboardStats = (): DashboardStats => ({
   total_tokens: 0,
   total_cost: 0,
   total_actual_cost: 0,
+  total_account_cost: 0,
   today_requests: 0,
   today_input_tokens: 0,
   today_output_tokens: 0,
@@ -79,6 +86,7 @@ const createDashboardStats = (): DashboardStats => ({
   today_tokens: 0,
   today_cost: 0,
   today_actual_cost: 0,
+  today_account_cost: 0,
   average_duration_ms: 0,
   uptime: 0,
   rpm: 0,
@@ -87,6 +95,13 @@ const createDashboardStats = (): DashboardStats => ({
 
 describe('admin DashboardView', () => {
   beforeEach(() => {
+    vi.stubGlobal('localStorage', {
+      getItem: vi.fn(() => null),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn()
+    })
+
     getSnapshotV2.mockReset()
     getUserUsageTrend.mockReset()
     getUserSpendingRanking.mockReset()
@@ -113,6 +128,8 @@ describe('admin DashboardView', () => {
   })
 
   it('uses last 24 hours as default dashboard range', async () => {
+    const { default: DashboardView } = await import('../DashboardView.vue')
+
     mount(DashboardView, {
       global: {
         stubs: {
@@ -139,5 +156,6 @@ describe('admin DashboardView', () => {
       end_date: formatLocalDate(now),
       granularity: 'hour'
     }))
+    expect(componentSource).toContain('card overflow-visible p-5')
   })
 })

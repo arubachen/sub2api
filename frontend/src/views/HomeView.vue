@@ -105,9 +105,6 @@
             <JuliuFlowLogo v-else class="h-24 w-24 md:h-28 md:w-28" />
           </div>
 
-          <p :class="['mb-5 text-xs font-semibold uppercase tracking-[0.55em]', isDark ? 'text-cyan-300/75' : 'text-cyan-700']">
-            {{ t('home.juliu.heroBadge') }}
-          </p>
           <h1 :class="['max-w-4xl text-5xl font-semibold tracking-tight md:text-7xl', isDark ? 'text-white' : 'text-slate-950']">
             {{ brandName }}
           </h1>

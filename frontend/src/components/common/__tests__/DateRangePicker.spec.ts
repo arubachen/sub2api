@@ -1,8 +1,15 @@
+import { readFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
 import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { ref } from 'vue'
 
 import DateRangePicker from '../DateRangePicker.vue'
+
+const componentPath = resolve(dirname(fileURLToPath(import.meta.url)), '../DateRangePicker.vue')
+const componentSource = readFileSync(componentPath, 'utf8')
 
 const messages: Record<string, string> = {
   'dates.today': 'Today',
@@ -92,5 +99,9 @@ describe('DateRangePicker', () => {
         preset: 'last24Hours'
       }
     ])
+  })
+
+  it('keeps the dropdown on a high z-index layer', async () => {
+    expect(componentSource).toContain('@apply absolute left-0 z-[1000] mt-2;')
   })
 })

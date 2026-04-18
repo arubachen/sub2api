@@ -10,13 +10,14 @@ const stylePath = resolve(dirname(fileURLToPath(import.meta.url)), '../../../sty
 const styleSource = readFileSync(stylePath, 'utf8')
 
 describe('AppSidebar custom SVG styles', () => {
-  it('does not override uploaded SVG fill or stroke colors', () => {
-    expect(componentSource).toContain('.sidebar-custom-icon-shell {')
+  it('recolors uploaded SVG icons to match the sidebar icon palette', () => {
     expect(componentSource).toContain('.sidebar-svg-icon {')
     expect(componentSource).toContain('color: currentColor;')
     expect(componentSource).toContain('display: block;')
-    expect(componentSource).not.toContain('stroke: currentColor;')
-    expect(componentSource).not.toContain('fill: none;')
+    expect(componentSource).toContain(".sidebar-svg-icon :deep([fill]:not([fill='none'])) {")
+    expect(componentSource).toContain('fill: currentColor !important;')
+    expect(componentSource).toContain(".sidebar-svg-icon :deep([stroke]:not([stroke='none'])) {")
+    expect(componentSource).toContain('stroke: currentColor !important;')
   })
 })
 

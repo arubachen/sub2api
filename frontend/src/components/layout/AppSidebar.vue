@@ -86,9 +86,7 @@
               "
               @click="handleMenuItemClick(item.path)"
             >
-              <span v-if="item.iconSvg" class="sidebar-custom-icon-shell">
-                <span class="sidebar-svg-icon" v-html="sanitizeSvg(item.iconSvg)"></span>
-              </span>
+              <span v-if="item.iconSvg" class="sidebar-svg-icon" v-html="sanitizeSvg(item.iconSvg)"></span>
               <component v-else :is="item.icon" class="h-5 w-5 flex-shrink-0" />
               <span class="sidebar-label" :class="{ 'sidebar-label-collapsed': sidebarCollapsed }" :aria-hidden="sidebarCollapsed ? 'true' : 'false'">{{ item.label }}</span>
             </router-link>
@@ -113,9 +111,7 @@
             :data-tour="item.path === '/keys' ? 'sidebar-my-keys' : undefined"
             @click="handleMenuItemClick(item.path)"
           >
-            <span v-if="item.iconSvg" class="sidebar-custom-icon-shell">
-              <span class="sidebar-svg-icon" v-html="sanitizeSvg(item.iconSvg)"></span>
-            </span>
+            <span v-if="item.iconSvg" class="sidebar-svg-icon" v-html="sanitizeSvg(item.iconSvg)"></span>
             <component v-else :is="item.icon" class="h-5 w-5 flex-shrink-0" />
             <span class="sidebar-label" :class="{ 'sidebar-label-collapsed': sidebarCollapsed }" :aria-hidden="sidebarCollapsed ? 'true' : 'false'">{{ item.label }}</span>
           </router-link>
@@ -135,9 +131,7 @@
             :data-tour="item.path === '/keys' ? 'sidebar-my-keys' : undefined"
             @click="handleMenuItemClick(item.path)"
           >
-            <span v-if="item.iconSvg" class="sidebar-custom-icon-shell">
-              <span class="sidebar-svg-icon" v-html="sanitizeSvg(item.iconSvg)"></span>
-            </span>
+            <span v-if="item.iconSvg" class="sidebar-svg-icon" v-html="sanitizeSvg(item.iconSvg)"></span>
             <component v-else :is="item.icon" class="h-5 w-5 flex-shrink-0" />
             <span class="sidebar-label" :class="{ 'sidebar-label-collapsed': sidebarCollapsed }" :aria-hidden="sidebarCollapsed ? 'true' : 'false'">{{ item.label }}</span>
           </router-link>
@@ -902,49 +896,28 @@ onMounted(() => {
   pointer-events: none;
 }
 
-/* Custom SVG icon in sidebar: constrain size without overriding uploaded SVG colors */
-.sidebar-custom-icon-shell {
-  display: inline-flex;
-  flex: 0 0 1.75rem;
-  align-items: center;
-  justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: 0.875rem;
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(241, 245, 249, 0.94));
-  box-shadow: 0 10px 18px -16px rgba(15, 23, 42, 0.55);
-}
-
-.dark .sidebar-custom-icon-shell {
-  border-color: rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: none;
-}
-
-.sidebar-link-active .sidebar-custom-icon-shell {
-  border-color: rgba(34, 211, 238, 0.32);
-  background: linear-gradient(180deg, rgba(236, 254, 255, 0.98), rgba(207, 250, 254, 0.94));
-  box-shadow: 0 14px 24px -18px rgba(8, 145, 178, 0.5);
-}
-
-.dark .sidebar-link-active .sidebar-custom-icon-shell {
-  border-color: rgba(34, 211, 238, 0.22);
-  background: rgba(8, 47, 73, 0.78);
-}
-
 .sidebar-svg-icon {
   display: inline-flex;
+  flex: 0 0 1.25rem;
   align-items: center;
   justify-content: center;
-  width: 1rem;
-  height: 1rem;
+  width: 1.25rem;
+  height: 1.25rem;
   color: currentColor;
 }
 
 .sidebar-svg-icon :deep(svg) {
   display: block;
-  width: 1rem;
-  height: 1rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  color: currentColor;
+}
+
+.sidebar-svg-icon :deep([fill]:not([fill='none'])) {
+  fill: currentColor !important;
+}
+
+.sidebar-svg-icon :deep([stroke]:not([stroke='none'])) {
+  stroke: currentColor !important;
 }
 </style>
