@@ -112,7 +112,18 @@
             {{ brandName }}
           </h1>
           <p :class="['mt-6 max-w-3xl text-lg leading-8 md:text-2xl md:leading-10', isDark ? 'text-slate-300' : 'text-slate-600']">
-            {{ heroSubtitle }}
+            <template v-if="heroSubtitleLines.length > 1">
+              <span
+                v-for="line in heroSubtitleLines"
+                :key="line"
+                class="block"
+              >
+                {{ line }}
+              </span>
+            </template>
+            <template v-else>
+              {{ heroSubtitle }}
+            </template>
           </p>
 
           <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -166,9 +177,11 @@
 
       <section :class="['border-t px-6 py-20', isDark ? 'border-white/8' : 'border-slate-200/80']" id="features">
         <div class="mx-auto max-w-6xl">
-          <div class="mx-auto max-w-2xl text-center">
+          <div class="mx-auto max-w-4xl text-center">
             <p :class="['text-sm font-semibold uppercase tracking-[0.4em]', isDark ? 'text-cyan-300/70' : 'text-cyan-700']">{{ t('home.juliu.capabilityEyebrow') }}</p>
-            <h2 :class="['mt-4 text-3xl font-semibold md:text-5xl', isDark ? 'text-white' : 'text-slate-950']">{{ t('home.juliu.capabilityTitle') }}</h2>
+            <h2 :class="['mt-4 text-3xl font-semibold leading-tight md:text-4xl lg:text-5xl', isDark ? 'text-white' : 'text-slate-950']">
+              <span :class="capabilityTitleClass">{{ t('home.juliu.capabilityTitle') }}</span>
+            </h2>
           </div>
 
           <div class="mt-16 grid gap-10 md:grid-cols-2 xl:grid-cols-4">
@@ -306,7 +319,7 @@ import Icon from '@/components/icons/Icon.vue'
 import { DEFAULT_SITE_NAME, DEFAULT_SITE_SUBTITLE } from '@/constants/branding'
 import { useTheme } from '@/composables/useTheme'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const authStore = useAuthStore()
 const appStore = useAppStore()
@@ -344,6 +357,27 @@ const heroSubtitle = computed(() => {
   }
   return subtitle
 })
+
+const heroSubtitleLines = computed(() => {
+  const subtitle = heroSubtitle.value.trim()
+  if (!subtitle) return []
+
+  if (locale.value.startsWith('zh') && subtitle === t('home.juliu.fallbackSubtitle')) {
+    return [
+      '一站式大模型 API Token 汇聚平台',
+      '连接全球顶尖模型，聚沙成塔，汇流成海'
+    ]
+  }
+
+  return subtitle
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+})
+
+const capabilityTitleClass = computed(() =>
+  locale.value.startsWith('zh') ? 'lg:whitespace-nowrap' : ''
+)
 
 const secondaryActionHref = computed(() => docUrl.value || '#features')
 const secondaryActionTarget = computed(() => (docUrl.value ? '_blank' : undefined))

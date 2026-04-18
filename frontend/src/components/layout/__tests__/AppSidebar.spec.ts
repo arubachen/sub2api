@@ -11,6 +11,7 @@ const styleSource = readFileSync(stylePath, 'utf8')
 
 describe('AppSidebar custom SVG styles', () => {
   it('does not override uploaded SVG fill or stroke colors', () => {
+    expect(componentSource).toContain('.sidebar-custom-icon-shell {')
     expect(componentSource).toContain('.sidebar-svg-icon {')
     expect(componentSource).toContain('color: currentColor;')
     expect(componentSource).toContain('display: block;')

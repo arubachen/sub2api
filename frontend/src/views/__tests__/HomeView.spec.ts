@@ -170,6 +170,11 @@ vi.mock('vue-i18n', async (importOriginal) => {
   return {
     ...actual,
     useI18n: () => ({
+      locale: {
+        get value() {
+          return i18nFixture.locale
+        }
+      },
       t: (key: string) => getByPath(i18nFixture.messages[i18nFixture.locale], key) ?? key
     })
   }
