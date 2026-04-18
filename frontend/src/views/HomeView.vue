@@ -60,7 +60,6 @@
         </div>
 
         <div class="flex items-center gap-3">
-          <ThemeToggleButton :button-class="themeToggleButtonClass" />
           <a
             v-if="docUrl"
             :href="docUrl"
@@ -310,7 +309,6 @@
 import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore, useAppStore } from '@/stores'
-import ThemeToggleButton from '@/components/common/ThemeToggleButton.vue'
 import JuliuFlowLogo from '@/components/common/JuliuFlowLogo.vue'
 import Icon from '@/components/icons/Icon.vue'
 import { DEFAULT_SITE_NAME, DEFAULT_SITE_SUBTITLE } from '@/constants/branding'
@@ -382,12 +380,6 @@ const secondaryActionLabel = computed(() => (docUrl.value ? t('home.docs') : t('
 
 const navLinkClass = computed(() =>
   isDark.value ? 'transition-colors hover:text-white' : 'transition-colors hover:text-slate-900'
-)
-
-const themeToggleButtonClass = computed(() =>
-  isDark.value
-    ? 'border-white/15 bg-white/5 text-slate-300 hover:border-white/30 hover:bg-white/10'
-    : 'border-slate-300 bg-slate-100 text-slate-700 shadow-sm hover:border-slate-400 hover:bg-white hover:text-slate-950'
 )
 
 const valueTags = computed(() => [
