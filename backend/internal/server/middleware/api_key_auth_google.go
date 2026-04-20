@@ -55,12 +55,24 @@ func APIKeyAuthWithSubscriptionGoogle(apiKeyService *service.APIKeyService, subs
 			return
 		}
 
+		effectiveConcurrency := apiKey.User.Concurrency
+		riskDecision, err := apiKeyService.EvaluateUserRiskAutomation(c.Request.Context(), apiKey)
+		if err == nil && riskDecision != nil && riskDecision.Enabled {
+			if riskDecision.Blocked {
+				abortWithGoogleError(c, 403, riskDecision.Message)
+				return
+			}
+			if riskDecision.EffectiveConcurrencyCap > 0 && riskDecision.EffectiveConcurrencyCap < effectiveConcurrency {
+				effectiveConcurrency = riskDecision.EffectiveConcurrencyCap
+			}
+		}
+
 		// 简易模式：跳过余额和订阅检查
 		if cfg.RunMode == config.RunModeSimple {
 			c.Set(string(ContextKeyAPIKey), apiKey)
 			c.Set(string(ContextKeyUser), AuthSubject{
 				UserID:      apiKey.User.ID,
-				Concurrency: apiKey.User.Concurrency,
+				Concurrency: effectiveConcurrency,
 			})
 			c.Set(string(ContextKeyUserRole), apiKey.User.Role)
 			setGroupContext(c, apiKey.Group)
@@ -109,7 +121,7 @@ func APIKeyAuthWithSubscriptionGoogle(apiKeyService *service.APIKeyService, subs
 		c.Set(string(ContextKeyAPIKey), apiKey)
 		c.Set(string(ContextKeyUser), AuthSubject{
 			UserID:      apiKey.User.ID,
-			Concurrency: apiKey.User.Concurrency,
+			Concurrency: effectiveConcurrency,
 		})
 		c.Set(string(ContextKeyUserRole), apiKey.User.Role)
 		setGroupContext(c, apiKey.Group)

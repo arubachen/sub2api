@@ -109,13 +109,25 @@ func apiKeyAuthWithSubscription(apiKeyService *service.APIKeyService, subscripti
 			return
 		}
 
+		effectiveConcurrency := apiKey.User.Concurrency
+		riskDecision, err := apiKeyService.EvaluateUserRiskAutomation(c.Request.Context(), apiKey)
+		if err == nil && riskDecision != nil && riskDecision.Enabled {
+			if riskDecision.Blocked {
+				AbortWithError(c, 403, "USER_RISK_FREEZE_REVIEW", riskDecision.Message)
+				return
+			}
+			if riskDecision.EffectiveConcurrencyCap > 0 && riskDecision.EffectiveConcurrencyCap < effectiveConcurrency {
+				effectiveConcurrency = riskDecision.EffectiveConcurrencyCap
+			}
+		}
+
 		// ── 4. SimpleMode → early return ─────────────────────────────
 
 		if cfg.RunMode == config.RunModeSimple {
 			c.Set(string(ContextKeyAPIKey), apiKey)
 			c.Set(string(ContextKeyUser), AuthSubject{
 				UserID:      apiKey.User.ID,
-				Concurrency: apiKey.User.Concurrency,
+				Concurrency: effectiveConcurrency,
 			})
 			c.Set(string(ContextKeyUserRole), apiKey.User.Role)
 			setGroupContext(c, apiKey.Group)
@@ -210,7 +222,7 @@ func apiKeyAuthWithSubscription(apiKeyService *service.APIKeyService, subscripti
 		c.Set(string(ContextKeyAPIKey), apiKey)
 		c.Set(string(ContextKeyUser), AuthSubject{
 			UserID:      apiKey.User.ID,
-			Concurrency: apiKey.User.Concurrency,
+			Concurrency: effectiveConcurrency,
 		})
 		c.Set(string(ContextKeyUserRole), apiKey.User.Role)
 		setGroupContext(c, apiKey.Group)

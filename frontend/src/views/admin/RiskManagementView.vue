@@ -4,7 +4,7 @@
       <section class="overflow-hidden rounded-[32px] border border-slate-200/80 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.15),transparent_42%),linear-gradient(135deg,#f8fafc,rgba(255,255,255,0.95))] p-6 shadow-card dark:border-dark-800 dark:bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.14),transparent_34%),linear-gradient(135deg,rgba(15,23,42,0.92),rgba(2,6,23,0.92))] lg:p-8">
         <div class="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(360px,0.7fr)] xl:items-start">
           <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.28em] text-sky-600/80 dark:text-cyan-300/80">{{ t('admin.risk.visuals.heroEyebrow') }}</p>
+            <p class="text-xs font-semibold tracking-[0.18em] text-sky-600/80 dark:text-cyan-300/80">{{ t('admin.risk.visuals.heroEyebrow') }}</p>
             <h1 class="mt-3 max-w-3xl text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
               {{ t('admin.risk.title') }}
             </h1>
@@ -35,11 +35,21 @@
           </div>
 
           <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-2">
-            <div v-for="card in heroCards" :key="card.label" class="rounded-3xl border border-white/70 bg-white/80 p-4 shadow-sm backdrop-blur dark:border-white/5 dark:bg-dark-900/70">
+            <button
+              v-for="card in heroCards"
+              :key="card.label"
+              type="button"
+              class="rounded-3xl border border-white/70 bg-white/80 p-4 text-left shadow-sm backdrop-blur transition-all dark:border-white/5 dark:bg-dark-900/70"
+              :class="[
+                card.clickable ? 'hover:-translate-y-0.5 hover:shadow-md' : 'cursor-default',
+                focusMode === card.key ? 'ring-2 ring-primary-500/70 dark:ring-primary-400/70' : ''
+              ]"
+              @click="card.key === 'ip_intel' ? undefined : applyHeroCardFilter(card.key)"
+            >
               <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500">{{ card.label }}</p>
               <p class="mt-2 text-2xl font-semibold text-slate-950 dark:text-white" :class="card.emphasisClass">{{ card.value }}</p>
               <p class="mt-2 text-xs leading-5 text-slate-500 dark:text-slate-400">{{ card.hint }}</p>
-            </div>
+            </button>
           </div>
         </div>
       </section>
@@ -103,7 +113,7 @@
             <template #cell-actual_cost_24h="{ row }">
               <div>
                 <p class="font-medium text-slate-900 dark:text-white">${{ row.metrics.actual_cost_24h.toFixed(4) }}</p>
-                <p class="text-xs text-gray-400 dark:text-gray-500">{{ row.metrics.request_count_24h }} req</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500">{{ row.metrics.request_count_24h }} 次请求</p>
               </div>
             </template>
 
@@ -131,14 +141,14 @@
             <template #cell-longest_silence_hours="{ row }">
               <div>
                 <p class="font-medium text-slate-900 dark:text-white">{{ row.metrics.longest_silence_hours.toFixed(2) }}h</p>
-                <p class="text-xs text-gray-400 dark:text-gray-500">HHI {{ row.metrics.hour_concentration.toFixed(3) }}</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500">集中度 {{ row.metrics.hour_concentration.toFixed(3) }}</p>
               </div>
             </template>
 
             <template #cell-rule_hit_count="{ row }">
               <div>
                 <p class="font-medium text-slate-900 dark:text-white">{{ row.rule_hit_count }}</p>
-                <p class="text-xs text-gray-400 dark:text-gray-500">{{ row.metrics.concurrent_multi_ip_ua_minutes_24h }} min burst</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500">{{ row.metrics.concurrent_multi_ip_ua_minutes_24h }} 分钟并发</p>
               </div>
             </template>
 
@@ -196,6 +206,8 @@ interface RiskRow extends UserRiskSummaryItem {
   user: AdminUser
 }
 
+type HeroFocusMode = 'all' | 'review_plus' | 'freeze_review'
+
 const users = ref<AdminUser[]>([])
 const summaries = ref<UserRiskSummaryItem[]>([])
 const loading = ref(false)
@@ -206,6 +218,7 @@ const searchQuery = ref('')
 const statusFilter = ref('')
 const decisionFilter = ref('')
 const sortMode = ref<'risk_desc' | 'spend_desc' | 'silence_asc'>('risk_desc')
+const focusMode = ref<HeroFocusMode>('all')
 let searchTimer: ReturnType<typeof setTimeout> | null = null
 
 const riskSettings = ref<UserRiskSettings>({
@@ -215,7 +228,11 @@ const riskSettings = ref<UserRiskSettings>({
   ip_intel_docs_url: 'https://ipinfo.io/developers/lite-api',
   review_threshold: 50,
   throttle_threshold: 80,
-  freeze_threshold: 120
+  freeze_threshold: 120,
+  auto_enabled: false,
+  auto_throttle: false,
+  auto_freeze: false,
+  auto_throttle_concurrency_cap: 1
 })
 
 const pagination = ref({
@@ -225,30 +242,38 @@ const pagination = ref({
   pages: 0
 })
 
-const heroCards = computed(() => [
+const heroCards = computed<Array<{ key: HeroFocusMode | 'ip_intel'; label: string; value: string; hint: string; emphasisClass: string; clickable: boolean }>>(() => [
   {
+    key: 'all',
     label: t('admin.risk.cards.currentPageUsers'),
     value: String(riskRows.value.length),
     hint: t('admin.risk.visuals.currentPageHint'),
-    emphasisClass: 'text-slate-950 dark:text-white'
+    emphasisClass: 'text-slate-950 dark:text-white',
+    clickable: true
   },
   {
+    key: 'review_plus',
     label: t('admin.risk.cards.reviewOrHigher'),
     value: String(reviewOrHigherCount.value),
     hint: t('admin.risk.visuals.reviewHint'),
-    emphasisClass: 'text-amber-600 dark:text-amber-300'
+    emphasisClass: 'text-amber-600 dark:text-amber-300',
+    clickable: true
   },
   {
+    key: 'freeze_review',
     label: t('admin.risk.cards.freezeReview'),
     value: String(freezeReviewCount.value),
     hint: t('admin.risk.visuals.freezeHint'),
-    emphasisClass: 'text-red-600 dark:text-red-300'
+    emphasisClass: 'text-red-600 dark:text-red-300',
+    clickable: true
   },
   {
+    key: 'ip_intel',
     label: t('admin.risk.cards.ipIntel'),
     value: riskSettings.value.ip_intel_enabled ? t('admin.risk.ipIntelEnabled') : t('admin.risk.ipIntelDisabled'),
     hint: riskSettings.value.ip_intel_provider,
-    emphasisClass: 'text-slate-950 dark:text-white text-base'
+    emphasisClass: 'text-slate-950 dark:text-white text-base',
+    clickable: false
   }
 ])
 
@@ -299,6 +324,8 @@ const riskRows = computed<RiskRow[]>(() => {
 const filteredRows = computed(() => {
   return riskRows.value.filter((row) => {
     if (decisionFilter.value && row.summary.decision !== decisionFilter.value) return false
+    if (focusMode.value === 'review_plus' && row.summary.risk_score < riskSettings.value.review_threshold) return false
+    if (focusMode.value === 'freeze_review' && row.summary.decision !== 'freeze_review') return false
     return true
   })
 })
@@ -416,6 +443,17 @@ function handlePageSizeChange(pageSize: number) {
 function openRiskDetail(user: AdminUser) {
   selectedUser.value = user
   showRiskModal.value = true
+}
+
+function applyHeroCardFilter(mode: HeroFocusMode) {
+  focusMode.value = mode
+  if (mode === 'freeze_review') {
+    decisionFilter.value = 'freeze_review'
+  } else if (mode === 'all') {
+    decisionFilter.value = ''
+  } else {
+    decisionFilter.value = ''
+  }
 }
 
 function closeRiskModal() {

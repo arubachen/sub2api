@@ -9,6 +9,10 @@ export interface UserRiskSettings {
   review_threshold: number
   throttle_threshold: number
   freeze_threshold: number
+  auto_enabled: boolean
+  auto_throttle: boolean
+  auto_freeze: boolean
+  auto_throttle_concurrency_cap: number
 }
 
 export interface UpdateUserRiskSettingsRequest {
@@ -19,6 +23,10 @@ export interface UpdateUserRiskSettingsRequest {
   review_threshold?: number
   throttle_threshold?: number
   freeze_threshold?: number
+  auto_enabled?: boolean
+  auto_throttle?: boolean
+  auto_freeze?: boolean
+  auto_throttle_concurrency_cap?: number
 }
 
 export interface UserRiskSummaryItem {
