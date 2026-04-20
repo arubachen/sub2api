@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, useTemplateRef, nextTick } from 'vue'
+import alertCircleSvg from '@/assets/icons/alert-circle.svg?raw'
 
 defineProps<{
   content?: string
@@ -38,19 +39,10 @@ function updatePosition() {
   >
     <!-- Trigger Icon -->
     <slot name="trigger">
-      <svg
-        class="h-4 w-4 cursor-help text-gray-400 transition-colors hover:text-primary-600 dark:text-gray-500 dark:hover:text-primary-400"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        stroke-width="2"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-        />
-      </svg>
+      <span
+        class="inline-flex h-4 w-4 cursor-help text-gray-400 transition-colors hover:text-primary-600 dark:text-gray-500 dark:hover:text-primary-400 [&>svg]:h-4 [&>svg]:w-4"
+        v-html="alertCircleSvg"
+      ></span>
     </slot>
 
     <!-- Teleport to body to escape modal overflow clipping -->

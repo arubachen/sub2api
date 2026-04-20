@@ -3,13 +3,7 @@
     <div class="flex items-center justify-between gap-4">
       <div class="flex items-center gap-2">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('admin.risk.visuals.leaderboardTitle') }}</h3>
-        <HelpTooltip :content="t('admin.risk.visuals.leaderboardHint')">
-          <template #trigger>
-            <span class="inline-flex rounded-full text-gray-400 hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400">
-              <Icon name="questionCircle" size="sm" />
-            </span>
-          </template>
-        </HelpTooltip>
+        <HelpTooltip :content="t('admin.risk.visuals.leaderboardHint')" />
       </div>
       <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600 dark:bg-dark-800 dark:text-dark-300">TOP {{ topRows.length }}</span>
     </div>
@@ -48,7 +42,6 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import HelpTooltip from '@/components/common/HelpTooltip.vue'
-import Icon from '@/components/icons/Icon.vue'
 import type { AdminUser } from '@/types'
 import type { UserRiskSummaryItem, UserRiskSettings } from '@/api/admin/risk'
 

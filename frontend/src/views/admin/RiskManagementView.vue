@@ -55,13 +55,7 @@
                   ></span>
                   <p class="text-sm font-medium text-slate-600 dark:text-slate-300">{{ card.label }}</p>
                 </div>
-                <HelpTooltip :content="card.hint">
-                  <template #trigger>
-                    <span class="inline-flex rounded-full text-gray-400 hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400">
-                      <Icon name="questionCircle" size="sm" />
-                    </span>
-                  </template>
-                </HelpTooltip>
+                <HelpTooltip :content="card.hint" />
               </div>
               <p class="mt-2 text-2xl font-semibold text-slate-950 dark:text-white" :class="card.emphasisClass">{{ card.value }}</p>
             </button>
@@ -232,7 +226,6 @@ import TablePageLayout from '@/components/layout/TablePageLayout.vue'
 import DataTable from '@/components/common/DataTable.vue'
 import Pagination from '@/components/common/Pagination.vue'
 import Select from '@/components/common/Select.vue'
-import HelpTooltip from '@/components/common/HelpTooltip.vue'
 import RiskDecisionBreakdownCard from '@/components/admin/risk/RiskDecisionBreakdownCard.vue'
 import RiskScoreDistributionCard from '@/components/admin/risk/RiskScoreDistributionCard.vue'
 import RiskActivityHeatmapCard from '@/components/admin/risk/RiskActivityHeatmapCard.vue'
@@ -246,7 +239,6 @@ import type { Column } from '@/components/common/types'
 import { useAppStore } from '@/stores'
 import { getPersistedPageSize } from '@/composables/usePersistedPageSize'
 import { formatDateTime } from '@/utils/format'
-import Icon from '@/components/icons/Icon.vue'
 
 const { t } = useI18n()
 const appStore = useAppStore()
