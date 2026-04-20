@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Wei-Shaw/sub2api/internal/handler/dto"
+	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/response"
 	"github.com/Wei-Shaw/sub2api/internal/service"
 
@@ -22,13 +23,19 @@ type UserWithConcurrency struct {
 type UserHandler struct {
 	adminService       service.AdminService
 	concurrencyService *service.ConcurrencyService
+	userRiskService    *service.UserRiskService
 }
 
 // NewUserHandler creates a new admin user handler
-func NewUserHandler(adminService service.AdminService, concurrencyService *service.ConcurrencyService) *UserHandler {
+func NewUserHandler(
+	adminService service.AdminService,
+	concurrencyService *service.ConcurrencyService,
+	userRiskService *service.UserRiskService,
+) *UserHandler {
 	return &UserHandler{
 		adminService:       adminService,
 		concurrencyService: concurrencyService,
+		userRiskService:    userRiskService,
 	}
 }
 
@@ -381,6 +388,28 @@ func (h *UserHandler) GetUserUsage(c *gin.Context) {
 	}
 
 	response.Success(c, stats)
+}
+
+// GetRiskDetail handles getting the rolling risk detail for a user.
+// GET /api/v1/admin/users/:id/risk
+func (h *UserHandler) GetRiskDetail(c *gin.Context) {
+	userID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, "Invalid user ID")
+		return
+	}
+	if h.userRiskService == nil {
+		response.ErrorFrom(c, infraerrors.InternalServer("USER_RISK_UNAVAILABLE", "user risk service unavailable"))
+		return
+	}
+
+	detail, err := h.userRiskService.GetUserRiskDetail(c.Request.Context(), userID, strings.TrimSpace(c.Query("timezone")))
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+
+	response.Success(c, detail)
 }
 
 // GetBalanceHistory handles getting user's balance/concurrency change history

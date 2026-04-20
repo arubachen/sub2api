@@ -239,7 +239,7 @@
           :columns="columns"
           :data="users"
           :loading="loading"
-          :actions-count="7"
+          :actions-count="8"
           :server-side-sort="true"
           default-sort-key="created_at"
           default-sort-order="desc"
@@ -558,6 +558,15 @@
                 {{ t('admin.users.groups') }}
               </button>
 
+              <!-- Risk Detail -->
+              <button
+                @click="handleRiskDetail(user); closeActionMenu()"
+                class="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-dark-700"
+              >
+                <Icon name="shield" size="sm" class="text-gray-400" :stroke-width="2" />
+                {{ t('admin.users.riskDetail') }}
+              </button>
+
               <div class="my-1 border-t border-gray-100 dark:border-dark-700"></div>
 
               <!-- Deposit -->
@@ -613,6 +622,7 @@
     <UserAllowedGroupsModal :show="showAllowedGroupsModal" :user="allowedGroupsUser" @close="closeAllowedGroupsModal" @success="loadUsers" />
     <UserBalanceModal :show="showBalanceModal" :user="balanceUser" :operation="balanceOperation" @close="closeBalanceModal" @success="loadUsers" />
     <UserBalanceHistoryModal :show="showBalanceHistoryModal" :user="balanceHistoryUser" @close="closeBalanceHistoryModal" @deposit="handleDepositFromHistory" @withdraw="handleWithdrawFromHistory" />
+    <UserRiskDetailModal :show="showRiskModal" :user="riskUser" @close="closeRiskModal" />
     <GroupReplaceModal :show="showGroupReplaceModal" :user="groupReplaceUser" :old-group="groupReplaceOldGroup" :all-groups="allGroups" @close="closeGroupReplaceModal" @success="loadUsers" />
     <UserAttributesConfigModal :show="showAttributesModal" @close="handleAttributesModalClose" />
   </AppLayout>
@@ -647,6 +657,7 @@ import UserApiKeysModal from '@/components/admin/user/UserApiKeysModal.vue'
 import UserAllowedGroupsModal from '@/components/admin/user/UserAllowedGroupsModal.vue'
 import UserBalanceModal from '@/components/admin/user/UserBalanceModal.vue'
 import UserBalanceHistoryModal from '@/components/admin/user/UserBalanceHistoryModal.vue'
+import UserRiskDetailModal from '@/components/admin/user/UserRiskDetailModal.vue'
 import GroupReplaceModal from '@/components/admin/user/GroupReplaceModal.vue'
 
 const appStore = useAppStore()
@@ -1035,7 +1046,7 @@ const openActionMenu = (user: AdminUser, e: MouseEvent) => {
 
     const rect = target.getBoundingClientRect()
     const menuWidth = 200
-    const menuHeight = 240
+    const menuHeight = 280
     const padding = 8
     const viewportWidth = window.innerWidth
     const viewportHeight = window.innerHeight
@@ -1124,6 +1135,10 @@ const balanceOperation = ref<'add' | 'subtract'>('add')
 // Balance History modal state
 const showBalanceHistoryModal = ref(false)
 const balanceHistoryUser = ref<AdminUser | null>(null)
+
+// Risk detail modal state
+const showRiskModal = ref(false)
+const riskUser = ref<AdminUser | null>(null)
 
 // 计算剩余天数
 const getDaysRemaining = (expiresAt: string): number => {
@@ -1388,6 +1403,16 @@ const handleBalanceHistory = (user: AdminUser) => {
 const closeBalanceHistoryModal = () => {
   showBalanceHistoryModal.value = false
   balanceHistoryUser.value = null
+}
+
+const handleRiskDetail = (user: AdminUser) => {
+  riskUser.value = user
+  showRiskModal.value = true
+}
+
+const closeRiskModal = () => {
+  showRiskModal.value = false
+  riskUser.value = null
 }
 
 // Handle deposit from balance history modal
