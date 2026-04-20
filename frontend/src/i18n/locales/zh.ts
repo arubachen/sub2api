@@ -1803,7 +1803,7 @@ export default {
         dominantDecision: '主导决策',
         avgScore: '均分',
         scoreEyebrow: '风险分布',
-        scoreTitle: '风险分布区间',
+        scoreTitle: '风险区间分布',
         scoreHint: '按照当前阈值查看风险分在各区间的分布情况。',
         maxScore: '当前最高分',
         activityEyebrow: '活跃画像',
@@ -1813,7 +1813,9 @@ export default {
         avgConcentration: '平均时段集中度',
         activeWindowCoverage: '平均活跃覆盖',
         activityPeak: '峰值时间',
-        activityTimeline: '24 小时时间轴'
+        activityTimeline: '24 小时时间轴',
+        leaderboardTitle: '高风险用户',
+        leaderboardHint: '按风险分从高到低展示当前筛选结果中的重点用户，支持一键查看风控详情。'
       },
       settings: {
         title: '风控配置',
