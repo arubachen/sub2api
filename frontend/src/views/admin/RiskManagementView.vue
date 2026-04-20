@@ -63,15 +63,13 @@
         </div>
       </section>
 
-      <div class="grid gap-6 xl:grid-cols-2">
+      <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(320px,0.92fr)] xl:items-stretch">
         <RiskDecisionBreakdownCard :rows="filteredRows" />
         <RiskScoreDistributionCard :rows="filteredRows" :settings="riskSettings" />
+        <RiskLeaderboardCard :rows="orderedRows" :settings="riskSettings" @open-user="openRiskDetail" />
       </div>
       <div class="grid gap-6">
         <RiskActivityHeatmapCard :rows="filteredRows" />
-      </div>
-      <div class="grid gap-6 xl:grid-cols-2">
-        <RiskLeaderboardCard :rows="orderedRows" :settings="riskSettings" @open-user="openRiskDetail" />
       </div>
 
       <section class="rounded-[28px] border border-gray-200/80 bg-white/95 p-4 shadow-card dark:border-dark-800 dark:bg-dark-900/90">

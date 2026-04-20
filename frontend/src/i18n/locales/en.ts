@@ -1780,7 +1780,7 @@ export default {
         dominantDecision: 'Dominant decision',
         avgScore: 'avg score',
         scoreEyebrow: 'Score Distribution',
-        scoreTitle: 'Score buckets',
+        scoreTitle: 'Risk score distribution',
         scoreHint: 'See how current users spread across the active decision thresholds.',
         maxScore: 'Highest score',
         activityEyebrow: 'Activity Pattern',
@@ -1790,7 +1790,9 @@ export default {
         avgConcentration: 'Avg. concentration',
         activeWindowCoverage: 'Avg. hour coverage',
         activityPeak: 'Peak hour',
-        activityTimeline: '24-hour timeline'
+        activityTimeline: '24-hour timeline',
+        leaderboardTitle: 'High-risk users',
+        leaderboardHint: 'Rank the current results by risk score so moderators can jump straight into the most urgent accounts.'
       },
       settings: {
         title: 'Risk Settings',
