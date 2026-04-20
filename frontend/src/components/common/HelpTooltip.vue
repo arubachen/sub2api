@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, useTemplateRef, nextTick } from 'vue'
+import { ref, useTemplateRef, nextTick, onBeforeUnmount } from 'vue'
 import alertCircleSvg from '@/assets/icons/alert-circle.svg?raw'
 
 defineProps<{
@@ -12,14 +12,23 @@ const tooltipRef = useTemplateRef<HTMLElement>('tooltip')
 const tooltipStyle = ref({ top: '0px', left: '0px' })
 const VIEWPORT_PADDING = 12
 const CURSOR_OFFSET = 14
+const FOLLOW_EASING = 0.24
+const SNAP_THRESHOLD = 0.5
+
+const currentPosition = { top: 0, left: 0 }
+const targetPosition = { top: 0, left: 0 }
+let frameId: number | null = null
 
 function onEnter(event: MouseEvent) {
   show.value = true
-  nextTick(() => updatePosition(event))
+  nextTick(() => {
+    updatePosition(event, { immediate: true })
+  })
 }
 
 function onLeave() {
   show.value = false
+  stopAnimation()
 }
 
 function onMove(event: MouseEvent) {
@@ -27,7 +36,45 @@ function onMove(event: MouseEvent) {
   updatePosition(event)
 }
 
-function updatePosition(event?: MouseEvent) {
+function syncTooltipStyle() {
+  tooltipStyle.value = {
+    top: `${currentPosition.top}px`,
+    left: `${currentPosition.left}px`,
+  }
+}
+
+function stopAnimation() {
+  if (frameId !== null) {
+    cancelAnimationFrame(frameId)
+    frameId = null
+  }
+}
+
+function startAnimation() {
+  if (frameId !== null) return
+
+  const tick = () => {
+    const deltaLeft = targetPosition.left - currentPosition.left
+    const deltaTop = targetPosition.top - currentPosition.top
+
+    if (Math.abs(deltaLeft) <= SNAP_THRESHOLD && Math.abs(deltaTop) <= SNAP_THRESHOLD) {
+      currentPosition.left = targetPosition.left
+      currentPosition.top = targetPosition.top
+      syncTooltipStyle()
+      frameId = null
+      return
+    }
+
+    currentPosition.left += deltaLeft * FOLLOW_EASING
+    currentPosition.top += deltaTop * FOLLOW_EASING
+    syncTooltipStyle()
+    frameId = requestAnimationFrame(tick)
+  }
+
+  frameId = requestAnimationFrame(tick)
+}
+
+function updatePosition(event?: MouseEvent, options?: { immediate?: boolean }) {
   const el = triggerRef.value
   if (!el) return
 
@@ -53,11 +100,22 @@ function updatePosition(event?: MouseEvent) {
   left = Math.min(Math.max(left, VIEWPORT_PADDING), window.innerWidth - tooltipWidth - VIEWPORT_PADDING)
   top = Math.min(Math.max(top, VIEWPORT_PADDING), window.innerHeight - tooltipHeight - VIEWPORT_PADDING)
 
-  tooltipStyle.value = {
-    top: `${top}px`,
-    left: `${left}px`,
+  targetPosition.left = left
+  targetPosition.top = top
+
+  if (options?.immediate) {
+    currentPosition.left = left
+    currentPosition.top = top
+    syncTooltipStyle()
+    return
   }
+
+  startAnimation()
 }
+
+onBeforeUnmount(() => {
+  stopAnimation()
+})
 </script>
 
 <template>
@@ -78,14 +136,23 @@ function updatePosition(event?: MouseEvent) {
 
     <!-- Teleport to body to escape modal overflow clipping -->
     <Teleport to="body">
-      <div
-        ref="tooltip"
-        v-show="show"
-        class="pointer-events-none fixed z-[99999] w-64 rounded-lg bg-gray-900 p-3 text-xs leading-relaxed text-white shadow-xl ring-1 ring-white/10 dark:bg-gray-800"
-        :style="tooltipStyle"
+      <Transition
+        enter-active-class="transition duration-150 ease-out"
+        enter-from-class="translate-y-1 scale-[0.98] opacity-0"
+        enter-to-class="translate-y-0 scale-100 opacity-100"
+        leave-active-class="transition duration-120 ease-in"
+        leave-from-class="translate-y-0 scale-100 opacity-100"
+        leave-to-class="translate-y-1 scale-[0.98] opacity-0"
       >
-        <slot>{{ content }}</slot>
-      </div>
+        <div
+          v-if="show"
+          ref="tooltip"
+          class="pointer-events-none fixed z-[99999] w-64 origin-top-left rounded-lg bg-gray-900 p-3 text-xs leading-relaxed text-white shadow-xl ring-1 ring-white/10 will-change-transform dark:bg-gray-800"
+          :style="tooltipStyle"
+        >
+          <slot>{{ content }}</slot>
+        </div>
+      </Transition>
     </Teleport>
   </div>
 </template>
