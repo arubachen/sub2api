@@ -1757,9 +1757,15 @@ export default {
       ipIntelEnabled: 'IP 情报已启用',
       ipIntelDisabled: 'IP 情报未启用',
       decisions: {
+        observe: '建议观察',
         review: '建议人工审查',
         throttle: '建议限流观察',
         freeze_review: '建议冻结审查'
+      },
+      sort: {
+        riskDesc: '按风险分排序',
+        spendDesc: '按 24h 消耗排序',
+        silenceAsc: '按静默时长排序'
       },
       filters: {
         allStatus: '全部状态',
@@ -1781,6 +1787,28 @@ export default {
         activeHours: '活跃小时',
         longestSilence: '最长静默',
         ruleHits: '命中规则'
+      },
+      visuals: {
+        heroEyebrow: 'Risk Control',
+        thresholdSummary: '审查 {review} / 限流 {throttle} / 冻结 {freeze}',
+        currentPageHint: '当前分页内已完成风险聚合的用户数量',
+        reviewHint: '达到“建议人工审查”阈值及以上的用户数',
+        freezeHint: '达到“建议冻结审查”阈值的高风险用户数',
+        showingUsers: '展示 {count} / {total} 名已聚合用户',
+        decisionEyebrow: 'Decision Mix',
+        decisionTitle: '决策分布',
+        decisionHint: '当前筛选结果下，各决策区间的用户占比和平均风险分。',
+        dominantDecision: '主导决策',
+        avgScore: '均分',
+        scoreEyebrow: 'Score Distribution',
+        scoreTitle: '风险分布区间',
+        scoreHint: '按照当前阈值查看风险分在各区间的分布情况。',
+        maxScore: '当前最高分',
+        activityEyebrow: 'Activity Pattern',
+        activityTitle: '活跃时段热力图',
+        activityHint: '统计当前页用户在 24 小时内覆盖到的活跃小时，快速识别“全天在线”特征。',
+        avgActiveHours: '平均活跃小时',
+        avgConcentration: '平均时段集中度'
       },
       settings: {
         title: '风控配置',
