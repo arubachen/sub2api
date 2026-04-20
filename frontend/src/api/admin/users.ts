@@ -206,6 +206,71 @@ export interface BalanceHistoryResponse extends PaginatedResponse<BalanceHistory
   total_recharged: number
 }
 
+export interface UserRiskWindow {
+  start_at: string
+  end_at: string
+  timezone: string
+}
+
+export interface UserRiskSummary {
+  risk_score: number
+  decision: 'normal' | 'observe' | 'review' | 'throttle' | 'freeze_review'
+  decision_label: string
+  computed_at: string
+}
+
+export interface UserRiskMetrics {
+  request_count_24h: number
+  actual_cost_24h: number
+  first_ip?: string
+  historical_ip_count: number
+  ua_24h_count: number
+  active_hours_count: number
+  active_hours: number[]
+  longest_silence_hours: number
+  all_day_active: boolean
+  hour_concentration: number
+  key_count: number
+  concurrent_multi_ip_ua_minutes_24h: number
+}
+
+export interface UserRiskRuleHit {
+  code: string
+  label: string
+  description: string
+  score: number
+}
+
+export interface UserRiskIPDetail {
+  ip_address: string
+  requests: number
+  ip_type: string
+  label: string
+  organization?: string
+}
+
+export interface UserRiskUADetail {
+  user_agent: string
+  requests: number
+  category: string
+  description: string
+  base_score: number
+  config_status: string
+  hit_rule?: string
+  programmatic: boolean
+  normal_allowed: boolean
+}
+
+export interface UserRiskDetail {
+  user: Pick<AdminUser, 'id' | 'email' | 'username' | 'balance' | 'status'>
+  window: UserRiskWindow
+  summary: UserRiskSummary
+  metrics: UserRiskMetrics
+  rule_hits: UserRiskRuleHit[]
+  ip_details: UserRiskIPDetail[]
+  ua_details: UserRiskUADetail[]
+}
+
 /**
  * Get user's balance/concurrency change history
  * @param id - User ID
@@ -226,6 +291,21 @@ export async function getUserBalanceHistory(
     `/admin/users/${id}/balance-history`,
     { params }
   )
+  return data
+}
+
+/**
+ * Get rolling abuse-risk detail for a user.
+ * @param id - User ID
+ * @param timezone - Optional IANA timezone for activity-hour bucketing
+ */
+export async function getUserRiskDetail(
+  id: number,
+  timezone?: string
+): Promise<UserRiskDetail> {
+  const { data } = await apiClient.get<UserRiskDetail>(`/admin/users/${id}/risk`, {
+    params: timezone ? { timezone } : undefined
+  })
   return data
 }
 
@@ -260,6 +340,7 @@ export const usersAPI = {
   getUserApiKeys,
   getUserUsageStats,
   getUserBalanceHistory,
+  getUserRiskDetail,
   replaceGroup
 }
 
