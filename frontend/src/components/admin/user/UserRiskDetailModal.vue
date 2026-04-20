@@ -134,17 +134,23 @@
                     <th class="px-4 py-3 text-left font-medium text-gray-500 dark:text-dark-300">{{ t('admin.users.riskRequestsShort') }}</th>
                     <th class="px-4 py-3 text-left font-medium text-gray-500 dark:text-dark-300">{{ t('admin.users.riskIpType') }}</th>
                     <th class="px-4 py-3 text-left font-medium text-gray-500 dark:text-dark-300">{{ t('admin.users.riskIpLabel') }}</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-500 dark:text-dark-300">ASN</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-500 dark:text-dark-300">{{ t('admin.users.riskOrganization') }}</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-500 dark:text-dark-300">{{ t('admin.users.riskRegion') }}</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-dark-700">
                   <tr v-if="detail.ip_details.length === 0">
-                    <td colspan="4" class="px-4 py-6 text-center text-sm text-gray-500 dark:text-dark-400">{{ t('admin.users.riskNoIpDetails') }}</td>
+                    <td colspan="7" class="px-4 py-6 text-center text-sm text-gray-500 dark:text-dark-400">{{ t('admin.users.riskNoIpDetails') }}</td>
                   </tr>
                   <tr v-for="item in detail.ip_details" :key="item.ip_address">
                     <td class="px-4 py-3 font-mono text-xs text-gray-700 dark:text-gray-200">{{ item.ip_address }}</td>
                     <td class="px-4 py-3 text-gray-700 dark:text-gray-200">{{ item.requests }}</td>
                     <td class="px-4 py-3 text-gray-500 dark:text-dark-300">{{ item.ip_type }}</td>
                     <td class="px-4 py-3 text-gray-500 dark:text-dark-300">{{ item.label }}</td>
+                    <td class="px-4 py-3 text-gray-500 dark:text-dark-300">{{ item.asn || '-' }}</td>
+                    <td class="px-4 py-3 text-gray-500 dark:text-dark-300">{{ item.organization || item.domain || '-' }}</td>
+                    <td class="px-4 py-3 text-gray-500 dark:text-dark-300">{{ item.country || item.country_code || '-' }}<span v-if="item.continent"> / {{ item.continent }}</span></td>
                   </tr>
                 </tbody>
               </table>
@@ -184,7 +190,7 @@
                     <td class="px-4 py-3 text-gray-700 dark:text-gray-200">{{ item.base_score }}</td>
                     <td class="px-4 py-3">
                       <span :class="configStatusClass(item.config_status)" class="rounded-full px-2 py-0.5 text-xs font-medium">
-                        {{ item.config_status }}
+                        {{ configStatusLabel(item.config_status) }}
                       </span>
                     </td>
                   </tr>
@@ -273,7 +279,7 @@ const loadDetail = async () => {
   error.value = ''
   try {
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
-    detail.value = await adminAPI.users.getUserRiskDetail(props.user.id, timezone)
+    detail.value = await adminAPI.risk.getUserDetail(props.user.id, timezone)
   } catch (err: any) {
     console.error('Failed to load user risk detail:', err)
     error.value = err?.response?.data?.detail || err?.message || t('admin.users.riskLoadFailed')
@@ -290,6 +296,17 @@ const configStatusClass = (status: string) => {
       return 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-300'
     default:
       return 'bg-gray-100 text-gray-600 dark:bg-dark-700 dark:text-dark-300'
+  }
+}
+
+const configStatusLabel = (status: string) => {
+  switch (status) {
+    case 'normal':
+      return t('admin.users.riskConfigStatusNormal')
+    case 'abnormal':
+      return t('admin.users.riskConfigStatusAbnormal')
+    default:
+      return t('admin.users.riskConfigStatusUnconfigured')
   }
 }
 </script>

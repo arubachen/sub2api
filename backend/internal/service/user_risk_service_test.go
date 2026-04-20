@@ -17,9 +17,9 @@ func TestClassifyRiskUserAgent(t *testing.T) {
 		wantNormal    bool
 	}{
 		{name: "normal codex cli", ua: "codex_cli_rs/0.1.0", wantCategory: "Codex CLI", wantStatus: "normal", wantBaseScore: 0, wantNormal: true},
-		{name: "abnormal go http 2", ua: "Go-http-client/2.0", wantCategory: "Go HTTP Client", wantStatus: "abnormal", wantBaseScore: 15},
-		{name: "generic go http", ua: "Go-http-client/1.1", wantCategory: "Go HTTP Client", wantStatus: "unconfigured", wantBaseScore: 10},
-		{name: "browser", ua: "Mozilla/5.0 Chrome/122.0 Safari/537.36", wantCategory: "Browser", wantStatus: "unconfigured", wantBaseScore: 0},
+		{name: "abnormal go http 2", ua: "Go-http-client/2.0", wantCategory: "Go HTTP客户端", wantStatus: "abnormal", wantBaseScore: 15},
+		{name: "generic go http", ua: "Go-http-client/1.1", wantCategory: "Go HTTP客户端", wantStatus: "unconfigured", wantBaseScore: 10},
+		{name: "browser", ua: "Mozilla/5.0 Chrome/122.0 Safari/537.36", wantCategory: "浏览器", wantStatus: "unconfigured", wantBaseScore: 0},
 	}
 
 	for _, tt := range tests {
@@ -67,6 +67,8 @@ func TestBuildUserRiskDetail(t *testing.T) {
 		windowEnd,
 		loc,
 		"UTC",
+		defaultUserRiskSettings(),
+		nil,
 	)
 
 	if detail.Summary.RiskScore <= 0 {
@@ -86,5 +88,29 @@ func TestBuildUserRiskDetail(t *testing.T) {
 	}
 	if got := detail.UADetails[0].UserAgent; got != "Go-http-client/2.0" {
 		t.Fatalf("top ua = %q, want Go-http-client/2.0", got)
+	}
+}
+
+func TestScoreUserRiskDecisionUsesChineseLabels(t *testing.T) {
+	t.Parallel()
+
+	settings := defaultUserRiskSettings()
+	tests := []struct {
+		score     int
+		wantCode  string
+		wantLabel string
+	}{
+		{score: 10, wantCode: "normal", wantLabel: "正常"},
+		{score: 30, wantCode: "observe", wantLabel: "建议观察"},
+		{score: 55, wantCode: "review", wantLabel: "建议人工审查"},
+		{score: 85, wantCode: "throttle", wantLabel: "建议限流观察"},
+		{score: 130, wantCode: "freeze_review", wantLabel: "建议冻结审查"},
+	}
+
+	for _, tt := range tests {
+		code, label := scoreUserRiskDecision(tt.score, settings)
+		if code != tt.wantCode || label != tt.wantLabel {
+			t.Fatalf("score=%d => (%q, %q), want (%q, %q)", tt.score, code, label, tt.wantCode, tt.wantLabel)
+		}
 	}
 }

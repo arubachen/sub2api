@@ -246,7 +246,12 @@ export interface UserRiskIPDetail {
   requests: number
   ip_type: string
   label: string
+  asn?: string
   organization?: string
+  domain?: string
+  country_code?: string
+  country?: string
+  continent?: string
 }
 
 export interface UserRiskUADetail {
