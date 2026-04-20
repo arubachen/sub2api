@@ -8,24 +8,54 @@ defineProps<{
 
 const show = ref(false)
 const triggerRef = useTemplateRef<HTMLElement>('trigger')
+const tooltipRef = useTemplateRef<HTMLElement>('tooltip')
 const tooltipStyle = ref({ top: '0px', left: '0px' })
+const VIEWPORT_PADDING = 12
+const CURSOR_OFFSET = 14
 
-function onEnter() {
+function onEnter(event: MouseEvent) {
   show.value = true
-  nextTick(updatePosition)
+  nextTick(() => updatePosition(event))
 }
 
 function onLeave() {
   show.value = false
 }
 
-function updatePosition() {
+function onMove(event: MouseEvent) {
+  if (!show.value) return
+  updatePosition(event)
+}
+
+function updatePosition(event?: MouseEvent) {
   const el = triggerRef.value
   if (!el) return
+
   const rect = el.getBoundingClientRect()
+  const tooltipWidth = tooltipRef.value?.offsetWidth ?? 256
+  const tooltipHeight = tooltipRef.value?.offsetHeight ?? 72
+
+  let left = rect.left + rect.width / 2 - tooltipWidth / 2
+  let top = rect.top - tooltipHeight - CURSOR_OFFSET
+
+  if (event) {
+    left = event.clientX + CURSOR_OFFSET
+    top = event.clientY - tooltipHeight - CURSOR_OFFSET
+
+    if (left + tooltipWidth > window.innerWidth - VIEWPORT_PADDING) {
+      left = event.clientX - tooltipWidth - CURSOR_OFFSET
+    }
+    if (top < VIEWPORT_PADDING) {
+      top = event.clientY + CURSOR_OFFSET
+    }
+  }
+
+  left = Math.min(Math.max(left, VIEWPORT_PADDING), window.innerWidth - tooltipWidth - VIEWPORT_PADDING)
+  top = Math.min(Math.max(top, VIEWPORT_PADDING), window.innerHeight - tooltipHeight - VIEWPORT_PADDING)
+
   tooltipStyle.value = {
-    top: `${rect.top + window.scrollY}px`,
-    left: `${rect.left + rect.width / 2 + window.scrollX}px`,
+    top: `${top}px`,
+    left: `${left}px`,
   }
 }
 </script>
@@ -36,6 +66,7 @@ function updatePosition() {
     class="group relative ml-1 inline-flex items-center align-middle"
     @mouseenter="onEnter"
     @mouseleave="onLeave"
+    @mousemove="onMove"
   >
     <!-- Trigger Icon -->
     <slot name="trigger">
@@ -48,12 +79,12 @@ function updatePosition() {
     <!-- Teleport to body to escape modal overflow clipping -->
     <Teleport to="body">
       <div
+        ref="tooltip"
         v-show="show"
-        class="fixed z-[99999] w-64 -translate-x-1/2 -translate-y-full rounded-lg bg-gray-900 p-3 text-xs leading-relaxed text-white shadow-xl ring-1 ring-white/10 dark:bg-gray-800"
-        :style="{ top: `calc(${tooltipStyle.top} - 8px)`, left: tooltipStyle.left }"
+        class="pointer-events-none fixed z-[99999] w-64 rounded-lg bg-gray-900 p-3 text-xs leading-relaxed text-white shadow-xl ring-1 ring-white/10 dark:bg-gray-800"
+        :style="tooltipStyle"
       >
         <slot>{{ content }}</slot>
-        <div class="absolute -bottom-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 bg-gray-900 dark:bg-gray-800"></div>
       </div>
     </Teleport>
   </div>
