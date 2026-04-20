@@ -7,7 +7,7 @@
           <HelpTooltip :content="t('admin.risk.visuals.activityHint')">
             <template #trigger>
               <span class="inline-flex rounded-full text-gray-400 hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400">
-                <Icon name="exclamationCircle" size="sm" />
+                <Icon name="questionCircle" size="sm" />
               </span>
             </template>
           </HelpTooltip>
@@ -48,32 +48,36 @@
           <p class="text-sm font-medium text-gray-600 dark:text-gray-300">{{ peakHourLabel }}</p>
         </div>
 
-        <div class="relative mt-4 rounded-2xl bg-slate-50 px-4 py-4 dark:bg-dark-900/70">
-          <svg class="pointer-events-none absolute inset-0 h-full w-full px-4 py-4" viewBox="0 0 100 40" preserveAspectRatio="none">
-            <polyline
-              fill="none"
-              stroke="url(#riskActivityGradient)"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              :points="trendPoints"
-            />
-            <defs>
-              <linearGradient id="riskActivityGradient" x1="0%" x2="100%" y1="0%" y2="0%">
-                <stop offset="0%" stop-color="#38bdf8" />
-                <stop offset="100%" stop-color="#8b5cf6" />
-              </linearGradient>
-            </defs>
-          </svg>
+        <div class="mt-4 rounded-2xl bg-slate-50 px-4 py-4 dark:bg-dark-900/70">
+          <div class="overflow-x-auto pb-1">
+            <div class="relative min-w-[960px]">
+              <svg class="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 240 40" preserveAspectRatio="none">
+                <polyline
+                  fill="none"
+                  stroke="url(#riskActivityGradient)"
+                  stroke-width="2.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  :points="trendPoints"
+                />
+                <defs>
+                  <linearGradient id="riskActivityGradient" x1="0%" x2="100%" y1="0%" y2="0%">
+                    <stop offset="0%" stop-color="#38bdf8" />
+                    <stop offset="100%" stop-color="#8b5cf6" />
+                  </linearGradient>
+                </defs>
+              </svg>
 
-          <div class="relative grid grid-cols-12 gap-2">
-            <div v-for="point in timeline" :key="point.hour" class="flex flex-col items-center gap-2">
-              <div class="h-16 w-1 rounded-full bg-gray-200 dark:bg-dark-800">
-                <div class="w-full rounded-full bg-gradient-to-t from-violet-500 to-sky-500 transition-all duration-300" :style="{ height: `${point.height}%`, marginTop: `${100 - point.height}%` }"></div>
-              </div>
-              <div class="text-center">
-                <p class="text-[11px] font-medium text-gray-500 dark:text-dark-400">{{ point.label }}</p>
-                <p class="text-[11px] text-gray-400 dark:text-dark-500">{{ point.count }}</p>
+              <div class="relative grid gap-2" :style="{ gridTemplateColumns: 'repeat(24, minmax(0, 1fr))' }">
+                <div v-for="point in timeline" :key="point.hour" class="flex flex-col items-center gap-2">
+                  <div class="h-16 w-1 rounded-full bg-gray-200 dark:bg-dark-800">
+                    <div class="w-full rounded-full bg-gradient-to-t from-violet-500 to-sky-500 transition-all duration-300" :style="{ height: `${point.height}%`, marginTop: `${100 - point.height}%` }"></div>
+                  </div>
+                  <div class="text-center">
+                    <p class="text-[11px] font-medium text-gray-500 dark:text-dark-400">{{ point.label }}</p>
+                    <p class="text-[11px] text-gray-400 dark:text-dark-500">{{ point.count }}</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -144,7 +148,7 @@ const peakHourLabel = computed(() => {
 const trendPoints = computed(() => {
   return timeline.value
     .map((point, index) => {
-      const x = timeline.value.length === 1 ? 50 : (index / (timeline.value.length - 1)) * 100
+      const x = timeline.value.length === 1 ? 120 : (index / (timeline.value.length - 1)) * 240
       const y = 36 - ((point.count / maxHourCount.value) * 28)
       return `${x},${y}`
     })

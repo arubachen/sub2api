@@ -7,7 +7,7 @@
           <HelpTooltip :content="t('admin.risk.visuals.scoreHint')">
             <template #trigger>
               <span class="inline-flex rounded-full text-gray-400 hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400">
-                <Icon name="exclamationCircle" size="sm" />
+                <Icon name="questionCircle" size="sm" />
               </span>
             </template>
           </HelpTooltip>
