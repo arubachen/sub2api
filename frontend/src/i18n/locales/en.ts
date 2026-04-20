@@ -1776,9 +1776,17 @@ export default {
         reviewThreshold: 'Review threshold',
         throttleThreshold: 'Throttle threshold',
         freezeThreshold: 'Freeze-review threshold',
+        automationTitle: 'Automation',
+        automationHint: 'Disabled by default. When enabled, requests can be auto-throttled or blocked at auth time without mutating the user account status.',
+        autoThrottleTitle: 'Auto throttle',
+        autoThrottleHint: 'When the score reaches the throttle threshold, cap the user concurrency to the configured value.',
+        autoThrottleCap: 'Throttle concurrency cap',
+        autoFreezeTitle: 'Auto freeze review',
+        autoFreezeHint: 'When the score reaches the freeze-review threshold, block API requests and ask the user to contact an administrator.',
         validationPositive: 'All thresholds must be positive integers.',
         validationAscending: 'Thresholds must satisfy: review < throttle < freeze-review.',
-        validationTokenRequired: 'Configure an API token before enabling IP intelligence.'
+        validationTokenRequired: 'Configure an API token before enabling IP intelligence.',
+        validationThrottleCap: 'The throttle concurrency cap must be a positive integer.'
       }
     },
 

@@ -108,6 +108,7 @@ func initializeApplication(buildInfo handler.BuildInfo) (*Application, error) {
 	concurrencyCache := repository.ProvideConcurrencyCache(redisClient, configConfig)
 	concurrencyService := service.ProvideConcurrencyService(concurrencyCache, accountRepository, configConfig)
 	userRiskService := service.NewUserRiskService(db, userRepository, settingRepository)
+	apiKeyService.SetUserRiskService(userRiskService)
 	adminUserHandler := admin.NewUserHandler(adminService, concurrencyService, userRiskService)
 	sessionLimitCache := repository.ProvideSessionLimitCache(redisClient, configConfig)
 	rpmCache := repository.NewRPMCache(redisClient)

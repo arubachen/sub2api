@@ -8,8 +8,8 @@
     @close="$emit('close')"
   >
     <div v-if="user" class="space-y-4">
-      <div class="rounded-xl bg-gray-50 p-4 dark:bg-dark-700">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <div class="overflow-hidden rounded-[28px] border border-slate-200/80 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.14),transparent_42%),linear-gradient(135deg,#f8fafc,rgba(255,255,255,0.98))] p-5 dark:border-dark-700 dark:bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_34%),linear-gradient(135deg,rgba(15,23,42,0.94),rgba(2,6,23,0.92))]">
+        <div class="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-3">
               <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900/30">
@@ -39,12 +39,12 @@
             </div>
           </div>
 
-          <div v-if="detail" class="grid min-w-[220px] gap-3 sm:grid-cols-2 lg:grid-cols-1">
-            <div class="rounded-xl border border-gray-200 bg-white px-4 py-3 dark:border-dark-600 dark:bg-dark-800">
+          <div v-if="detail" class="grid min-w-[260px] gap-3 sm:grid-cols-2 xl:grid-cols-1">
+            <div class="rounded-2xl border border-white/70 bg-white/85 px-4 py-3 shadow-sm dark:border-white/5 dark:bg-dark-900/70">
               <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-dark-400">{{ t('admin.users.riskScore') }}</p>
               <p :class="riskScoreClass" class="mt-1 text-3xl font-bold">{{ detail.summary.risk_score }}</p>
             </div>
-            <div class="rounded-xl border border-gray-200 bg-white px-4 py-3 dark:border-dark-600 dark:bg-dark-800">
+            <div class="rounded-2xl border border-white/70 bg-white/85 px-4 py-3 shadow-sm dark:border-white/5 dark:bg-dark-900/70">
               <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-dark-400">{{ t('admin.users.riskDecision') }}</p>
               <p :class="decisionBadgeClass" class="mt-1 inline-flex rounded-full px-2.5 py-1 text-sm font-semibold">
                 {{ detail.summary.decision_label }}
@@ -83,7 +83,7 @@
         <section class="space-y-3">
           <div class="flex items-center justify-between">
             <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('admin.users.riskMetricsTitle') }}</h4>
-            <span class="text-xs text-gray-400 dark:text-dark-500">24h + history</span>
+            <span class="text-xs text-gray-400 dark:text-dark-500">近 24 小时 + 历史</span>
           </div>
           <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <div
@@ -102,7 +102,7 @@
           <div v-if="detail.rule_hits.length === 0" class="rounded-xl border border-gray-200 bg-white px-4 py-6 text-sm text-gray-500 dark:border-dark-600 dark:bg-dark-800 dark:text-dark-400">
             {{ t('admin.users.riskNoRuleHits') }}
           </div>
-          <div v-else class="grid gap-3 lg:grid-cols-2">
+          <div v-else class="space-y-3">
             <div
               v-for="rule in detail.rule_hits"
               :key="rule.code"
@@ -119,11 +119,11 @@
           </div>
         </section>
 
-        <section class="grid gap-4 xl:grid-cols-2">
+        <section class="space-y-5">
           <div class="space-y-3">
             <div class="flex items-center justify-between">
               <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('admin.users.riskIpDetailsTitle') }}</h4>
-              <span class="text-xs text-gray-400 dark:text-dark-500">24h</span>
+              <span class="text-xs text-gray-400 dark:text-dark-500">近 24 小时</span>
             </div>
             <p class="text-xs text-amber-600 dark:text-amber-300">{{ t('admin.users.riskIpIntelNote') }}</p>
             <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white dark:border-dark-600 dark:bg-dark-800">
@@ -160,7 +160,7 @@
           <div class="space-y-3">
             <div class="flex items-center justify-between">
               <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('admin.users.riskUaDetailsTitle') }}</h4>
-              <span class="text-xs text-gray-400 dark:text-dark-500">24h</span>
+              <span class="text-xs text-gray-400 dark:text-dark-500">近 24 小时</span>
             </div>
             <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white dark:border-dark-600 dark:bg-dark-800">
               <table class="min-w-full divide-y divide-gray-200 text-sm dark:divide-dark-600">

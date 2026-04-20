@@ -14,6 +14,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
@@ -32,6 +33,12 @@ const (
 	settingKeyUserRiskReviewThreshold   = "user_risk_review_threshold"
 	settingKeyUserRiskThrottleThreshold = "user_risk_throttle_threshold"
 	settingKeyUserRiskFreezeThreshold   = "user_risk_freeze_threshold"
+	settingKeyUserRiskAutoEnabled       = "user_risk_auto_enabled"
+	settingKeyUserRiskAutoThrottle      = "user_risk_auto_throttle"
+	settingKeyUserRiskAutoFreeze        = "user_risk_auto_freeze"
+	settingKeyUserRiskAutoThrottleCap   = "user_risk_auto_throttle_concurrency_cap"
+
+	userRiskAutomationCacheTTL = 3 * time.Minute
 )
 
 var (
@@ -44,6 +51,7 @@ type UserRiskService struct {
 	userRepo    UserRepository
 	settingRepo SettingRepository
 	httpClient  *http.Client
+	autoCache   sync.Map
 }
 
 func NewUserRiskService(db *sql.DB, userRepo UserRepository, settingRepo SettingRepository) *UserRiskService {
@@ -149,6 +157,10 @@ type UserRiskSettings struct {
 	ReviewThreshold        int    `json:"review_threshold"`
 	ThrottleThreshold      int    `json:"throttle_threshold"`
 	FreezeThreshold        int    `json:"freeze_threshold"`
+	AutoEnabled            bool   `json:"auto_enabled"`
+	AutoThrottle           bool   `json:"auto_throttle"`
+	AutoFreeze             bool   `json:"auto_freeze"`
+	AutoThrottleCap        int    `json:"auto_throttle_concurrency_cap"`
 }
 
 type UserRiskSettingsUpdate struct {
@@ -159,6 +171,24 @@ type UserRiskSettingsUpdate struct {
 	ReviewThreshold   *int    `json:"review_threshold"`
 	ThrottleThreshold *int    `json:"throttle_threshold"`
 	FreezeThreshold   *int    `json:"freeze_threshold"`
+	AutoEnabled       *bool   `json:"auto_enabled"`
+	AutoThrottle      *bool   `json:"auto_throttle"`
+	AutoFreeze        *bool   `json:"auto_freeze"`
+	AutoThrottleCap   *int    `json:"auto_throttle_concurrency_cap"`
+}
+
+type UserRiskAutomationDecision struct {
+	Enabled                 bool
+	Blocked                 bool
+	EffectiveConcurrencyCap int
+	Decision                string
+	Message                 string
+	Score                   int
+}
+
+type userRiskAutomationCacheEntry struct {
+	Decision  UserRiskAutomationDecision
+	ExpiresAt time.Time
 }
 
 type userRiskUsageRow struct {
@@ -235,6 +265,10 @@ func defaultUserRiskSettings() UserRiskSettings {
 		ReviewThreshold:        50,
 		ThrottleThreshold:      80,
 		FreezeThreshold:        120,
+		AutoEnabled:            false,
+		AutoThrottle:           false,
+		AutoFreeze:             false,
+		AutoThrottleCap:        1,
 	}
 }
 
@@ -273,6 +307,18 @@ func (s *UserRiskService) UpdateSettings(ctx context.Context, update *UserRiskSe
 	if update.FreezeThreshold != nil {
 		settings.FreezeThreshold = *update.FreezeThreshold
 	}
+	if update.AutoEnabled != nil {
+		settings.AutoEnabled = *update.AutoEnabled
+	}
+	if update.AutoThrottle != nil {
+		settings.AutoThrottle = *update.AutoThrottle
+	}
+	if update.AutoFreeze != nil {
+		settings.AutoFreeze = *update.AutoFreeze
+	}
+	if update.AutoThrottleCap != nil {
+		settings.AutoThrottleCap = *update.AutoThrottleCap
+	}
 	if update.ClearIPIntelToken != nil && *update.ClearIPIntelToken {
 		secret = ""
 	}
@@ -295,10 +341,18 @@ func (s *UserRiskService) UpdateSettings(ctx context.Context, update *UserRiskSe
 		settingKeyUserRiskReviewThreshold:   userRiskFormatInt(settings.ReviewThreshold),
 		settingKeyUserRiskThrottleThreshold: userRiskFormatInt(settings.ThrottleThreshold),
 		settingKeyUserRiskFreezeThreshold:   userRiskFormatInt(settings.FreezeThreshold),
+		settingKeyUserRiskAutoEnabled:       userRiskFormatBool(settings.AutoEnabled),
+		settingKeyUserRiskAutoThrottle:      userRiskFormatBool(settings.AutoThrottle),
+		settingKeyUserRiskAutoFreeze:        userRiskFormatBool(settings.AutoFreeze),
+		settingKeyUserRiskAutoThrottleCap:   userRiskFormatInt(settings.AutoThrottleCap),
 	}
 	if err := s.settingRepo.SetMultiple(ctx, values); err != nil {
 		return nil, fmt.Errorf("set user risk settings: %w", err)
 	}
+	s.autoCache.Range(func(key, _ any) bool {
+		s.autoCache.Delete(key)
+		return true
+	})
 	return s.GetSettings(ctx)
 }
 
@@ -349,6 +403,52 @@ func (s *UserRiskService) GetUserRiskDetail(ctx context.Context, userID int64, t
 		return nil, err
 	}
 	return s.getUserRiskDetailWithSettings(ctx, userID, timezone, settings, true)
+}
+
+func (s *UserRiskService) EvaluateAutomation(ctx context.Context, userID int64) (*UserRiskAutomationDecision, error) {
+	if s == nil {
+		return &UserRiskAutomationDecision{}, nil
+	}
+	if cached, ok := s.autoCache.Load(userID); ok {
+		if entry, ok := cached.(userRiskAutomationCacheEntry); ok && time.Now().Before(entry.ExpiresAt) {
+			decision := entry.Decision
+			return &decision, nil
+		}
+	}
+
+	settings, err := s.loadSettingsInternal(ctx)
+	if err != nil {
+		return nil, err
+	}
+	decision := UserRiskAutomationDecision{
+		Enabled:                 settings.Settings.AutoEnabled,
+		EffectiveConcurrencyCap: 0,
+	}
+	if !settings.Settings.AutoEnabled {
+		s.autoCache.Store(userID, userRiskAutomationCacheEntry{Decision: decision, ExpiresAt: time.Now().Add(userRiskAutomationCacheTTL)})
+		return &decision, nil
+	}
+
+	detail, err := s.getUserRiskDetailWithSettings(ctx, userID, "", settings, false)
+	if err != nil {
+		return nil, err
+	}
+	score := detail.Summary.RiskScore
+	decision.Score = score
+	decision.Decision = detail.Summary.Decision
+	if settings.Settings.AutoFreeze && score >= settings.Settings.FreezeThreshold {
+		decision.Blocked = true
+		decision.Message = "用户触发自动冻结审查，请联系管理员"
+	} else if settings.Settings.AutoThrottle && score >= settings.Settings.ThrottleThreshold {
+		cap := settings.Settings.AutoThrottleCap
+		if cap < 1 {
+			cap = 1
+		}
+		decision.EffectiveConcurrencyCap = cap
+		decision.Message = "用户触发自动限流观察，系统已下调并发上限"
+	}
+	s.autoCache.Store(userID, userRiskAutomationCacheEntry{Decision: decision, ExpiresAt: time.Now().Add(userRiskAutomationCacheTTL)})
+	return &decision, nil
 }
 
 func (s *UserRiskService) getUserRiskDetailWithSettings(ctx context.Context, userID int64, timezone string, settings *userRiskSettingsInternal, includeIPIntel bool) (*UserRiskDetail, error) {
@@ -475,6 +575,10 @@ func (s *UserRiskService) loadSettingsInternal(ctx context.Context) (*userRiskSe
 		settingKeyUserRiskReviewThreshold,
 		settingKeyUserRiskThrottleThreshold,
 		settingKeyUserRiskFreezeThreshold,
+		settingKeyUserRiskAutoEnabled,
+		settingKeyUserRiskAutoThrottle,
+		settingKeyUserRiskAutoFreeze,
+		settingKeyUserRiskAutoThrottleCap,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("get user risk settings: %w", err)
@@ -501,6 +605,20 @@ func (s *UserRiskService) loadSettingsInternal(ctx context.Context) (*userRiskSe
 			settings.FreezeThreshold = v
 		}
 	}
+	if raw := strings.TrimSpace(values[settingKeyUserRiskAutoEnabled]); raw != "" {
+		settings.AutoEnabled = raw == "true"
+	}
+	if raw := strings.TrimSpace(values[settingKeyUserRiskAutoThrottle]); raw != "" {
+		settings.AutoThrottle = raw == "true"
+	}
+	if raw := strings.TrimSpace(values[settingKeyUserRiskAutoFreeze]); raw != "" {
+		settings.AutoFreeze = raw == "true"
+	}
+	if raw := strings.TrimSpace(values[settingKeyUserRiskAutoThrottleCap]); raw != "" {
+		if v, err := userRiskParseInt(raw); err == nil {
+			settings.AutoThrottleCap = v
+		}
+	}
 	internal.IPIntelToken = strings.TrimSpace(values[settingKeyUserRiskIPIntelToken])
 	settings.IPIntelTokenConfigured = internal.IPIntelToken != ""
 	settings.IPIntelDocsURL = userRiskIPInfoLiteDocsURL
@@ -524,6 +642,9 @@ func validateUserRiskSettings(settings UserRiskSettings) error {
 	}
 	if !(settings.ReviewThreshold < settings.ThrottleThreshold && settings.ThrottleThreshold < settings.FreezeThreshold) {
 		return infraerrors.BadRequest("USER_RISK_THRESHOLD_INVALID", "review/throttle/freeze thresholds must be strictly increasing")
+	}
+	if settings.AutoThrottleCap < 1 {
+		return infraerrors.BadRequest("USER_RISK_AUTOMATION_INVALID", "auto throttle concurrency cap must be at least 1")
 	}
 	return nil
 }

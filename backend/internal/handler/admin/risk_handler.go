@@ -30,6 +30,10 @@ type UpdateRiskSettingsRequest struct {
 	ReviewThreshold   *int    `json:"review_threshold"`
 	ThrottleThreshold *int    `json:"throttle_threshold"`
 	FreezeThreshold   *int    `json:"freeze_threshold"`
+	AutoEnabled       *bool   `json:"auto_enabled"`
+	AutoThrottle      *bool   `json:"auto_throttle"`
+	AutoFreeze        *bool   `json:"auto_freeze"`
+	AutoThrottleCap   *int    `json:"auto_throttle_concurrency_cap"`
 }
 
 func (h *RiskHandler) GetSettings(c *gin.Context) {
@@ -55,6 +59,10 @@ func (h *RiskHandler) UpdateSettings(c *gin.Context) {
 		ReviewThreshold:   req.ReviewThreshold,
 		ThrottleThreshold: req.ThrottleThreshold,
 		FreezeThreshold:   req.FreezeThreshold,
+		AutoEnabled:       req.AutoEnabled,
+		AutoThrottle:      req.AutoThrottle,
+		AutoFreeze:        req.AutoFreeze,
+		AutoThrottleCap:   req.AutoThrottleCap,
 	})
 	if err != nil {
 		response.ErrorFrom(c, err)

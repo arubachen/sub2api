@@ -206,6 +206,7 @@ type APIKeyService struct {
 	authGroup             singleflight.Group
 	lastUsedTouchL1       sync.Map // keyID -> nextAllowedAt(time.Time)
 	lastUsedTouchSF       singleflight.Group
+	userRiskService       *UserRiskService
 }
 
 // NewAPIKeyService 创建API Key服务实例
@@ -235,6 +236,17 @@ func NewAPIKeyService(
 // Called after construction (e.g. in wire) to avoid circular dependencies.
 func (s *APIKeyService) SetRateLimitCacheInvalidator(inv RateLimitCacheInvalidator) {
 	s.rateLimitCacheInvalid = inv
+}
+
+func (s *APIKeyService) SetUserRiskService(userRiskService *UserRiskService) {
+	s.userRiskService = userRiskService
+}
+
+func (s *APIKeyService) EvaluateUserRiskAutomation(ctx context.Context, apiKey *APIKey) (*UserRiskAutomationDecision, error) {
+	if s == nil || s.userRiskService == nil || apiKey == nil || apiKey.User == nil {
+		return &UserRiskAutomationDecision{}, nil
+	}
+	return s.userRiskService.EvaluateAutomation(ctx, apiKey.User.ID)
 }
 
 func (s *APIKeyService) compileAPIKeyIPRules(apiKey *APIKey) {

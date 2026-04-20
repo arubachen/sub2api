@@ -1789,26 +1789,30 @@ export default {
         ruleHits: '命中规则'
       },
       visuals: {
-        heroEyebrow: 'Risk Control',
+        heroEyebrow: '风控总览',
         thresholdSummary: '审查 {review} / 限流 {throttle} / 冻结 {freeze}',
         currentPageHint: '当前分页内已完成风险聚合的用户数量',
         reviewHint: '达到“建议人工审查”阈值及以上的用户数',
         freezeHint: '达到“建议冻结审查”阈值的高风险用户数',
         showingUsers: '展示 {count} / {total} 名已聚合用户',
-        decisionEyebrow: 'Decision Mix',
+        decisionEyebrow: '决策分布',
         decisionTitle: '决策分布',
         decisionHint: '当前筛选结果下，各决策区间的用户占比和平均风险分。',
         dominantDecision: '主导决策',
         avgScore: '均分',
-        scoreEyebrow: 'Score Distribution',
+        scoreEyebrow: '风险分布',
         scoreTitle: '风险分布区间',
         scoreHint: '按照当前阈值查看风险分在各区间的分布情况。',
         maxScore: '当前最高分',
-        activityEyebrow: 'Activity Pattern',
-        activityTitle: '活跃时段热力图',
-        activityHint: '统计当前页用户在 24 小时内覆盖到的活跃小时，快速识别“全天在线”特征。',
+        activityEyebrow: '活跃画像',
+        activityTitle: '昼夜活跃时间轴',
+        activityHint: '把 24 小时拆成白天与夜间两个时间轴，查看当前页用户在哪些时段最常出现。',
         avgActiveHours: '平均活跃小时',
-        avgConcentration: '平均时段集中度'
+        avgConcentration: '平均时段集中度',
+        dayCoverage: '白天覆盖',
+        nightCoverage: '夜间覆盖',
+        dayTimeline: '白天时间轴',
+        nightTimeline: '夜间时间轴'
       },
       settings: {
         title: '风控配置',
@@ -1831,9 +1835,17 @@ export default {
         reviewThreshold: '人工审查阈值',
         throttleThreshold: '限流观察阈值',
         freezeThreshold: '冻结审查阈值',
+        automationTitle: '自动联动',
+        automationHint: '默认关闭。开启后，系统会在请求进入时按风控分自动限流或阻断，不会修改用户账户状态。',
+        autoThrottleTitle: '自动限流',
+        autoThrottleHint: '当风险分达到“限流观察阈值”时，自动把该用户请求并发压到指定上限。',
+        autoThrottleCap: '限流并发上限',
+        autoFreezeTitle: '自动冻结审查',
+        autoFreezeHint: '当风险分达到“冻结审查阈值”时，自动阻断 API 请求，并提示联系管理员。',
         validationPositive: '所有阈值都必须是大于 0 的整数。',
         validationAscending: '阈值必须满足：人工审查 < 限流观察 < 冻结审查。',
-        validationTokenRequired: '启用 IP 情报前，请先配置 API Token。'
+        validationTokenRequired: '启用 IP 情报前，请先配置 API Token。',
+        validationThrottleCap: '限流并发上限必须是大于 0 的整数。'
       }
     },
 
