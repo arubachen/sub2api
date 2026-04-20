@@ -1,120 +1,145 @@
 <template>
   <AppLayout>
-    <div class="space-y-6">
-      <div class="rounded-[28px] border border-gray-200/80 bg-white/95 p-6 shadow-card dark:border-dark-800 dark:bg-dark-900/90">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <div class="space-y-6 pb-12">
+      <section class="overflow-hidden rounded-[32px] border border-slate-200/80 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.15),transparent_42%),linear-gradient(135deg,#f8fafc,rgba(255,255,255,0.95))] p-6 shadow-card dark:border-dark-800 dark:bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.14),transparent_34%),linear-gradient(135deg,rgba(15,23,42,0.92),rgba(2,6,23,0.92))] lg:p-8">
+        <div class="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(360px,0.7fr)] xl:items-start">
           <div>
-            <h1 class="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ t('admin.risk.title') }}</h1>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('admin.risk.description') }}</p>
-          </div>
-          <div class="flex flex-wrap items-center gap-3">
-            <button type="button" class="btn btn-secondary px-3 py-2 text-sm" @click="showSettingsDialog = true">
-              {{ t('common.settings') }}
-            </button>
-            <button type="button" class="btn btn-primary px-3 py-2 text-sm" :disabled="loading" @click="loadPage">
-              {{ loading ? t('common.loading') : t('common.refresh') }}
-            </button>
-          </div>
-        </div>
-
-        <div class="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <div class="rounded-2xl border border-gray-200 px-4 py-3 dark:border-dark-700">
-            <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ t('admin.risk.cards.currentPageUsers') }}</p>
-            <p class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{{ riskRows.length }}</p>
-          </div>
-          <div class="rounded-2xl border border-gray-200 px-4 py-3 dark:border-dark-700">
-            <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ t('admin.risk.cards.reviewOrHigher') }}</p>
-            <p class="mt-1 text-2xl font-semibold text-amber-600 dark:text-amber-300">{{ reviewOrHigherCount }}</p>
-          </div>
-          <div class="rounded-2xl border border-gray-200 px-4 py-3 dark:border-dark-700">
-            <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ t('admin.risk.cards.freezeReview') }}</p>
-            <p class="mt-1 text-2xl font-semibold text-red-600 dark:text-red-300">{{ freezeReviewCount }}</p>
-          </div>
-          <div class="rounded-2xl border border-gray-200 px-4 py-3 dark:border-dark-700">
-            <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ t('admin.risk.cards.ipIntel') }}</p>
-            <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">
-              {{ riskSettings.ip_intel_enabled ? t('admin.risk.ipIntelEnabled') : t('admin.risk.ipIntelDisabled') }}
+            <p class="text-xs font-semibold uppercase tracking-[0.28em] text-sky-600/80 dark:text-cyan-300/80">{{ t('admin.risk.visuals.heroEyebrow') }}</p>
+            <h1 class="mt-3 max-w-3xl text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
+              {{ t('admin.risk.title') }}
+            </h1>
+            <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+              {{ t('admin.risk.description') }}
             </p>
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ riskSettings.ip_intel_provider }}</p>
-          </div>
-        </div>
-      </div>
 
-      <TablePageLayout>
-        <template #filters>
-          <div class="rounded-[28px] border border-gray-200/80 bg-white/95 p-4 shadow-card dark:border-dark-800 dark:bg-dark-900/90">
-            <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_200px_160px_auto] lg:items-center">
-              <input
-                v-model="searchQuery"
-                type="text"
-                class="input"
-                :placeholder="t('admin.risk.searchPlaceholder')"
-                @input="handleSearch"
-              />
-              <Select v-model="statusFilter" :options="statusOptions" @change="applyFilters" />
-              <Select v-model="decisionFilter" :options="decisionOptions" @change="applyFilters" />
-              <div class="text-sm text-gray-500 dark:text-gray-400">
+            <div class="mt-5 flex flex-wrap gap-2">
+              <span class="rounded-full border border-sky-200/80 bg-white/80 px-3 py-1 text-xs font-medium text-slate-700 backdrop-blur dark:border-cyan-900/60 dark:bg-dark-900/70 dark:text-slate-200">
                 {{ t('admin.risk.windowLabel') }}: 24h
-              </div>
+              </span>
+              <span class="rounded-full border border-sky-200/80 bg-white/80 px-3 py-1 text-xs font-medium text-slate-700 backdrop-blur dark:border-cyan-900/60 dark:bg-dark-900/70 dark:text-slate-200">
+                {{ riskSettings.ip_intel_enabled ? t('admin.risk.ipIntelEnabled') : t('admin.risk.ipIntelDisabled') }}
+              </span>
+              <span class="rounded-full border border-sky-200/80 bg-white/80 px-3 py-1 text-xs font-medium text-slate-700 backdrop-blur dark:border-cyan-900/60 dark:bg-dark-900/70 dark:text-slate-200">
+                {{ t('admin.risk.visuals.thresholdSummary', { review: riskSettings.review_threshold, throttle: riskSettings.throttle_threshold, freeze: riskSettings.freeze_threshold }) }}
+              </span>
+            </div>
+
+            <div class="mt-6 flex flex-wrap gap-3">
+              <button type="button" class="btn btn-primary px-4 py-2 text-sm" :disabled="loading" @click="loadPage">
+                {{ loading ? t('common.loading') : t('common.refresh') }}
+              </button>
+              <button type="button" class="btn btn-secondary px-4 py-2 text-sm" @click="showSettingsDialog = true">
+                {{ t('common.settings') }}
+              </button>
             </div>
           </div>
-        </template>
 
+          <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-2">
+            <div v-for="card in heroCards" :key="card.label" class="rounded-3xl border border-white/70 bg-white/80 p-4 shadow-sm backdrop-blur dark:border-white/5 dark:bg-dark-900/70">
+              <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500">{{ card.label }}</p>
+              <p class="mt-2 text-2xl font-semibold text-slate-950 dark:text-white" :class="card.emphasisClass">{{ card.value }}</p>
+              <p class="mt-2 text-xs leading-5 text-slate-500 dark:text-slate-400">{{ card.hint }}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="grid gap-6 xl:grid-cols-3">
+        <RiskDecisionBreakdownCard :rows="filteredRows" />
+        <RiskScoreDistributionCard :rows="filteredRows" :settings="riskSettings" />
+        <RiskActivityHeatmapCard :rows="filteredRows" />
+      </div>
+
+      <section class="rounded-[28px] border border-gray-200/80 bg-white/95 p-4 shadow-card dark:border-dark-800 dark:bg-dark-900/90">
+        <div class="grid gap-3 xl:grid-cols-[minmax(0,1fr)_180px_180px_180px_auto] xl:items-center">
+          <div>
+            <label class="sr-only" for="risk-search">{{ t('common.search') }}</label>
+            <input
+              id="risk-search"
+              v-model="searchQuery"
+              type="text"
+              class="input"
+              :placeholder="t('admin.risk.searchPlaceholder')"
+              @input="handleSearch"
+            />
+          </div>
+          <Select v-model="statusFilter" :options="statusOptions" @change="applyFilters" />
+          <Select v-model="decisionFilter" :options="decisionOptions" @change="applyFilters" />
+          <Select v-model="sortMode" :options="sortOptions" @change="applyFilters" />
+          <div class="text-right text-xs text-gray-500 dark:text-gray-400">
+            {{ t('admin.risk.visuals.showingUsers', { count: filteredRows.length, total: riskRows.length }) }}
+          </div>
+        </div>
+      </section>
+
+      <TablePageLayout>
         <template #table>
-          <DataTable
-            :columns="columns"
-            :data="filteredRows"
-            :loading="loading"
-            :actions-count="1"
-          >
+          <DataTable :columns="columns" :data="orderedRows" :loading="loading" :actions-count="1">
             <template #cell-user="{ row }">
-              <button type="button" class="text-left" @click="openRiskDetail(row.user)">
-                <p class="font-medium text-primary-600 dark:text-primary-400">{{ row.user.email }}</p>
-                <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ row.user.username || '-' }}</p>
+              <button type="button" class="group text-left" @click="openRiskDetail(row.user)">
+                <p class="font-medium text-slate-900 transition-colors group-hover:text-primary-600 dark:text-white dark:group-hover:text-primary-400">{{ row.user.email }}</p>
+                <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                  <span>{{ row.user.username || '-' }}</span>
+                  <span class="rounded-full px-2 py-0.5" :class="row.user.status === 'active' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-300' : 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-300'">
+                    {{ row.user.status }}
+                  </span>
+                </div>
               </button>
             </template>
 
             <template #cell-risk_score="{ row }">
-              <span :class="scoreClass(row.summary.risk_score)" class="font-semibold">{{ row.summary.risk_score }}</span>
+              <div>
+                <p class="text-lg font-semibold" :class="scoreClass(row.summary.risk_score)">{{ row.summary.risk_score }}</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500">{{ row.summary.computed_at ? formatDateTime(row.summary.computed_at) : '-' }}</p>
+              </div>
             </template>
 
             <template #cell-decision="{ row }">
-              <span :class="decisionClass(row.summary.decision)" class="rounded-full px-2 py-0.5 text-xs font-medium">
+              <span :class="decisionClass(row.summary.decision)" class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold">
                 {{ row.summary.decision_label }}
               </span>
             </template>
 
             <template #cell-actual_cost_24h="{ row }">
-              ${{ row.metrics.actual_cost_24h.toFixed(4) }}
+              <div>
+                <p class="font-medium text-slate-900 dark:text-white">${{ row.metrics.actual_cost_24h.toFixed(4) }}</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500">{{ row.metrics.request_count_24h }} req</p>
+              </div>
             </template>
 
             <template #cell-historical_ip_count="{ row }">
               <div>
-                <p>{{ row.metrics.historical_ip_count }}</p>
+                <p class="font-medium text-slate-900 dark:text-white">{{ row.metrics.historical_ip_count }}</p>
                 <p class="text-xs text-gray-400 dark:text-gray-500">{{ row.metrics.first_ip || '-' }}</p>
               </div>
             </template>
 
             <template #cell-ua_24h_count="{ row }">
               <div>
-                <p>{{ row.metrics.ua_24h_count }}</p>
-                <p class="max-w-[240px] truncate text-xs text-gray-400 dark:text-gray-500">{{ row.top_user_agent || '-' }}</p>
+                <p class="font-medium text-slate-900 dark:text-white">{{ row.metrics.ua_24h_count }}</p>
+                <p class="max-w-[220px] truncate text-xs text-gray-400 dark:text-gray-500">{{ row.top_user_agent || '-' }}</p>
               </div>
             </template>
 
             <template #cell-active_hours_count="{ row }">
               <div>
-                <p>{{ row.metrics.active_hours_count }}</p>
+                <p class="font-medium text-slate-900 dark:text-white">{{ row.metrics.active_hours_count }}</p>
                 <p class="text-xs text-gray-400 dark:text-gray-500">{{ row.metrics.all_day_active ? t('common.yes') : t('common.no') }}</p>
               </div>
             </template>
 
             <template #cell-longest_silence_hours="{ row }">
-              {{ row.metrics.longest_silence_hours.toFixed(2) }}h
+              <div>
+                <p class="font-medium text-slate-900 dark:text-white">{{ row.metrics.longest_silence_hours.toFixed(2) }}h</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500">HHI {{ row.metrics.hour_concentration.toFixed(3) }}</p>
+              </div>
             </template>
 
             <template #cell-rule_hit_count="{ row }">
-              {{ row.rule_hit_count }}
+              <div>
+                <p class="font-medium text-slate-900 dark:text-white">{{ row.rule_hit_count }}</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500">{{ row.metrics.concurrent_multi_ip_ua_minutes_24h }} min burst</p>
+              </div>
             </template>
 
             <template #cell-actions="{ row }">
@@ -151,6 +176,9 @@ import TablePageLayout from '@/components/layout/TablePageLayout.vue'
 import DataTable from '@/components/common/DataTable.vue'
 import Pagination from '@/components/common/Pagination.vue'
 import Select from '@/components/common/Select.vue'
+import RiskDecisionBreakdownCard from '@/components/admin/risk/RiskDecisionBreakdownCard.vue'
+import RiskScoreDistributionCard from '@/components/admin/risk/RiskScoreDistributionCard.vue'
+import RiskActivityHeatmapCard from '@/components/admin/risk/RiskActivityHeatmapCard.vue'
 import RiskSettingsDialog from '@/components/admin/risk/RiskSettingsDialog.vue'
 import UserRiskDetailModal from '@/components/admin/user/UserRiskDetailModal.vue'
 import { adminAPI } from '@/api/admin'
@@ -159,6 +187,7 @@ import type { AdminUser } from '@/types'
 import type { Column } from '@/components/common/types'
 import { useAppStore } from '@/stores'
 import { getPersistedPageSize } from '@/composables/usePersistedPageSize'
+import { formatDateTime } from '@/utils/format'
 
 const { t } = useI18n()
 const appStore = useAppStore()
@@ -176,6 +205,7 @@ const selectedUser = ref<AdminUser | null>(null)
 const searchQuery = ref('')
 const statusFilter = ref('')
 const decisionFilter = ref('')
+const sortMode = ref<'risk_desc' | 'spend_desc' | 'silence_asc'>('risk_desc')
 let searchTimer: ReturnType<typeof setTimeout> | null = null
 
 const riskSettings = ref<UserRiskSettings>({
@@ -195,6 +225,33 @@ const pagination = ref({
   pages: 0
 })
 
+const heroCards = computed(() => [
+  {
+    label: t('admin.risk.cards.currentPageUsers'),
+    value: String(riskRows.value.length),
+    hint: t('admin.risk.visuals.currentPageHint'),
+    emphasisClass: 'text-slate-950 dark:text-white'
+  },
+  {
+    label: t('admin.risk.cards.reviewOrHigher'),
+    value: String(reviewOrHigherCount.value),
+    hint: t('admin.risk.visuals.reviewHint'),
+    emphasisClass: 'text-amber-600 dark:text-amber-300'
+  },
+  {
+    label: t('admin.risk.cards.freezeReview'),
+    value: String(freezeReviewCount.value),
+    hint: t('admin.risk.visuals.freezeHint'),
+    emphasisClass: 'text-red-600 dark:text-red-300'
+  },
+  {
+    label: t('admin.risk.cards.ipIntel'),
+    value: riskSettings.value.ip_intel_enabled ? t('admin.risk.ipIntelEnabled') : t('admin.risk.ipIntelDisabled'),
+    hint: riskSettings.value.ip_intel_provider,
+    emphasisClass: 'text-slate-950 dark:text-white text-base'
+  }
+])
+
 const statusOptions = computed(() => [
   { value: '', label: t('admin.risk.filters.allStatus') },
   { value: 'active', label: t('common.active') },
@@ -203,9 +260,16 @@ const statusOptions = computed(() => [
 
 const decisionOptions = computed(() => [
   { value: '', label: t('admin.risk.filters.allDecisions') },
+  { value: 'observe', label: t('admin.risk.decisions.observe') },
   { value: 'review', label: t('admin.risk.decisions.review') },
   { value: 'throttle', label: t('admin.risk.decisions.throttle') },
   { value: 'freeze_review', label: t('admin.risk.decisions.freeze_review') }
+])
+
+const sortOptions = computed(() => [
+  { value: 'risk_desc', label: t('admin.risk.sort.riskDesc') },
+  { value: 'spend_desc', label: t('admin.risk.sort.spendDesc') },
+  { value: 'silence_asc', label: t('admin.risk.sort.silenceAsc') }
 ])
 
 const columns = computed<Column[]>(() => [
@@ -233,20 +297,32 @@ const riskRows = computed<RiskRow[]>(() => {
 })
 
 const filteredRows = computed(() => {
-  return riskRows.value
-    .filter((row) => {
-      if (decisionFilter.value && row.summary.decision !== decisionFilter.value) return false
-      return true
-    })
-    .sort((left, right) => {
-      if (left.summary.risk_score !== right.summary.risk_score) {
-        return right.summary.risk_score - left.summary.risk_score
-      }
+  return riskRows.value.filter((row) => {
+    if (decisionFilter.value && row.summary.decision !== decisionFilter.value) return false
+    return true
+  })
+})
+
+const orderedRows = computed(() => {
+  return [...filteredRows.value].sort((left, right) => {
+    if (sortMode.value === 'spend_desc') {
       if (left.metrics.actual_cost_24h !== right.metrics.actual_cost_24h) {
         return right.metrics.actual_cost_24h - left.metrics.actual_cost_24h
       }
-      return left.user.id - right.user.id
-    })
+    } else if (sortMode.value === 'silence_asc') {
+      if (left.metrics.longest_silence_hours !== right.metrics.longest_silence_hours) {
+        return left.metrics.longest_silence_hours - right.metrics.longest_silence_hours
+      }
+    } else {
+      if (left.summary.risk_score !== right.summary.risk_score) {
+        return right.summary.risk_score - left.summary.risk_score
+      }
+    }
+    if (left.summary.risk_score !== right.summary.risk_score) {
+      return right.summary.risk_score - left.summary.risk_score
+    }
+    return left.user.id - right.user.id
+  })
 })
 
 const reviewOrHigherCount = computed(() => filteredRows.value.filter(row => row.summary.risk_score >= riskSettings.value.review_threshold).length)

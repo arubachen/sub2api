@@ -1734,9 +1734,15 @@ export default {
       ipIntelEnabled: 'IP intelligence enabled',
       ipIntelDisabled: 'IP intelligence disabled',
       decisions: {
+        observe: 'Observe',
         review: 'Manual review recommended',
         throttle: 'Throttle recommended',
         freeze_review: 'Freeze & review recommended'
+      },
+      sort: {
+        riskDesc: 'Sort by risk score',
+        spendDesc: 'Sort by 24h spend',
+        silenceAsc: 'Sort by shortest silence'
       },
       filters: {
         allStatus: 'All Status',
@@ -1758,6 +1764,28 @@ export default {
         activeHours: 'Active Hours',
         longestSilence: 'Longest Silence',
         ruleHits: 'Rule Hits'
+      },
+      visuals: {
+        heroEyebrow: 'Risk Control',
+        thresholdSummary: 'Review {review} / Throttle {throttle} / Freeze {freeze}',
+        currentPageHint: 'Users on the current page with computed risk summaries.',
+        reviewHint: 'Users already at or above the manual-review threshold.',
+        freezeHint: 'Users already at the freeze-review threshold.',
+        showingUsers: 'Showing {count} / {total} aggregated users',
+        decisionEyebrow: 'Decision Mix',
+        decisionTitle: 'Decision distribution',
+        decisionHint: 'Share of current results in each decision bucket, with average score per bucket.',
+        dominantDecision: 'Dominant decision',
+        avgScore: 'avg score',
+        scoreEyebrow: 'Score Distribution',
+        scoreTitle: 'Score buckets',
+        scoreHint: 'See how current users spread across the active decision thresholds.',
+        maxScore: 'Highest score',
+        activityEyebrow: 'Activity Pattern',
+        activityTitle: 'Activity heatmap',
+        activityHint: 'Shows which local-hour buckets are covered by current-page users to surface “always-on” behavior.',
+        avgActiveHours: 'Avg. active hours',
+        avgConcentration: 'Avg. concentration'
       },
       settings: {
         title: 'Risk Settings',
