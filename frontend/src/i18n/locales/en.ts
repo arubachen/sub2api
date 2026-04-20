@@ -260,6 +260,7 @@ export default {
     filter: 'Filter',
     export: 'Export',
     import: 'Import',
+    details: 'Details',
     actions: 'Actions',
     status: 'Status',
     name: 'Name',
@@ -345,6 +346,7 @@ export default {
     subscriptions: 'Subscriptions',
     accounts: 'Accounts',
     proxies: 'Proxies',
+    risk: 'Risk',
     redeemCodes: 'Redeem Codes',
     ops: 'Ops',
     promoCodes: 'Promo Codes',
@@ -1639,16 +1641,21 @@ export default {
       riskRuleHitsTitle: 'Rule Hits',
       riskNoRuleHits: 'No abuse-risk rules hit right now.',
       riskIpDetailsTitle: 'IP Details',
-      riskIpIntelNote: 'This version does not yet include ASN / datacenter / residential-proxy enrichment. IP labels are basic only.',
+      riskIpIntelNote: 'If IPinfo Lite is configured, ASN / organization / country fields are enriched; otherwise only basic IP data is shown.',
       riskNoIpDetails: 'No IP details in the last 24 hours.',
       riskUaDetailsTitle: 'UA Details',
       riskNoUaDetails: 'No UA details in the last 24 hours.',
       riskRequestsShort: 'Requests',
       riskIpType: 'Type',
       riskIpLabel: 'Label',
+      riskOrganization: 'Organization / Domain',
+      riskRegion: 'Country / Continent',
       riskCategory: 'Category',
       riskBaseScore: 'Base Score',
       riskConfigStatus: 'Config Status',
+      riskConfigStatusNormal: 'Normal',
+      riskConfigStatusAbnormal: 'Abnormal',
+      riskConfigStatusUnconfigured: 'Unconfigured',
       roles: {
         admin: 'Admin',
         user: 'User'
@@ -1715,6 +1722,67 @@ export default {
         failedToReorder: 'Failed to update order',
         keyExists: 'Attribute key already exists',
         dragToReorder: 'Drag to reorder'
+      }
+    },
+
+    risk: {
+      title: 'Risk Management',
+      description: 'Review rolling abuse signals, rule hits, and IP/UA fingerprints from one dedicated control surface.',
+      loadFailed: 'Failed to load risk list',
+      searchPlaceholder: 'Search users by email, username, notes, or API key...',
+      windowLabel: 'Window',
+      ipIntelEnabled: 'IP intelligence enabled',
+      ipIntelDisabled: 'IP intelligence disabled',
+      decisions: {
+        review: 'Manual review recommended',
+        throttle: 'Throttle recommended',
+        freeze_review: 'Freeze & review recommended'
+      },
+      filters: {
+        allStatus: 'All Status',
+        allDecisions: 'All Decisions'
+      },
+      cards: {
+        currentPageUsers: 'Users on page',
+        reviewOrHigher: 'Review or higher',
+        freezeReview: 'Freeze review',
+        ipIntel: 'IP intelligence'
+      },
+      columns: {
+        user: 'User',
+        riskScore: 'Risk Score',
+        decision: 'Decision',
+        cost24h: '24h Spend',
+        ipHistory: 'Historical IP / First IP',
+        ua24h: '24h UA / Dominant UA',
+        activeHours: 'Active Hours',
+        longestSilence: 'Longest Silence',
+        ruleHits: 'Rule Hits'
+      },
+      settings: {
+        title: 'Risk Settings',
+        loadFailed: 'Failed to load risk settings',
+        saveFailed: 'Failed to save risk settings',
+        saveSuccess: 'Risk settings saved',
+        validationTitle: 'Please fix the following:',
+        ipIntelTitle: 'IP intelligence',
+        ipIntelHint: 'Optionally use the free IPinfo Lite API to enrich risk details with ASN, organization, and country data.',
+        providerLabel: 'Provider',
+        providerDocs: 'Read official docs',
+        tokenLabel: 'API Token',
+        tokenPlaceholder: 'Enter your IPinfo Lite token',
+        tokenConfiguredPlaceholder: 'A token is already configured; enter a new one to rotate it',
+        tokenConfiguredHint: 'Leave the field empty to keep the current token.',
+        tokenEmptyHint: 'Without a token, only basic IP fields are shown.',
+        clearToken: 'Clear current token',
+        thresholdTitle: 'Decision thresholds',
+        thresholdHint: 'Controls when the UI upgrades users from observe to review / throttle / freeze-review decisions.',
+        reviewThreshold: 'Review threshold',
+        throttleThreshold: 'Throttle threshold',
+        freezeThreshold: 'Freeze-review threshold',
+        validationPositive: 'All thresholds must be positive integers.',
+        validationAscending: 'Thresholds must satisfy: review < throttle < freeze-review.',
+        validationTokenRequired: 'Configure an API token before enabling IP intelligence.'
       }
     },
 

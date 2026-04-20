@@ -260,6 +260,7 @@ export default {
     filter: '筛选',
     export: '导出',
     import: '导入',
+    details: '详情',
     actions: '操作',
     status: '状态',
     name: '名称',
@@ -345,6 +346,7 @@ export default {
     subscriptions: '订阅管理',
     accounts: '账号管理',
     proxies: 'IP管理',
+    risk: '风控管理',
     redeemCodes: '兑换码',
     ops: '运维监控',
     promoCodes: '优惠码',
@@ -1698,16 +1700,21 @@ export default {
       riskRuleHitsTitle: '命中规则',
       riskNoRuleHits: '当前未命中任何滥用风险规则。',
       riskIpDetailsTitle: 'IP 明细',
-      riskIpIntelNote: '当前版本未接入 ASN / 机房 / 住宅代理情报，IP 标签仅展示基础信息。',
+      riskIpIntelNote: '若已配置 IPinfo Lite，将补充 ASN / 组织 / 国家信息；否则仅展示基础 IP 信息。',
       riskNoIpDetails: '近 24 小时暂无 IP 明细。',
       riskUaDetailsTitle: 'UA 明细',
       riskNoUaDetails: '近 24 小时暂无 UA 明细。',
       riskRequestsShort: '请求数',
       riskIpType: '类型',
       riskIpLabel: '标签',
+      riskOrganization: '组织 / 域名',
+      riskRegion: '国家 / 洲',
       riskCategory: '分类',
       riskBaseScore: '基础分',
       riskConfigStatus: '配置状态',
+      riskConfigStatusNormal: '正常',
+      riskConfigStatusAbnormal: '异常',
+      riskConfigStatusUnconfigured: '未配置',
       // Settings Dropdowns
       filterSettings: '筛选设置',
       columnSettings: '列设置',
@@ -1770,6 +1777,67 @@ export default {
         failedToReorder: '更新排序失败',
         keyExists: '属性键已存在',
         dragToReorder: '拖拽排序'
+      }
+    },
+
+    risk: {
+      title: '风控管理',
+      description: '统一查看近 24 小时滥用风险、命中规则与 IP/UA 画像，并维护风控模块配置。',
+      loadFailed: '加载风控列表失败',
+      searchPlaceholder: '按邮箱/用户名/备注/API Key 搜索用户...',
+      windowLabel: '分析窗口',
+      ipIntelEnabled: 'IP 情报已启用',
+      ipIntelDisabled: 'IP 情报未启用',
+      decisions: {
+        review: '建议人工审查',
+        throttle: '建议限流观察',
+        freeze_review: '建议冻结审查'
+      },
+      filters: {
+        allStatus: '全部状态',
+        allDecisions: '全部决策'
+      },
+      cards: {
+        currentPageUsers: '当前页用户数',
+        reviewOrHigher: '当前页审查及以上',
+        freezeReview: '当前页冻结审查',
+        ipIntel: 'IP 情报'
+      },
+      columns: {
+        user: '用户',
+        riskScore: '风险分',
+        decision: '决策',
+        cost24h: '24h 消耗',
+        ipHistory: '历史 IP / 首个 IP',
+        ua24h: '24h UA / 主力 UA',
+        activeHours: '活跃小时',
+        longestSilence: '最长静默',
+        ruleHits: '命中规则'
+      },
+      settings: {
+        title: '风控配置',
+        loadFailed: '加载风控配置失败',
+        saveFailed: '保存风控配置失败',
+        saveSuccess: '风控配置已保存',
+        validationTitle: '请先修正以下问题：',
+        ipIntelTitle: 'IP 情报增强',
+        ipIntelHint: '可选接入免费的 IPinfo Lite API，为风控详情补充 ASN、组织和国家信息。',
+        providerLabel: '情报提供方',
+        providerDocs: '查看官方文档',
+        tokenLabel: 'API Token',
+        tokenPlaceholder: '输入 IPinfo Lite token',
+        tokenConfiguredPlaceholder: '已配置 token，如需更换请重新输入',
+        tokenConfiguredHint: '当前已配置 token；留空则保持不变。',
+        tokenEmptyHint: '未配置 token 时将只展示基础 IP 信息。',
+        clearToken: '清除现有 Token',
+        thresholdTitle: '风险决策阈值',
+        thresholdHint: '用于决定何时从“建议观察”升级为“人工审查 / 限流观察 / 冻结审查”。',
+        reviewThreshold: '人工审查阈值',
+        throttleThreshold: '限流观察阈值',
+        freezeThreshold: '冻结审查阈值',
+        validationPositive: '所有阈值都必须是大于 0 的整数。',
+        validationAscending: '阈值必须满足：人工审查 < 限流观察 < 冻结审查。',
+        validationTokenRequired: '启用 IP 情报前，请先配置 API Token。'
       }
     },
 
