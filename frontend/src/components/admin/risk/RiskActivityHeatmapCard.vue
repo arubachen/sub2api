@@ -4,13 +4,7 @@
       <div>
         <div class="flex items-center gap-2">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('admin.risk.visuals.activityTitle') }}</h3>
-          <HelpTooltip :content="t('admin.risk.visuals.activityHint')">
-            <template #trigger>
-              <span class="inline-flex rounded-full text-gray-400 hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400">
-                <Icon name="questionCircle" size="sm" />
-              </span>
-            </template>
-          </HelpTooltip>
+          <HelpTooltip :content="t('admin.risk.visuals.activityHint')" />
         </div>
       </div>
       <div class="text-right text-sm text-gray-500 dark:text-gray-400">
@@ -91,7 +85,6 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import HelpTooltip from '@/components/common/HelpTooltip.vue'
-import Icon from '@/components/icons/Icon.vue'
 
 interface RowLike {
   metrics: {
