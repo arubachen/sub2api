@@ -142,7 +142,7 @@
         <template #cell-cost="{ row }">
           <div class="text-sm">
             <div class="flex items-center gap-1.5">
-              <span class="font-medium text-green-600 dark:text-green-400">${{ row.actual_cost?.toFixed(6) || '0.000000' }}</span>
+              <span class="font-medium text-emerald-700 dark:text-emerald-300">${{ row.actual_cost?.toFixed(6) || '0.000000' }}</span>
               <!-- Cost Detail Tooltip -->
               <div
                 class="group relative"
@@ -319,7 +319,7 @@
           </div>
           <div class="flex items-center justify-between gap-6">
             <span class="text-gray-400">{{ t('usage.userBilled') }}</span>
-            <span class="font-semibold text-green-400">${{ tooltipData?.actual_cost?.toFixed(6) || '0.000000' }}</span>
+            <span class="font-semibold text-emerald-300">${{ tooltipData?.actual_cost?.toFixed(6) || '0.000000' }}</span>
           </div>
           <!-- Account billing (separated from user billing) -->
           <div class="flex items-center justify-between gap-6 border-t border-gray-700 pt-1.5">
@@ -328,7 +328,7 @@
           </div>
           <div class="flex items-center justify-between gap-6">
             <span class="text-gray-400">{{ t('usage.accountBilled') }}</span>
-            <span class="font-semibold text-green-400">
+            <span class="font-semibold text-emerald-300">
               ${{ accountBilled({
                 total_cost: tooltipData?.total_cost,
                 account_stats_cost: tooltipData?.account_stats_cost,

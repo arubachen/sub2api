@@ -940,7 +940,7 @@ export default {
     avatarReset: '重置位置',
     avatarApply: '应用裁剪',
     username: '用户名',
-    enterUsername: '输入用户名',
+    enterUsername: '输入用户名（可选）',
     editProfile: '编辑个人资料',
     updateProfile: '更新资料',
     updating: '更新中...',

@@ -248,6 +248,7 @@ import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import UserBreakdownSubTable from './UserBreakdownSubTable.vue'
 import type { ModelStat, UserSpendingRankingItem, UserBreakdownItem } from '@/types'
 import { getUserBreakdown } from '@/api/admin/dashboard'
+import { DISTRIBUTION_CHART_COLORS } from '@/utils/chartPalette'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
@@ -330,20 +331,7 @@ const emit = defineEmits<{
 const enableRankingView = computed(() => props.enableRankingView)
 const activeView = ref<'model_distribution' | 'spending_ranking'>('model_distribution')
 
-const chartColors = [
-  '#06b6d4',
-  '#14b8a6',
-  '#22c55e',
-  '#38bdf8',
-  '#818cf8',
-  '#a78bfa',
-  '#2dd4bf',
-  '#0ea5e9',
-  '#34d399',
-  '#67e8f9',
-  '#94a3b8',
-  '#cbd5e1'
-]
+const chartColors = [...DISTRIBUTION_CHART_COLORS]
 
 const displayModelStats = computed(() => {
   const sourceStats = props.source === 'upstream'

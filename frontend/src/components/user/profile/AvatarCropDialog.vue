@@ -10,10 +10,10 @@
       <div class="flex flex-col gap-6 lg:flex-row">
         <div class="flex flex-1 items-center justify-center">
           <div
-            ref="previewRef"
             class="relative h-60 w-60 overflow-hidden rounded-[2rem] border border-gray-200 bg-gray-100 dark:border-dark-700 dark:bg-dark-900"
             @mousedown="startDrag"
             @touchstart.prevent="startTouchDrag"
+            @wheel.prevent="handleWheelZoom"
           >
             <img
               v-if="imageUrl"
@@ -30,16 +30,27 @@
         </div>
 
         <div class="w-full space-y-4 lg:max-w-xs">
-          <div>
-            <label class="input-label">{{ t('profile.avatarZoom') }}</label>
-            <input
-              v-model.number="scale"
-              type="range"
-              min="1"
-              max="3"
-              step="0.01"
-              class="w-full"
-            />
+          <div class="space-y-3">
+            <div class="flex items-center justify-between gap-3">
+              <label class="input-label !mb-0">{{ t('profile.avatarZoom') }}</label>
+              <span class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ zoomPercent }}</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <button type="button" class="btn btn-secondary btn-sm !h-9 !w-9 !rounded-full !px-0" @click="nudgeScale(-0.1)">
+                −
+              </button>
+              <input
+                v-model.number="scale"
+                type="range"
+                :min="MIN_SCALE"
+                :max="MAX_SCALE"
+                step="0.01"
+                class="avatar-zoom-range"
+              />
+              <button type="button" class="btn btn-secondary btn-sm !h-9 !w-9 !rounded-full !px-0" @click="nudgeScale(0.1)">
+                +
+              </button>
+            </div>
           </div>
           <p class="text-xs text-gray-500 dark:text-gray-400">
             {{ t('profile.avatarCropHint') }}
@@ -73,6 +84,8 @@ import BaseDialog from '@/components/common/BaseDialog.vue'
 import { cropAvatarToDataUrl } from '@/utils/avatar'
 
 const PREVIEW_SIZE = 240
+const MIN_SCALE = 1
+const MAX_SCALE = 3
 
 defineProps<{
   show: boolean
@@ -87,10 +100,9 @@ const emit = defineEmits<{
 const { t } = useI18n()
 
 const imageRef = ref<HTMLImageElement | null>(null)
-const previewRef = ref<HTMLDivElement | null>(null)
 const naturalWidth = ref(1)
 const naturalHeight = ref(1)
-const scale = ref(1)
+const scale = ref(MIN_SCALE)
 const offsetX = ref(0)
 const offsetY = ref(0)
 const loading = ref(false)
@@ -124,6 +136,7 @@ const imageStyle = computed(() => ({
   transform: `translate(calc(-50% + ${offsetX.value}px), calc(-50% + ${offsetY.value}px))`,
   cursor: dragState.active ? 'grabbing' : 'grab',
 }))
+const zoomPercent = computed(() => `${Math.round(scale.value * 100)}%`)
 
 watch(scale, () => {
   clampOffsets()
@@ -142,9 +155,17 @@ function handleImageLoad() {
 }
 
 function resetCrop() {
-  scale.value = 1
+  scale.value = MIN_SCALE
   offsetX.value = 0
   offsetY.value = 0
+}
+
+function setScale(nextScale: number) {
+  scale.value = Math.max(MIN_SCALE, Math.min(MAX_SCALE, Number(nextScale.toFixed(2))))
+}
+
+function nudgeScale(delta: number) {
+  setScale(scale.value + delta)
 }
 
 function startDrag(event: MouseEvent) {
@@ -183,6 +204,11 @@ function handleTouchDrag(event: TouchEvent) {
   clampOffsets()
 }
 
+function handleWheelZoom(event: WheelEvent) {
+  const direction = event.deltaY < 0 ? 0.08 : -0.08
+  nudgeScale(direction)
+}
+
 function stopDrag() {
   dragState.active = false
   window.removeEventListener('mousemove', handleDrag)
@@ -217,3 +243,46 @@ onBeforeUnmount(() => {
   stopTouchDrag()
 })
 </script>
+
+<style scoped>
+.avatar-zoom-range {
+  width: 100%;
+  height: 0.5rem;
+  cursor: pointer;
+  appearance: none;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, rgba(37, 99, 235, 0.9), rgba(124, 58, 237, 0.92));
+}
+
+.avatar-zoom-range::-webkit-slider-thumb {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #ffffff;
+  border-radius: 9999px;
+  background: #1d4ed8;
+  box-shadow: 0 8px 18px -10px rgba(29, 78, 216, 0.9);
+  cursor: pointer;
+  appearance: none;
+}
+
+.avatar-zoom-range::-moz-range-thumb {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #ffffff;
+  border-radius: 9999px;
+  background: #1d4ed8;
+  box-shadow: 0 8px 18px -10px rgba(29, 78, 216, 0.9);
+  cursor: pointer;
+}
+
+.dark .avatar-zoom-range {
+  background: linear-gradient(90deg, rgba(96, 165, 250, 0.92), rgba(167, 139, 250, 0.96));
+}
+
+.dark .avatar-zoom-range::-webkit-slider-thumb,
+.dark .avatar-zoom-range::-moz-range-thumb {
+  background: #dbeafe;
+  border-color: rgba(15, 23, 42, 0.9);
+  box-shadow: 0 8px 18px -10px rgba(96, 165, 250, 0.85);
+}
+</style>

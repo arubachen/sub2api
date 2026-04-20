@@ -98,9 +98,9 @@ const primaryCards = computed<DashboardCard[]>(() => {
           label: t('dashboard.balance'),
           value: `$${formatBalance(props.balance)}`,
           meta: t('common.available'),
-          iconWrap: 'bg-primary-50 text-primary-600 ring-primary-100 dark:bg-primary-950/40 dark:text-primary-400 dark:ring-primary-900/40',
-          iconColor: 'text-primary-600 dark:text-primary-400',
-          hoverGlow: 'bg-[radial-gradient(circle_at_top_right,rgba(6,182,212,0.16),transparent_55%)] dark:bg-[radial-gradient(circle_at_top_right,rgba(6,182,212,0.18),transparent_55%)]'
+          iconWrap: 'bg-blue-50 text-blue-700 ring-blue-100 dark:bg-blue-950/35 dark:text-blue-300 dark:ring-blue-900/40',
+          iconColor: 'text-blue-700 dark:text-blue-300',
+          hoverGlow: 'bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.16),transparent_55%)] dark:bg-[radial-gradient(circle_at_top_right,rgba(96,165,250,0.18),transparent_55%)]'
         }
       : null,
     {
@@ -119,9 +119,9 @@ const primaryCards = computed<DashboardCard[]>(() => {
       label: t('dashboard.todayRequests'),
       value: String(props.stats?.today_requests || 0),
       meta: `${t('common.total')}: ${formatNumber(props.stats?.total_requests || 0)}`,
-      iconWrap: 'bg-emerald-50 text-emerald-600 ring-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-400 dark:ring-emerald-900/30',
-      iconColor: 'text-emerald-600 dark:text-emerald-400',
-      hoverGlow: 'bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.15),transparent_55%)] dark:bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.16),transparent_55%)]'
+      iconWrap: 'bg-amber-50 text-amber-700 ring-amber-100 dark:bg-amber-950/30 dark:text-amber-300 dark:ring-amber-900/30',
+      iconColor: 'text-amber-700 dark:text-amber-300',
+      hoverGlow: 'bg-[radial-gradient(circle_at_top_right,rgba(245,158,11,0.16),transparent_55%)] dark:bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.18),transparent_55%)]'
     },
     {
       key: 'today-cost',
@@ -129,9 +129,9 @@ const primaryCards = computed<DashboardCard[]>(() => {
       label: t('dashboard.todayCost'),
       value: `$${formatCost(props.stats?.today_actual_cost || 0)}`,
       meta: `${t('common.total')}: $${formatCost(props.stats?.total_actual_cost || 0)} • ${t('dashboard.standard')}: $${formatCost(props.stats?.today_cost || 0)}`,
-      iconWrap: 'bg-primary-50 text-primary-600 ring-primary-100 dark:bg-primary-950/40 dark:text-primary-400 dark:ring-primary-900/40',
-      iconColor: 'text-primary-600 dark:text-primary-400',
-      hoverGlow: 'bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.15),transparent_55%)] dark:bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.18),transparent_55%)]'
+      iconWrap: 'bg-violet-50 text-violet-700 ring-violet-100 dark:bg-violet-950/30 dark:text-violet-300 dark:ring-violet-900/30',
+      iconColor: 'text-violet-700 dark:text-violet-300',
+      hoverGlow: 'bg-[radial-gradient(circle_at_top_right,rgba(124,58,237,0.15),transparent_55%)] dark:bg-[radial-gradient(circle_at_top_right,rgba(167,139,250,0.18),transparent_55%)]'
     }
   ]
 
@@ -167,8 +167,8 @@ const secondaryCards = computed<DashboardCard[]>(() => {
       value: formatTokens(props.stats?.rpm || 0),
       trailing: 'RPM',
       meta: `${formatTokens(props.stats?.tpm || 0)} TPM`,
-      iconWrap: 'bg-primary-50 text-primary-600 ring-primary-100 dark:bg-primary-950/40 dark:text-primary-400 dark:ring-primary-900/40',
-      iconColor: 'text-primary-600 dark:text-primary-400'
+      iconWrap: 'bg-blue-50 text-blue-700 ring-blue-100 dark:bg-blue-950/35 dark:text-blue-300 dark:ring-blue-900/40',
+      iconColor: 'text-blue-700 dark:text-blue-300'
     },
     {
       key: 'avg-response',

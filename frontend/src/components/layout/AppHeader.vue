@@ -40,7 +40,7 @@
 
         <!-- Theme Toggle -->
         <ThemeToggleButton
-          button-class="hidden sm:inline-flex border border-gray-200 bg-white px-3 py-2 text-gray-600 hover:border-gray-300 hover:text-gray-900 dark:border-dark-700 dark:bg-dark-900 dark:text-dark-300 dark:hover:border-dark-600 dark:hover:text-white"
+          button-class="hidden sm:inline-flex border border-gray-200 bg-white px-3 py-2 text-slate-700 hover:border-gray-300 hover:text-slate-950 dark:border-dark-700 dark:bg-dark-900 dark:text-slate-200 dark:hover:border-dark-600 dark:hover:text-white"
         />
 
         <!-- Subscription Progress (for users with active subscriptions) -->

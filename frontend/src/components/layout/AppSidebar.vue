@@ -13,8 +13,8 @@
       :class="{ 'sidebar-header-collapsed': sidebarCollapsed }"
     >
       <!-- Custom Logo or Default Logo -->
-      <div class="sidebar-logo flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-dark-800 dark:bg-dark-900">
-        <img v-if="settingsLoaded" :src="siteLogo || '/logo-light.svg'" alt="Logo" class="max-h-full max-w-full object-contain p-1" />
+      <div class="sidebar-logo flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-white to-slate-50 shadow-[0_14px_28px_-18px_rgba(15,23,42,0.18)] dark:bg-[linear-gradient(135deg,rgba(15,23,42,0.92),rgba(2,6,23,0.86))] dark:shadow-[0_18px_36px_-22px_rgba(34,211,238,0.16)]">
+        <img v-if="settingsLoaded" :src="siteLogo || '/logo-light.svg'" alt="Logo" class="max-h-full max-w-full object-contain p-1.5" />
       </div>
       <div class="sidebar-brand" :class="{ 'sidebar-brand-collapsed': sidebarCollapsed }" :aria-hidden="sidebarCollapsed ? 'true' : 'false'">
         <span class="sidebar-brand-title text-lg font-semibold tracking-tight text-gray-900 dark:text-white">

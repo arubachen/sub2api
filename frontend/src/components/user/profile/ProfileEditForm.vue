@@ -53,6 +53,9 @@
         <div>
           <label for="username" class="input-label">
             {{ t('profile.username') }}
+            <span class="ml-1 text-xs font-normal text-gray-400 dark:text-gray-500">
+              ({{ t('common.optional') }})
+            </span>
           </label>
           <input
             id="username"
@@ -63,8 +66,11 @@
           />
         </div>
 
-        <div class="flex justify-end pt-4">
-          <button type="submit" :disabled="loading" class="btn btn-primary">
+        <div class="flex justify-end gap-3 pt-4">
+          <button type="button" :disabled="loading || !isDirty" class="btn btn-secondary" @click="resetForm">
+            {{ t('common.cancel') }}
+          </button>
+          <button type="submit" :disabled="loading || !isDirty" class="btn btn-primary">
             {{ loading ? t('profile.updating') : t('profile.updateProfile') }}
           </button>
         </div>
@@ -108,6 +114,14 @@ const showAvatarCropDialog = ref(false)
 const fileInputRef = ref<HTMLInputElement | null>(null)
 
 const avatarPreviewUrl = computed(() => avatarValue.value || authStore.user?.avatar_url || '')
+const normalizedInitialUsername = computed(() => props.initialUsername.trim())
+const normalizedUsername = computed(() => username.value.trim())
+const initialAvatarValue = computed(() => props.initialAvatarUrl || '')
+const isDirty = computed(
+  () =>
+    normalizedUsername.value !== normalizedInitialUsername.value ||
+    avatarValue.value !== initialAvatarValue.value,
+)
 
 watch(
   () => props.initialUsername,
@@ -179,19 +193,31 @@ const removeAvatar = () => {
   }
 }
 
+const resetForm = () => {
+  username.value = props.initialUsername
+  avatarValue.value = props.initialAvatarUrl || ''
+  avatarError.value = ''
+  closeCropDialog()
+  if (fileInputRef.value) {
+    fileInputRef.value.value = ''
+  }
+}
+
 const handleUpdateProfile = async () => {
-  if (!username.value.trim()) {
-    appStore.showError(t('profile.usernameRequired'))
+  if (!isDirty.value) {
     return
   }
 
   loading.value = true
   try {
     const updatedUser = await userAPI.updateProfile({
-      username: username.value,
+      username: normalizedUsername.value,
       avatar_url: avatarValue.value,
     })
     authStore.updateCurrentUser(updatedUser)
+    username.value = updatedUser.username || ''
+    avatarValue.value = updatedUser.avatar_url || ''
+    avatarError.value = ''
     appStore.showSuccess(t('profile.updateSuccess'))
   } catch (error: any) {
     appStore.showError(error.response?.data?.detail || t('profile.updateFailed'))

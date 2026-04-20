@@ -320,6 +320,7 @@ import DateRangePicker from '@/components/common/DateRangePicker.vue'
 import Select from '@/components/common/Select.vue'
 import ModelDistributionChart from '@/components/charts/ModelDistributionChart.vue'
 import TokenUsageTrend from '@/components/charts/TokenUsageTrend.vue'
+import { MULTI_SERIES_LINE_COLORS } from '@/utils/chartPalette'
 
 import {
   Chart as ChartJS,
@@ -496,20 +497,7 @@ const userTrendChartData = computed(() => {
   })
 
   const sortedDates = Array.from(allDates).sort()
-  const colors = [
-    '#06b6d4',
-    '#14b8a6',
-    '#22c55e',
-    '#38bdf8',
-    '#818cf8',
-    '#a78bfa',
-    '#2dd4bf',
-    '#0ea5e9',
-    '#34d399',
-    '#67e8f9',
-    '#94a3b8',
-    '#cbd5e1'
-  ]
+  const colors = MULTI_SERIES_LINE_COLORS
 
   const datasets = Array.from(userGroups.values()).map((group, idx) => ({
     label: group.name,

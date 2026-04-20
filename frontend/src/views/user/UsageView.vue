@@ -47,14 +47,14 @@
         <!-- Total Cost -->
         <div class="card p-4">
           <div class="flex items-center gap-3">
-            <div class="rounded-lg bg-green-100 p-2 dark:bg-green-900/30">
-              <Icon name="dollar" size="md" class="text-green-600 dark:text-green-400" />
+            <div class="rounded-lg bg-emerald-100 p-2 dark:bg-emerald-900/30">
+              <Icon name="dollar" size="md" class="text-emerald-700 dark:text-emerald-300" />
             </div>
             <div class="min-w-0 flex-1">
               <p class="text-xs font-medium text-gray-500 dark:text-gray-400">
                 {{ t('usage.totalCost') }}
               </p>
-              <p class="text-xl font-bold text-green-600 dark:text-green-400">
+              <p class="text-xl font-bold text-emerald-700 dark:text-emerald-300">
                 ${{ (usageStats?.total_actual_cost || 0).toFixed(4) }}
               </p>
               <p class="text-xs text-gray-500 dark:text-gray-400">
@@ -279,7 +279,7 @@
 
           <template #cell-cost="{ row }">
             <div class="flex items-center gap-1.5 text-sm">
-              <span class="font-medium text-green-600 dark:text-green-400">
+              <span class="font-medium text-emerald-700 dark:text-emerald-300">
                 ${{ row.actual_cost.toFixed(6) }}
               </span>
               <!-- Cost Detail Tooltip -->
@@ -489,7 +489,7 @@
           </div>
           <div class="flex items-center justify-between gap-6 border-t border-gray-700 pt-1.5">
             <span class="text-gray-400">{{ t('usage.billed') }}</span>
-            <span class="font-semibold text-green-400"
+            <span class="font-semibold text-emerald-300"
               >${{ tooltipData?.actual_cost.toFixed(6) }}</span
             >
           </div>

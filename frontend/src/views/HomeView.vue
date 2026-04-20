@@ -36,8 +36,10 @@
         <router-link to="/home" class="flex min-h-10 items-center gap-3 rounded-full px-1 py-1">
           <div
             :class="[
-              'flex h-10 w-10 items-center justify-center rounded-2xl ring-1 transition-colors duration-300',
-              isDark ? 'bg-white/5 ring-white/10' : 'bg-white ring-slate-300 shadow-[0_12px_32px_-20px_rgba(15,23,42,0.18)]'
+              'flex h-10 w-10 items-center justify-center rounded-2xl transition-all duration-300',
+              isDark
+                ? 'bg-white/[0.06] shadow-[0_18px_38px_-24px_rgba(34,211,238,0.18)]'
+                : 'bg-white shadow-[0_14px_32px_-22px_rgba(15,23,42,0.22)]'
             ]"
           >
             <img

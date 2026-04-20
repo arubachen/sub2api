@@ -41,6 +41,10 @@ vi.mock('vue-chartjs', () => ({
   },
 }))
 
+vi.mock('@/api/admin/dashboard', () => ({
+  getUserBreakdown: vi.fn().mockResolvedValue({ users: [] }),
+}))
+
 describe('ModelDistributionChart', () => {
   const modelStats = [
     {
@@ -52,6 +56,7 @@ describe('ModelDistributionChart', () => {
       cache_read_tokens: 0,
       total_tokens: 1000,
       cost: 1.5,
+      account_cost: 0.3,
       actual_cost: 0.2,
     },
     {
@@ -63,6 +68,7 @@ describe('ModelDistributionChart', () => {
       cache_read_tokens: 0,
       total_tokens: 500,
       cost: 0.5,
+      account_cost: 0.1,
       actual_cost: 1.4,
     },
   ]
@@ -157,7 +163,7 @@ describe('ModelDistributionChart', () => {
       'Others',
     ])
     expect(chartData.datasets[0].data).toEqual([12, 8, 10])
-    expect(chartData.datasets[0].backgroundColor[0]).toBe('#e60000')
+    expect(chartData.datasets[0].backgroundColor[0]).toBe('#2563eb')
     expect(chartData.datasets[0].backgroundColor[2]).toBe('#94a3b8')
     expect(chartData.datasets[0].backgroundColor[2]).not.toBe(chartData.datasets[0].backgroundColor[0])
 

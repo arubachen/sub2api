@@ -20,7 +20,7 @@
           >
             <Icon name="book" size="md" />
           </a>
-          <ThemeToggleButton button-class="rounded-lg border border-gray-200 bg-white p-2 text-gray-500 hover:border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:border-dark-700 dark:bg-dark-900 dark:text-dark-400 dark:hover:border-dark-600 dark:hover:bg-dark-800 dark:hover:text-white" />
+          <ThemeToggleButton button-class="rounded-lg border border-gray-200 bg-white p-2 text-slate-700 hover:border-gray-300 hover:bg-gray-100 hover:text-slate-950 dark:border-dark-700 dark:bg-dark-900 dark:text-slate-200 dark:hover:border-dark-600 dark:hover:bg-dark-800 dark:hover:text-white" />
         </div>
       </nav>
     </header>

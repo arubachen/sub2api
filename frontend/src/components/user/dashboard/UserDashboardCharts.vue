@@ -83,6 +83,7 @@ import { Doughnut } from 'vue-chartjs'
 import TokenUsageTrend from '@/components/charts/TokenUsageTrend.vue'
 import type { TrendDataPoint, ModelStat } from '@/types'
 import { formatCostFixed as formatCost, formatNumberLocaleString as formatNumber, formatTokensK as formatTokens } from '@/utils/format'
+import { DISTRIBUTION_CHART_COLORS } from '@/utils/chartPalette'
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Title, Tooltip, Legend, Filler } from 'chart.js'
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Title, Tooltip, Legend, Filler)
 
@@ -94,7 +95,7 @@ const modelData = computed(() => !props.models?.length ? null : {
   labels: props.models.map((m: ModelStat) => m.model),
   datasets: [{
     data: props.models.map((m: ModelStat) => m.total_tokens),
-    backgroundColor: ['#06b6d4', '#14b8a6', '#22c55e', '#38bdf8', '#7dd3fc', '#94a3b8', '#64748b', '#0f172a']
+    backgroundColor: DISTRIBUTION_CHART_COLORS.slice(0, props.models.length)
   }]
 })
 

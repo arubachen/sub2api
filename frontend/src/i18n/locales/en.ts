@@ -936,7 +936,7 @@ export default {
     avatarReset: 'Reset Position',
     avatarApply: 'Apply Crop',
     username: 'Username',
-    enterUsername: 'Enter username',
+    enterUsername: 'Enter username (optional)',
     editProfile: 'Edit Profile',
     updateProfile: 'Update Profile',
     updating: 'Updating...',
