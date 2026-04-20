@@ -2,9 +2,16 @@
   <section class="rounded-[28px] border border-gray-200/80 bg-white/95 p-5 shadow-card dark:border-dark-800 dark:bg-dark-900/90">
     <div class="flex items-start justify-between gap-4">
       <div>
-        <p class="text-xs font-semibold tracking-[0.18em] text-gray-400 dark:text-dark-500">{{ t('admin.risk.visuals.activityEyebrow') }}</p>
-        <h3 class="mt-2 text-lg font-semibold text-gray-900 dark:text-white">{{ t('admin.risk.visuals.activityTitle') }}</h3>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('admin.risk.visuals.activityHint') }}</p>
+        <div class="flex items-center gap-2">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('admin.risk.visuals.activityTitle') }}</h3>
+          <HelpTooltip :content="t('admin.risk.visuals.activityHint')">
+            <template #trigger>
+              <span class="inline-flex rounded-full text-gray-400 hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400">
+                <Icon name="exclamationCircle" size="sm" />
+              </span>
+            </template>
+          </HelpTooltip>
+        </div>
       </div>
       <div class="text-right text-sm text-gray-500 dark:text-gray-400">
         <p>{{ t('admin.users.riskAllDayActive') }}</p>
@@ -19,12 +26,12 @@
     <template v-else>
       <div class="mt-6 grid gap-4 sm:grid-cols-3">
         <div class="rounded-2xl border border-gray-100 p-3 dark:border-dark-800">
-          <p class="text-xs tracking-[0.16em] text-gray-400 dark:text-dark-500">{{ t('admin.risk.visuals.dayCoverage') }}</p>
-          <p class="mt-2 text-lg font-semibold text-gray-900 dark:text-white">{{ avgDayCoverage.toFixed(1) }} / 12</p>
+          <p class="text-xs tracking-[0.16em] text-gray-400 dark:text-dark-500">{{ t('admin.risk.visuals.activeWindowCoverage') }}</p>
+          <p class="mt-2 text-lg font-semibold text-gray-900 dark:text-white">{{ avgActiveWindow.toFixed(1) }} / 24</p>
         </div>
         <div class="rounded-2xl border border-gray-100 p-3 dark:border-dark-800">
-          <p class="text-xs tracking-[0.16em] text-gray-400 dark:text-dark-500">{{ t('admin.risk.visuals.nightCoverage') }}</p>
-          <p class="mt-2 text-lg font-semibold text-gray-900 dark:text-white">{{ avgNightCoverage.toFixed(1) }} / 12</p>
+          <p class="text-xs tracking-[0.16em] text-gray-400 dark:text-dark-500">{{ t('admin.risk.visuals.activityPeak') }}</p>
+          <p class="mt-2 text-lg font-semibold text-gray-900 dark:text-white">{{ peakHourLabel }}</p>
         </div>
         <div class="rounded-2xl border border-gray-100 p-3 dark:border-dark-800">
           <p class="text-xs tracking-[0.16em] text-gray-400 dark:text-dark-500">{{ t('admin.risk.visuals.avgConcentration') }}</p>
@@ -32,40 +39,37 @@
         </div>
       </div>
 
-      <div class="mt-6 space-y-4">
-        <div class="rounded-2xl border border-gray-100 p-4 dark:border-dark-800">
-          <div class="flex items-center justify-between gap-3">
-            <div>
-              <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('admin.risk.visuals.dayTimeline') }}</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">08:00 - 19:00</p>
-            </div>
-            <p class="text-sm font-medium text-gray-600 dark:text-gray-300">{{ dayPeakLabel }}</p>
+      <div class="mt-6 rounded-2xl border border-gray-100 p-4 dark:border-dark-800">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('admin.risk.visuals.activityTimeline') }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">00:00 - 23:00</p>
           </div>
-          <div class="mt-4 grid grid-cols-12 gap-2">
-            <div v-for="point in dayTimeline" :key="`day-${point.hour}`" class="flex flex-col items-center gap-2">
-              <div class="h-16 w-1 rounded-full bg-gray-100 dark:bg-dark-800">
-                <div class="w-full rounded-full bg-sky-500 transition-all duration-300" :style="{ height: `${point.height}%`, marginTop: `${100 - point.height}%` }"></div>
-              </div>
-              <div class="text-center">
-                <p class="text-[11px] font-medium text-gray-500 dark:text-dark-400">{{ point.label }}</p>
-                <p class="text-[11px] text-gray-400 dark:text-dark-500">{{ point.count }}</p>
-              </div>
-            </div>
-          </div>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-300">{{ peakHourLabel }}</p>
         </div>
 
-        <div class="rounded-2xl border border-gray-100 p-4 dark:border-dark-800">
-          <div class="flex items-center justify-between gap-3">
-            <div>
-              <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('admin.risk.visuals.nightTimeline') }}</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">20:00 - 07:00</p>
-            </div>
-            <p class="text-sm font-medium text-gray-600 dark:text-gray-300">{{ nightPeakLabel }}</p>
-          </div>
-          <div class="mt-4 grid grid-cols-12 gap-2">
-            <div v-for="point in nightTimeline" :key="`night-${point.hour}`" class="flex flex-col items-center gap-2">
-              <div class="h-16 w-1 rounded-full bg-gray-100 dark:bg-dark-800">
-                <div class="w-full rounded-full bg-violet-500 transition-all duration-300" :style="{ height: `${point.height}%`, marginTop: `${100 - point.height}%` }"></div>
+        <div class="relative mt-4 rounded-2xl bg-slate-50 px-4 py-4 dark:bg-dark-900/70">
+          <svg class="pointer-events-none absolute inset-0 h-full w-full px-4 py-4" viewBox="0 0 100 40" preserveAspectRatio="none">
+            <polyline
+              fill="none"
+              stroke="url(#riskActivityGradient)"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              :points="trendPoints"
+            />
+            <defs>
+              <linearGradient id="riskActivityGradient" x1="0%" x2="100%" y1="0%" y2="0%">
+                <stop offset="0%" stop-color="#38bdf8" />
+                <stop offset="100%" stop-color="#8b5cf6" />
+              </linearGradient>
+            </defs>
+          </svg>
+
+          <div class="relative grid grid-cols-12 gap-2">
+            <div v-for="point in timeline" :key="point.hour" class="flex flex-col items-center gap-2">
+              <div class="h-16 w-1 rounded-full bg-gray-200 dark:bg-dark-800">
+                <div class="w-full rounded-full bg-gradient-to-t from-violet-500 to-sky-500 transition-all duration-300" :style="{ height: `${point.height}%`, marginTop: `${100 - point.height}%` }"></div>
               </div>
               <div class="text-center">
                 <p class="text-[11px] font-medium text-gray-500 dark:text-dark-400">{{ point.label }}</p>
@@ -82,6 +86,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import HelpTooltip from '@/components/common/HelpTooltip.vue'
+import Icon from '@/components/icons/Icon.vue'
 
 interface RowLike {
   metrics: {
@@ -107,12 +113,9 @@ const countsByHour = computed(() => {
 })
 
 const maxHourCount = computed(() => Math.max(...countsByHour.value, 1))
-const dayHours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-const nightHours = [20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7]
 
-function buildTimeline(hours: number[]) {
-  return hours.map((hour) => {
-    const count = countsByHour.value[hour]
+const timeline = computed(() => {
+  return countsByHour.value.map((count, hour) => {
     return {
       hour,
       count,
@@ -120,10 +123,7 @@ function buildTimeline(hours: number[]) {
       height: maxHourCount.value ? Math.max(8, (count / maxHourCount.value) * 100) : 8
     }
   })
-}
-
-const dayTimeline = computed(() => buildTimeline(dayHours))
-const nightTimeline = computed(() => buildTimeline(nightHours))
+})
 
 const allDayUsers = computed(() => props.rows.filter((row) => row.metrics.all_day_active).length)
 const avgConcentration = computed(() => {
@@ -131,21 +131,23 @@ const avgConcentration = computed(() => {
   return props.rows.reduce((sum, row) => sum + row.metrics.hour_concentration, 0) / props.rows.length
 })
 
-const avgDayCoverage = computed(() => {
+const avgActiveWindow = computed(() => {
   if (!props.rows.length) return 0
-  return props.rows.reduce((sum, row) => sum + (row.metrics.active_hours || []).filter(hour => dayHours.includes(hour)).length, 0) / props.rows.length
+  return props.rows.reduce((sum, row) => sum + (row.metrics.active_hours || []).length, 0) / props.rows.length
 })
 
-const avgNightCoverage = computed(() => {
-  if (!props.rows.length) return 0
-  return props.rows.reduce((sum, row) => sum + (row.metrics.active_hours || []).filter(hour => nightHours.includes(hour)).length, 0) / props.rows.length
+const peakHourLabel = computed(() => {
+  const peak = timeline.value.reduce((best, current) => (current.count > best.count ? current : best), timeline.value[0])
+  return `${String(peak.hour).padStart(2, '0')}:00 · ${peak.count}`
 })
 
-function peakLabel(points: { hour: number; count: number }[], labelPrefix: string) {
-  const peak = points.reduce((best, current) => (current.count > best.count ? current : best), points[0])
-  return `${labelPrefix} ${String(peak.hour).padStart(2, '0')}:00 · ${peak.count}`
-}
-
-const dayPeakLabel = computed(() => peakLabel(dayTimeline.value, '峰值'))
-const nightPeakLabel = computed(() => peakLabel(nightTimeline.value, '峰值'))
+const trendPoints = computed(() => {
+  return timeline.value
+    .map((point, index) => {
+      const x = timeline.value.length === 1 ? 50 : (index / (timeline.value.length - 1)) * 100
+      const y = 36 - ((point.count / maxHourCount.value) * 28)
+      return `${x},${y}`
+    })
+    .join(' ')
+})
 </script>

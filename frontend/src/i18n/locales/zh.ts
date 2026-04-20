@@ -1807,7 +1807,9 @@ export default {
         currentPageUsers: '当前页用户数',
         reviewOrHigher: '当前页审查及以上',
         freezeReview: '当前页冻结审查',
-        ipIntel: 'IP 情报'
+        ipIntel: 'IP 情报',
+        automation: '自动联动',
+        automationHint: '自动限流：{throttle}；自动冻结审查：{freeze}'
       },
       columns: {
         user: '用户',
@@ -1837,14 +1839,13 @@ export default {
         scoreHint: '按照当前阈值查看风险分在各区间的分布情况。',
         maxScore: '当前最高分',
         activityEyebrow: '活跃画像',
-        activityTitle: '昼夜活跃时间轴',
-        activityHint: '把 24 小时拆成白天与夜间两个时间轴，查看当前页用户在哪些时段最常出现。',
+        activityTitle: '用户时间活跃',
+        activityHint: '按 24 小时时间轴查看当前页用户最常出现的时段，并用趋势线突出峰值变化。',
         avgActiveHours: '平均活跃小时',
         avgConcentration: '平均时段集中度',
-        dayCoverage: '白天覆盖',
-        nightCoverage: '夜间覆盖',
-        dayTimeline: '白天时间轴',
-        nightTimeline: '夜间时间轴'
+        activeWindowCoverage: '平均活跃覆盖',
+        activityPeak: '峰值时间',
+        activityTimeline: '24 小时时间轴'
       },
       settings: {
         title: '风控配置',
@@ -1878,7 +1879,20 @@ export default {
         validationAscending: '阈值必须满足：人工审查 < 限流观察 < 冻结审查。',
         validationTokenRequired: '启用 IP 情报前，请先配置 API Token。',
         validationThrottleCap: '限流并发上限必须是大于 0 的整数。'
-      }
+      },
+      actions: {
+        throttle: '限流',
+        throttleSuccess: '已将用户并发限流到 1',
+        throttleFailed: '限流失败',
+        freeze: '冻结',
+        freezeSuccess: '用户已冻结',
+        freezeFailed: '冻结失败',
+        unfreeze: '解冻',
+        unfreezeSuccess: '用户已解冻',
+        unfreezeFailed: '解冻失败'
+      },
+      automationEnabled: '自动联动已启用',
+      automationDisabled: '自动联动未启用'
     },
 
     // Groups Management

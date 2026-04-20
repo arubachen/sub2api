@@ -2,9 +2,16 @@
   <section class="rounded-[28px] border border-gray-200/80 bg-white/95 p-5 shadow-card dark:border-dark-800 dark:bg-dark-900/90">
     <div class="flex items-start justify-between gap-4">
       <div>
-        <p class="text-xs font-semibold uppercase tracking-[0.24em] text-gray-400 dark:text-dark-500">{{ t('admin.risk.visuals.decisionEyebrow') }}</p>
-        <h3 class="mt-2 text-lg font-semibold text-gray-900 dark:text-white">{{ t('admin.risk.visuals.decisionTitle') }}</h3>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('admin.risk.visuals.decisionHint') }}</p>
+        <div class="flex items-center gap-2">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('admin.risk.visuals.decisionTitle') }}</h3>
+          <HelpTooltip :content="t('admin.risk.visuals.decisionHint')">
+            <template #trigger>
+              <span class="inline-flex rounded-full text-gray-400 hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400">
+                <Icon name="exclamationCircle" size="sm" />
+              </span>
+            </template>
+          </HelpTooltip>
+        </div>
       </div>
       <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600 dark:bg-dark-800 dark:text-dark-300">
         {{ rows.length }}
@@ -53,6 +60,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import HelpTooltip from '@/components/common/HelpTooltip.vue'
+import Icon from '@/components/icons/Icon.vue'
 
 interface RowLike {
   summary: {

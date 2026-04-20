@@ -1752,7 +1752,9 @@ export default {
         currentPageUsers: 'Users on page',
         reviewOrHigher: 'Review or higher',
         freezeReview: 'Freeze review',
-        ipIntel: 'IP intelligence'
+        ipIntel: 'IP intelligence',
+        automation: 'Automation',
+        automationHint: 'Auto throttle: {throttle}; auto freeze-review: {freeze}'
       },
       columns: {
         user: 'User',
@@ -1782,10 +1784,13 @@ export default {
         scoreHint: 'See how current users spread across the active decision thresholds.',
         maxScore: 'Highest score',
         activityEyebrow: 'Activity Pattern',
-        activityTitle: 'Activity heatmap',
-        activityHint: 'Shows which local-hour buckets are covered by current-page users to surface “always-on” behavior.',
+        activityTitle: 'User activity timeline',
+        activityHint: 'Use a continuous 24-hour timeline plus a trend line to spot when current users are most active.',
         avgActiveHours: 'Avg. active hours',
-        avgConcentration: 'Avg. concentration'
+        avgConcentration: 'Avg. concentration',
+        activeWindowCoverage: 'Avg. hour coverage',
+        activityPeak: 'Peak hour',
+        activityTimeline: '24-hour timeline'
       },
       settings: {
         title: 'Risk Settings',
@@ -1819,7 +1824,20 @@ export default {
         validationAscending: 'Thresholds must satisfy: review < throttle < freeze-review.',
         validationTokenRequired: 'Configure an API token before enabling IP intelligence.',
         validationThrottleCap: 'The throttle concurrency cap must be a positive integer.'
-      }
+      },
+      actions: {
+        throttle: 'Throttle',
+        throttleSuccess: 'User concurrency capped at 1',
+        throttleFailed: 'Failed to throttle user',
+        freeze: 'Freeze',
+        freezeSuccess: 'User frozen',
+        freezeFailed: 'Failed to freeze user',
+        unfreeze: 'Unfreeze',
+        unfreezeSuccess: 'User unfrozen',
+        unfreezeFailed: 'Failed to unfreeze user'
+      },
+      automationEnabled: 'Automation enabled',
+      automationDisabled: 'Automation disabled'
     },
 
     // Groups

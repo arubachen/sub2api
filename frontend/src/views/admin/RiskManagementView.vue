@@ -34,7 +34,7 @@
             </div>
           </div>
 
-          <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-2">
+          <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             <button
               v-for="card in heroCards"
               :key="card.label"
@@ -44,19 +44,36 @@
                 card.clickable ? 'hover:-translate-y-0.5 hover:shadow-md' : 'cursor-default',
                 focusMode === card.key ? 'ring-2 ring-primary-500/70 dark:ring-primary-400/70' : ''
               ]"
-              @click="card.key === 'ip_intel' ? undefined : applyHeroCardFilter(card.key)"
+              @click="card.clickable ? applyHeroCardFilter(card.key as HeroFocusMode) : undefined"
             >
-              <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500">{{ card.label }}</p>
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-2">
+                  <span
+                    v-if="card.status !== undefined"
+                    class="h-2.5 w-2.5 rounded-full"
+                    :class="card.status ? 'bg-emerald-500 shadow-[0_0_0_4px_rgba(16,185,129,0.16)]' : 'bg-red-500 shadow-[0_0_0_4px_rgba(239,68,68,0.12)]'"
+                  ></span>
+                  <p class="text-sm font-medium text-slate-600 dark:text-slate-300">{{ card.label }}</p>
+                </div>
+                <HelpTooltip :content="card.hint">
+                  <template #trigger>
+                    <span class="inline-flex rounded-full text-gray-400 hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400">
+                      <Icon name="exclamationCircle" size="sm" />
+                    </span>
+                  </template>
+                </HelpTooltip>
+              </div>
               <p class="mt-2 text-2xl font-semibold text-slate-950 dark:text-white" :class="card.emphasisClass">{{ card.value }}</p>
-              <p class="mt-2 text-xs leading-5 text-slate-500 dark:text-slate-400">{{ card.hint }}</p>
             </button>
           </div>
         </div>
       </section>
 
-      <div class="grid gap-6 xl:grid-cols-3">
+      <div class="grid gap-6 xl:grid-cols-2">
         <RiskDecisionBreakdownCard :rows="filteredRows" />
         <RiskScoreDistributionCard :rows="filteredRows" :settings="riskSettings" />
+      </div>
+      <div class="grid gap-6">
         <RiskActivityHeatmapCard :rows="filteredRows" />
       </div>
 
@@ -84,7 +101,7 @@
 
       <TablePageLayout>
         <template #table>
-          <DataTable :columns="columns" :data="orderedRows" :loading="loading" :actions-count="1">
+          <DataTable :columns="columns" :data="orderedRows" :loading="loading" :actions-count="4">
             <template #cell-user="{ row }">
               <button type="button" class="group text-left" @click="openRiskDetail(row.user)">
                 <p class="font-medium text-slate-900 transition-colors group-hover:text-primary-600 dark:text-white dark:group-hover:text-primary-400">{{ row.user.email }}</p>
@@ -153,9 +170,35 @@
             </template>
 
             <template #cell-actions="{ row }">
-              <button type="button" class="btn btn-secondary px-3 py-1.5 text-xs" @click="openRiskDetail(row.user)">
-                {{ t('common.details') }}
-              </button>
+              <div class="flex flex-wrap gap-2">
+                <button type="button" class="btn btn-secondary px-3 py-1.5 text-xs" @click="openRiskDetail(row.user)">
+                  {{ t('common.details') }}
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-secondary px-3 py-1.5 text-xs"
+                  :disabled="row.user.concurrency <= 1 || row.user.status !== 'active'"
+                  @click="applyThrottle(row.user)"
+                >
+                  {{ t('admin.risk.actions.throttle') }}
+                </button>
+                <button
+                  v-if="row.user.status === 'active'"
+                  type="button"
+                  class="btn btn-secondary px-3 py-1.5 text-xs text-red-600 dark:text-red-300"
+                  @click="freezeUser(row.user)"
+                >
+                  {{ t('admin.risk.actions.freeze') }}
+                </button>
+                <button
+                  v-else
+                  type="button"
+                  class="btn btn-secondary px-3 py-1.5 text-xs text-emerald-600 dark:text-emerald-300"
+                  @click="unfreezeUser(row.user)"
+                >
+                  {{ t('admin.risk.actions.unfreeze') }}
+                </button>
+              </div>
             </template>
           </DataTable>
         </template>
@@ -186,6 +229,7 @@ import TablePageLayout from '@/components/layout/TablePageLayout.vue'
 import DataTable from '@/components/common/DataTable.vue'
 import Pagination from '@/components/common/Pagination.vue'
 import Select from '@/components/common/Select.vue'
+import HelpTooltip from '@/components/common/HelpTooltip.vue'
 import RiskDecisionBreakdownCard from '@/components/admin/risk/RiskDecisionBreakdownCard.vue'
 import RiskScoreDistributionCard from '@/components/admin/risk/RiskScoreDistributionCard.vue'
 import RiskActivityHeatmapCard from '@/components/admin/risk/RiskActivityHeatmapCard.vue'
@@ -198,6 +242,7 @@ import type { Column } from '@/components/common/types'
 import { useAppStore } from '@/stores'
 import { getPersistedPageSize } from '@/composables/usePersistedPageSize'
 import { formatDateTime } from '@/utils/format'
+import Icon from '@/components/icons/Icon.vue'
 
 const { t } = useI18n()
 const appStore = useAppStore()
@@ -242,7 +287,7 @@ const pagination = ref({
   pages: 0
 })
 
-const heroCards = computed<Array<{ key: HeroFocusMode | 'ip_intel'; label: string; value: string; hint: string; emphasisClass: string; clickable: boolean }>>(() => [
+const heroCards = computed<Array<{ key: HeroFocusMode | 'ip_intel' | 'automation'; label: string; value: string; hint: string; emphasisClass: string; clickable: boolean; status?: boolean }>>(() => [
   {
     key: 'all',
     label: t('admin.risk.cards.currentPageUsers'),
@@ -273,7 +318,20 @@ const heroCards = computed<Array<{ key: HeroFocusMode | 'ip_intel'; label: strin
     value: riskSettings.value.ip_intel_enabled ? t('admin.risk.ipIntelEnabled') : t('admin.risk.ipIntelDisabled'),
     hint: riskSettings.value.ip_intel_provider,
     emphasisClass: 'text-slate-950 dark:text-white text-base',
-    clickable: false
+    clickable: false,
+    status: riskSettings.value.ip_intel_enabled
+  },
+  {
+    key: 'automation',
+    label: t('admin.risk.cards.automation'),
+    value: riskSettings.value.auto_enabled ? t('admin.risk.automationEnabled') : t('admin.risk.automationDisabled'),
+    hint: t('admin.risk.cards.automationHint', {
+      throttle: riskSettings.value.auto_throttle ? t('common.enabled') : t('common.disabled'),
+      freeze: riskSettings.value.auto_freeze ? t('common.enabled') : t('common.disabled')
+    }),
+    emphasisClass: 'text-slate-950 dark:text-white text-base',
+    clickable: false,
+    status: riskSettings.value.auto_enabled
   }
 ])
 
@@ -453,6 +511,39 @@ function applyHeroCardFilter(mode: HeroFocusMode) {
     decisionFilter.value = ''
   } else {
     decisionFilter.value = ''
+  }
+}
+
+async function applyThrottle(user: AdminUser) {
+  try {
+    await adminAPI.users.updateConcurrency(user.id, 1)
+    appStore.showSuccess(t('admin.risk.actions.throttleSuccess'))
+    await loadPage()
+  } catch (err: any) {
+    console.error('Failed to throttle user:', err)
+    appStore.showError(err?.response?.data?.detail || err?.message || t('admin.risk.actions.throttleFailed'))
+  }
+}
+
+async function freezeUser(user: AdminUser) {
+  try {
+    await adminAPI.users.toggleStatus(user.id, 'disabled')
+    appStore.showSuccess(t('admin.risk.actions.freezeSuccess'))
+    await loadPage()
+  } catch (err: any) {
+    console.error('Failed to freeze user:', err)
+    appStore.showError(err?.response?.data?.detail || err?.message || t('admin.risk.actions.freezeFailed'))
+  }
+}
+
+async function unfreezeUser(user: AdminUser) {
+  try {
+    await adminAPI.users.toggleStatus(user.id, 'active')
+    appStore.showSuccess(t('admin.risk.actions.unfreezeSuccess'))
+    await loadPage()
+  } catch (err: any) {
+    console.error('Failed to unfreeze user:', err)
+    appStore.showError(err?.response?.data?.detail || err?.message || t('admin.risk.actions.unfreezeFailed'))
   }
 }
 
