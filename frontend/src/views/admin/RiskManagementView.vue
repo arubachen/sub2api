@@ -58,7 +58,7 @@
                 <HelpTooltip :content="card.hint">
                   <template #trigger>
                     <span class="inline-flex rounded-full text-gray-400 hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400">
-                      <Icon name="exclamationCircle" size="sm" />
+                      <Icon name="questionCircle" size="sm" />
                     </span>
                   </template>
                 </HelpTooltip>
@@ -75,6 +75,9 @@
       </div>
       <div class="grid gap-6">
         <RiskActivityHeatmapCard :rows="filteredRows" />
+      </div>
+      <div class="grid gap-6 xl:grid-cols-2">
+        <RiskLeaderboardCard :rows="orderedRows" :settings="riskSettings" @open-user="openRiskDetail" />
       </div>
 
       <section class="rounded-[28px] border border-gray-200/80 bg-white/95 p-4 shadow-card dark:border-dark-800 dark:bg-dark-900/90">
@@ -233,6 +236,7 @@ import HelpTooltip from '@/components/common/HelpTooltip.vue'
 import RiskDecisionBreakdownCard from '@/components/admin/risk/RiskDecisionBreakdownCard.vue'
 import RiskScoreDistributionCard from '@/components/admin/risk/RiskScoreDistributionCard.vue'
 import RiskActivityHeatmapCard from '@/components/admin/risk/RiskActivityHeatmapCard.vue'
+import RiskLeaderboardCard from '@/components/admin/risk/RiskLeaderboardCard.vue'
 import RiskSettingsDialog from '@/components/admin/risk/RiskSettingsDialog.vue'
 import UserRiskDetailModal from '@/components/admin/user/UserRiskDetailModal.vue'
 import { adminAPI } from '@/api/admin'
