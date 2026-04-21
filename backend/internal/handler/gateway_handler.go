@@ -869,7 +869,22 @@ func (h *GatewayHandler) Models(c *gin.Context) {
 	availableModels := h.gatewayService.GetAvailableModels(c.Request.Context(), groupID, "")
 
 	if len(availableModels) > 0 {
-		// Build model list from whitelist
+		// Build model list from whitelist.
+		// OpenAI-compatible clients such as Cherry Studio infer model grouping from
+		// slash-prefixed IDs (e.g. openai/gpt-5.4, x-ai/grok-4). Returning the raw
+		// bare IDs causes every model to collapse under the provider UUID bucket.
+		if platform == service.PlatformOpenAI {
+			models := make([]openai.Model, 0, len(availableModels))
+			for _, modelID := range availableModels {
+				models = append(models, service.BuildOpenAICompatModelCatalogEntry(modelID))
+			}
+			c.JSON(http.StatusOK, gin.H{
+				"object": "list",
+				"data":   models,
+			})
+			return
+		}
+
 		models := make([]claude.Model, 0, len(availableModels))
 		for _, modelID := range availableModels {
 			models = append(models, claude.Model{
@@ -888,9 +903,13 @@ func (h *GatewayHandler) Models(c *gin.Context) {
 
 	// Fallback to default models
 	if platform == "openai" {
+		models := make([]openai.Model, 0, len(openai.DefaultModels))
+		for _, model := range openai.DefaultModels {
+			models = append(models, service.BuildOpenAICompatModelCatalogEntry(model.ID))
+		}
 		c.JSON(http.StatusOK, gin.H{
 			"object": "list",
-			"data":   openai.DefaultModels,
+			"data":   models,
 		})
 		return
 	}

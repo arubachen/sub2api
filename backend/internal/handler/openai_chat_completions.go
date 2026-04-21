@@ -72,6 +72,15 @@ func (h *OpenAIGatewayHandler) ChatCompletions(c *gin.Context) {
 		return
 	}
 	reqModel := modelResult.String()
+	normalizedBody, normalizedModel, _, err := normalizeOpenAICompatModelInBody(body)
+	if err != nil {
+		h.errorResponse(c, http.StatusBadRequest, "invalid_request_error", "Failed to normalize request body")
+		return
+	}
+	if normalizedModel != "" {
+		body = normalizedBody
+		reqModel = normalizedModel
+	}
 	reqStream := gjson.GetBytes(body, "stream").Bool()
 
 	reqLog = reqLog.With(zap.String("model", reqModel), zap.Bool("stream", reqStream))

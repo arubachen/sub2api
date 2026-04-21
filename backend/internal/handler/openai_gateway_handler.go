@@ -51,6 +51,7 @@ func resolveOpenAIMessagesDispatchMappedModel(apiKey *service.APIKey, requestedM
 	if apiKey == nil || apiKey.Group == nil {
 		return ""
 	}
+	requestedModel = service.NormalizeOpenAICompatRequestedModel(requestedModel)
 	return strings.TrimSpace(apiKey.Group.ResolveMessagesDispatchModel(requestedModel))
 }
 
@@ -164,6 +165,15 @@ func (h *OpenAIGatewayHandler) Responses(c *gin.Context) {
 		return
 	}
 	reqModel := modelResult.String()
+	normalizedBody, normalizedModel, _, err := normalizeOpenAICompatModelInBody(body)
+	if err != nil {
+		h.errorResponse(c, http.StatusBadRequest, "invalid_request_error", "Failed to normalize request body")
+		return
+	}
+	if normalizedModel != "" {
+		body = normalizedBody
+		reqModel = normalizedModel
+	}
 
 	streamResult := gjson.GetBytes(body, "stream")
 	if streamResult.Exists() && streamResult.Type != gjson.True && streamResult.Type != gjson.False {
@@ -562,7 +572,16 @@ func (h *OpenAIGatewayHandler) Messages(c *gin.Context) {
 		return
 	}
 	reqModel := modelResult.String()
-	routingModel := service.NormalizeOpenAICompatRequestedModel(reqModel)
+	normalizedBody, normalizedModel, _, err := normalizeOpenAICompatModelInBody(body)
+	if err != nil {
+		h.anthropicErrorResponse(c, http.StatusBadRequest, "invalid_request_error", "Failed to normalize request body")
+		return
+	}
+	if normalizedModel != "" {
+		body = normalizedBody
+		reqModel = normalizedModel
+	}
+	routingModel := reqModel
 	preferredMappedModel := resolveOpenAIMessagesDispatchMappedModel(apiKey, reqModel)
 	reqStream := gjson.GetBytes(body, "stream").Bool()
 
@@ -1095,6 +1114,15 @@ func (h *OpenAIGatewayHandler) ResponsesWebSocket(c *gin.Context) {
 	if reqModel == "" {
 		closeOpenAIClientWS(wsConn, coderws.StatusPolicyViolation, "model is required in first response.create payload")
 		return
+	}
+	normalizedFirstMessage, normalizedModel, _, err := normalizeOpenAICompatModelInBody(firstMessage)
+	if err != nil {
+		closeOpenAIClientWS(wsConn, coderws.StatusPolicyViolation, "failed to normalize request body")
+		return
+	}
+	if normalizedModel != "" {
+		firstMessage = normalizedFirstMessage
+		reqModel = normalizedModel
 	}
 	previousResponseID := strings.TrimSpace(gjson.GetBytes(firstMessage, "previous_response_id").String())
 	previousResponseIDKind := service.ClassifyOpenAIPreviousResponseIDKind(previousResponseID)
