@@ -57,7 +57,10 @@ func (s *OpenAIGatewayService) ForwardAsChatCompletions(
 	if err := json.Unmarshal(body, &chatReq); err != nil {
 		return nil, fmt.Errorf("parse chat completions request: %w", err)
 	}
-	originalModel := chatReq.Model
+	originalModel := NormalizeOpenAICompatRequestedModel(chatReq.Model)
+	if originalModel != chatReq.Model {
+		chatReq.Model = originalModel
+	}
 	clientStream := chatReq.Stream
 	includeUsage := chatReq.StreamOptions != nil && chatReq.StreamOptions.IncludeUsage
 

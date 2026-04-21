@@ -3421,6 +3421,9 @@ func (s *GatewayService) isModelSupportedByAccount(account *Account, requestedMo
 		}
 		return mapAntigravityModel(account, requestedModel) != ""
 	}
+	if account.Platform == PlatformOpenAI {
+		requestedModel = NormalizeOpenAICompatRequestedModel(requestedModel)
+	}
 	if account.IsBedrock() {
 		_, ok := ResolveBedrockModelID(account, requestedModel)
 		return ok

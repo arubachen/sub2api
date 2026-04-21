@@ -1859,7 +1859,7 @@ func (s *OpenAIGatewayService) Forward(ctx context.Context, c *gin.Context, acco
 	if passthroughEnabled {
 		// 透传分支只需要轻量提取字段，避免热路径全量 Unmarshal。
 		reasoningEffort := extractOpenAIReasoningEffortFromBody(body, reqModel)
-		return s.forwardOpenAIPassthrough(ctx, c, account, originalBody, reqModel, reasoningEffort, reqStream, startTime)
+		return s.forwardOpenAIPassthrough(ctx, c, account, originalBody, reqModel, reasoningEffort, reqStream, startTime, isCodexCLI)
 	}
 
 	reqBody, err := getOpenAIRequestBodyMap(c, body)
@@ -1867,9 +1867,14 @@ func (s *OpenAIGatewayService) Forward(ctx context.Context, c *gin.Context, acco
 		return nil, err
 	}
 
+	normalizedReqModelChanged := false
 	if v, ok := reqBody["model"].(string); ok {
-		reqModel = v
+		reqModel = NormalizeOpenAICompatRequestedModel(v)
 		originalModel = reqModel
+		if reqModel != v {
+			reqBody["model"] = reqModel
+			normalizedReqModelChanged = true
+		}
 	}
 	if v, ok := reqBody["stream"].(bool); ok {
 		reqStream = v
@@ -1929,6 +1934,10 @@ func (s *OpenAIGatewayService) Forward(ctx context.Context, c *gin.Context, acco
 	}
 	disablePatch := func() {
 		patchDisabled = true
+	}
+	if normalizedReqModelChanged {
+		bodyModified = true
+		markPatchSet("model", reqModel)
 	}
 
 	// 非透传模式下，instructions 为空时注入默认指令。
@@ -2467,8 +2476,19 @@ func (s *OpenAIGatewayService) forwardOpenAIPassthrough(
 	reasoningEffort *string,
 	reqStream bool,
 	startTime time.Time,
+	isCodexCLI bool,
 ) (*OpenAIForwardResult, error) {
 	if account != nil && account.Type == AccountTypeOAuth {
+		preparedBody, prepared, err := prepareOpenAIPassthroughOAuthBody(body, isCodexCLI, isOpenAIResponsesCompactPath(c))
+		if err != nil {
+			return nil, err
+		}
+		if prepared {
+			body = preparedBody
+		}
+		if normalizedReqModel := strings.TrimSpace(gjson.GetBytes(body, "model").String()); normalizedReqModel != "" {
+			reqModel = normalizedReqModel
+		}
 		if rejectReason := detectOpenAIPassthroughInstructionsRejectReason(reqModel, body); rejectReason != "" {
 			rejectMsg := "OpenAI codex passthrough requires a non-empty instructions field"
 			setOpsUpstreamError(c, http.StatusForbidden, rejectMsg, "")
@@ -2490,14 +2510,6 @@ func (s *OpenAIGatewayService) forwardOpenAIPassthrough(
 				},
 			})
 			return nil, fmt.Errorf("openai passthrough rejected before upstream: %s", rejectReason)
-		}
-
-		normalizedBody, normalized, err := normalizeOpenAIPassthroughOAuthBody(body, isOpenAIResponsesCompactPath(c))
-		if err != nil {
-			return nil, err
-		}
-		if normalized {
-			body = normalizedBody
 		}
 		reqStream = gjson.GetBytes(body, "stream").Bool()
 	}
@@ -4982,6 +4994,75 @@ func normalizeOpenAIPassthroughOAuthBody(body []byte, compact bool) ([]byte, boo
 	}
 
 	return normalized, changed, nil
+}
+
+func prepareOpenAIPassthroughOAuthBody(body []byte, isCodexCLI bool, compact bool) ([]byte, bool, error) {
+	normalizedBody, changed, err := normalizeOpenAIPassthroughOAuthBody(body, compact)
+	if err != nil {
+		return body, false, err
+	}
+	if len(normalizedBody) == 0 {
+		return normalizedBody, changed, nil
+	}
+
+	var reqBody map[string]any
+	if err := json.Unmarshal(normalizedBody, &reqBody); err != nil {
+		return body, false, fmt.Errorf("prepare passthrough oauth body parse json: %w", err)
+	}
+
+	bodyModified := false
+	if rawModel, ok := reqBody["model"].(string); ok {
+		normalizedModel := NormalizeOpenAICompatRequestedModel(rawModel)
+		if normalizedModel != rawModel {
+			reqBody["model"] = normalizedModel
+			bodyModified = true
+		}
+	}
+	if extractSystemMessagesFromInput(reqBody) {
+		bodyModified = true
+	}
+	if applyInstructions(reqBody, isCodexCLI) {
+		bodyModified = true
+	}
+	for _, key := range []string{
+		"max_output_tokens",
+		"max_completion_tokens",
+		"temperature",
+		"top_p",
+		"frequency_penalty",
+		"presence_penalty",
+		"prompt_cache_retention",
+	} {
+		if _, ok := reqBody[key]; ok {
+			delete(reqBody, key)
+			bodyModified = true
+		}
+	}
+	if inputStr, ok := reqBody["input"].(string); ok {
+		trimmed := strings.TrimSpace(inputStr)
+		if trimmed != "" {
+			reqBody["input"] = []any{
+				map[string]any{
+					"type":    "message",
+					"role":    "user",
+					"content": inputStr,
+				},
+			}
+		} else {
+			reqBody["input"] = []any{}
+		}
+		bodyModified = true
+	}
+
+	if !bodyModified {
+		return normalizedBody, changed, nil
+	}
+
+	remarshaledBody, err := json.Marshal(reqBody)
+	if err != nil {
+		return body, false, fmt.Errorf("prepare passthrough oauth body marshal json: %w", err)
+	}
+	return remarshaledBody, true, nil
 }
 
 func detectOpenAIPassthroughInstructionsRejectReason(reqModel string, body []byte) string {

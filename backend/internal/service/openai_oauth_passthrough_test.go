@@ -307,10 +307,8 @@ func TestOpenAIGatewayService_OAuthPassthrough_CompactUsesJSONAndKeepsNonStreami
 	require.Contains(t, rec.Body.String(), `"id":"cmp_123"`)
 }
 
-func TestOpenAIGatewayService_OAuthPassthrough_CodexMissingInstructionsRejectedBeforeUpstream(t *testing.T) {
+func TestOpenAIGatewayService_OAuthPassthrough_CodexMissingInstructionsAutoFilledBeforeUpstream(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	logSink, restore := captureStructuredLog(t)
-	defer restore()
 
 	rec := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(rec)
@@ -319,14 +317,22 @@ func TestOpenAIGatewayService_OAuthPassthrough_CodexMissingInstructionsRejectedB
 	c.Request.Header.Set("Content-Type", "application/json")
 	c.Request.Header.Set("OpenAI-Beta", "responses=experimental")
 
-	// Codex 模型且缺少 instructions，应在本地直接 403 拒绝，不触达上游。
-	originalBody := []byte(`{"model":"gpt-5.1-codex-max","stream":false,"store":true,"input":[{"type":"text","text":"hi"}]}`)
+	// 缺少 instructions 且 input 是字符串：透传链路应自动补全，避免
+	// gpt-5.4 / codex 在 ChatGPT internal upstream 上报
+	// "Instructions are required" / "Input must be a list"。
+	originalBody := []byte(`{"model":"gpt-5.1-codex-max","stream":true,"store":true,"input":"hi"}`)
 
+	upstreamSSE := strings.Join([]string{
+		`data: {"type":"response.output_text.delta","delta":"ok"}`,
+		"",
+		"data: [DONE]",
+		"",
+	}, "\n")
 	upstream := &httpUpstreamRecorder{
 		resp: &http.Response{
 			StatusCode: http.StatusOK,
-			Header:     http.Header{"Content-Type": []string{"application/json"}, "x-request-id": []string{"rid"}},
-			Body:       io.NopCloser(strings.NewReader(`{"output":[],"usage":{"input_tokens":1,"output_tokens":1}}`)),
+			Header:     http.Header{"Content-Type": []string{"text/event-stream"}, "x-request-id": []string{"rid"}},
+			Body:       io.NopCloser(strings.NewReader(upstreamSSE)),
 		},
 	}
 
@@ -349,15 +355,33 @@ func TestOpenAIGatewayService_OAuthPassthrough_CodexMissingInstructionsRejectedB
 	}
 
 	result, err := svc.Forward(context.Background(), c, account, originalBody)
-	require.Error(t, err)
-	require.Nil(t, result)
-	require.Equal(t, http.StatusForbidden, rec.Code)
-	require.Contains(t, rec.Body.String(), "requires a non-empty instructions field")
-	require.Nil(t, upstream.lastReq)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	require.True(t, result.Stream)
+	require.NotNil(t, upstream.lastReq)
 
-	require.True(t, logSink.ContainsMessage("OpenAI passthrough 本地拦截：Codex 请求缺少有效 instructions"))
-	require.True(t, logSink.ContainsFieldValue("request_user_agent", "codex_cli_rs/0.98.0 (Windows 10.0.19045; x86_64) unknown"))
-	require.True(t, logSink.ContainsFieldValue("reject_reason", "instructions_missing"))
+	require.Equal(t, "You are a helpful coding assistant.", strings.TrimSpace(gjson.GetBytes(upstream.lastBody, "instructions").String()))
+	require.Equal(t, "message", gjson.GetBytes(upstream.lastBody, "input.0.type").String())
+	require.Equal(t, "user", gjson.GetBytes(upstream.lastBody, "input.0.role").String())
+	require.Equal(t, "hi", gjson.GetBytes(upstream.lastBody, "input.0.content").String())
+}
+
+func TestPrepareOpenAIPassthroughOAuthBody_Gpt54AutoFillsInstructionsAndNormalizesPresentedModel(t *testing.T) {
+	t.Parallel()
+
+	body := []byte(`{"model":"openai/gpt-5.4","stream":false,"input":"hi","max_output_tokens":8}`)
+
+	got, changed, err := prepareOpenAIPassthroughOAuthBody(body, false, false)
+	require.NoError(t, err)
+	require.True(t, changed)
+	require.Equal(t, "gpt-5.4", gjson.GetBytes(got, "model").String())
+	require.Equal(t, "You are a helpful coding assistant.", gjson.GetBytes(got, "instructions").String())
+	require.Equal(t, "message", gjson.GetBytes(got, "input.0.type").String())
+	require.Equal(t, "user", gjson.GetBytes(got, "input.0.role").String())
+	require.Equal(t, "hi", gjson.GetBytes(got, "input.0.content").String())
+	require.Equal(t, false, gjson.GetBytes(got, "store").Bool())
+	require.Equal(t, true, gjson.GetBytes(got, "stream").Bool())
+	require.False(t, gjson.GetBytes(got, "max_output_tokens").Exists())
 }
 
 func TestOpenAIGatewayService_OAuthPassthrough_DisabledUsesLegacyTransform(t *testing.T) {

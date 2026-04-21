@@ -26,6 +26,8 @@ func TestNormalizeOpenAICompatRequestedModel(t *testing.T) {
 		input string
 		want  string
 	}{
+		{name: "strips openai presentation prefix", input: "openai/gpt-5.4", want: "gpt-5.4"},
+		{name: "strips xai presentation prefix", input: "x-ai/grok-4.20-0309", want: "grok-4.20-0309"},
 		{name: "gpt reasoning alias strips xhigh", input: "gpt-5.4-xhigh", want: "gpt-5.4"},
 		{name: "gpt reasoning alias strips none", input: "gpt-5.4-none", want: "gpt-5.4"},
 		{name: "codex max model stays intact", input: "gpt-5.1-codex-max", want: "gpt-5.1-codex-max"},
@@ -37,6 +39,33 @@ func TestNormalizeOpenAICompatRequestedModel(t *testing.T) {
 			require.Equal(t, tt.want, NormalizeOpenAICompatRequestedModel(tt.input))
 		})
 	}
+}
+
+func TestBuildOpenAICompatModelCatalogEntry(t *testing.T) {
+	t.Parallel()
+
+	t.Run("prefixes openai models for client-side grouping", func(t *testing.T) {
+		got := BuildOpenAICompatModelCatalogEntry("gpt-5.4")
+		require.Equal(t, "openai/gpt-5.4", got.ID)
+		require.Equal(t, "gpt-5.4", got.Name)
+		require.Equal(t, "openai", got.OwnedBy)
+		require.Equal(t, "gpt-5.4", got.DisplayName)
+		require.Equal(t, "model", got.Object)
+	})
+
+	t.Run("prefixes grok models as x-ai for client-side grouping", func(t *testing.T) {
+		got := BuildOpenAICompatModelCatalogEntry("grok-4.20-0309-non-reasoning")
+		require.Equal(t, "x-ai/grok-4.20-0309-non-reasoning", got.ID)
+		require.Equal(t, "grok-4.20-0309-non-reasoning", got.Name)
+		require.Equal(t, "x-ai", got.OwnedBy)
+		require.Equal(t, "grok-4.20-0309-non-reasoning", got.DisplayName)
+	})
+
+	t.Run("preserves already prefixed ids", func(t *testing.T) {
+		got := BuildOpenAICompatModelCatalogEntry("deepseek/deepseek-chat")
+		require.Equal(t, "deepseek/deepseek-chat", got.ID)
+		require.Equal(t, "deepseek", got.OwnedBy)
+	})
 }
 
 func TestApplyOpenAICompatModelNormalization(t *testing.T) {
