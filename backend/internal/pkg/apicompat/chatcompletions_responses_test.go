@@ -1073,6 +1073,34 @@ func TestBufferedResponseAccumulator_NoSupplementWhenOutputExists(t *testing.T) 
 	assert.Equal(t, "from terminal event", resp.Output[0].Content[0].Text)
 }
 
+func TestBufferedResponseAccumulator_SupplementsPlaceholderOutput(t *testing.T) {
+	acc := NewBufferedResponseAccumulator()
+	acc.ProcessEvent(&ResponsesStreamEvent{Type: "response.output_text.delta", Delta: "from deltas"})
+
+	resp := &ResponsesResponse{
+		ID:     "resp_placeholder",
+		Status: "completed",
+		Output: []ResponsesOutput{
+			{
+				Type:   "message",
+				Role:   "assistant",
+				Status: "completed",
+				Content: []ResponsesContentPart{
+					{Type: "output_text", Text: ""},
+				},
+			},
+		},
+	}
+
+	changed := acc.SupplementResponseOutput(resp)
+
+	assert.True(t, changed)
+	require.Len(t, resp.Output, 1)
+	assert.Equal(t, "message", resp.Output[0].Type)
+	require.Len(t, resp.Output[0].Content, 1)
+	assert.Equal(t, "from deltas", resp.Output[0].Content[0].Text)
+}
+
 func TestBufferedResponseAccumulator_EmptyDeltas(t *testing.T) {
 	acc := NewBufferedResponseAccumulator()
 
