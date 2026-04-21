@@ -477,15 +477,58 @@ func (a *BufferedResponseAccumulator) BuildOutput() []ResponsesOutput {
 	return out
 }
 
-// SupplementResponseOutput fills resp.Output from accumulated delta content
-// when the terminal event delivered an empty output array. If resp.Output is
-// already populated, this is a no-op (preserves backward compatibility).
-func (a *BufferedResponseAccumulator) SupplementResponseOutput(resp *ResponsesResponse) {
-	if resp == nil || len(resp.Output) > 0 {
-		return
+func responseOutputNeedsSupplement(output []ResponsesOutput) bool {
+	if len(output) == 0 {
+		return true
 	}
-	if !a.HasContent() {
-		return
+
+	for _, item := range output {
+		switch item.Type {
+		case "message":
+			for _, part := range item.Content {
+				if strings.TrimSpace(part.Text) != "" || strings.TrimSpace(part.ImageURL) != "" {
+					return false
+				}
+			}
+		case "reasoning":
+			if strings.TrimSpace(item.EncryptedContent) != "" {
+				return false
+			}
+			for _, summary := range item.Summary {
+				if strings.TrimSpace(summary.Text) != "" {
+					return false
+				}
+			}
+		case "function_call":
+			if strings.TrimSpace(item.CallID) != "" || strings.TrimSpace(item.Name) != "" || strings.TrimSpace(item.Arguments) != "" {
+				return false
+			}
+		case "web_search_call":
+			if item.Action != nil && (strings.TrimSpace(item.Action.Type) != "" || strings.TrimSpace(item.Action.Query) != "") {
+				return false
+			}
+		default:
+			// 对未知输出类型保持保守：只要存在非空字段则认为终止事件已携带有效输出，
+			// 避免误用增量结果覆盖上游返回。
+			if strings.TrimSpace(item.ID) != "" || strings.TrimSpace(item.Role) != "" || strings.TrimSpace(item.Status) != "" {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
+// SupplementResponseOutput fills resp.Output from accumulated delta content
+// when the terminal event delivered an empty/placeholder output payload.
+// Returns true when resp.Output was replaced.
+func (a *BufferedResponseAccumulator) SupplementResponseOutput(resp *ResponsesResponse) bool {
+	if resp == nil || !a.HasContent() {
+		return false
+	}
+	if !responseOutputNeedsSupplement(resp.Output) {
+		return false
 	}
 	resp.Output = a.BuildOutput()
+	return true
 }

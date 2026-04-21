@@ -53,11 +53,16 @@ const (
 	openAIWSRetryBackoffInitialDefault = 120 * time.Millisecond
 	openAIWSRetryBackoffMaxDefault     = 2 * time.Second
 	openAIWSRetryJitterRatioDefault    = 0.2
-	openAICompactSessionSeedKey        = "openai_compact_session_seed"
-	codexCLIVersion                    = "0.104.0"
+	// 对自定义 OpenAI-compatible 上游，非流式 /responses 偶发返回空 output 时，
+	// 在同账号上做一次轻量重试，避免把明显占位响应直接透出给客户端。
+	openAINonStreamingEmptyOutputRetryLimit = 4
+	openAICompactSessionSeedKey             = "openai_compact_session_seed"
+	codexCLIVersion                         = "0.104.0"
 	// Codex 限额快照仅用于后台展示/诊断，不需要每个成功请求都立即落库。
 	openAICodexSnapshotPersistMinInterval = 30 * time.Second
 )
+
+var errOpenAINonStreamingEmptyOutput = errors.New("openai non-streaming response output is empty")
 
 // OpenAI allowed headers whitelist (for non-passthrough).
 var openaiAllowedHeaders = map[string]bool{
@@ -2304,6 +2309,7 @@ func (s *OpenAIGatewayService) Forward(ctx context.Context, c *gin.Context, acco
 	}
 
 	httpInvalidEncryptedContentRetryTried := false
+	httpEmptyOutputRetryCount := 0
 	for {
 		// Build upstream request
 		upstreamCtx, releaseUpstreamCtx := detachStreamUpstreamContext(ctx, reqStream)
@@ -2410,6 +2416,17 @@ func (s *OpenAIGatewayService) Forward(ctx context.Context, c *gin.Context, acco
 		} else {
 			usage, err = s.handleNonStreamingResponse(ctx, resp, c, account, originalModel, upstreamModel)
 			if err != nil {
+				if errors.Is(err, errOpenAINonStreamingEmptyOutput) && httpEmptyOutputRetryCount < openAINonStreamingEmptyOutputRetryLimit {
+					httpEmptyOutputRetryCount++
+					logger.LegacyPrintf(
+						"service.openai_gateway",
+						"[OpenAI] Retrying non-streaming custom upstream after empty output (account: %s, retry: %d/%d)",
+						account.Name,
+						httpEmptyOutputRetryCount,
+						openAINonStreamingEmptyOutputRetryLimit,
+					)
+					continue
+				}
 				return nil, err
 			}
 		}
@@ -3060,15 +3077,7 @@ func (s *OpenAIGatewayService) handlePassthroughSSEToJSON(resp *http.Response, c
 		if parsedUsage, parsed := extractOpenAIUsageFromJSONBytes(finalResponse); parsed {
 			*usage = parsedUsage
 		}
-		// When the terminal event has an empty output array, reconstruct
-		// output from accumulated delta events so the client gets full content.
-		if len(gjson.GetBytes(finalResponse, "output").Array()) == 0 {
-			if outputJSON, reconstructed := reconstructResponseOutputFromSSE(bodyText); reconstructed {
-				if patched, err := sjson.SetRawBytes(finalResponse, "output", outputJSON); err == nil {
-					finalResponse = patched
-				}
-			}
-		}
+		finalResponse = supplementResponseOutputFromSSE(finalResponse, bodyText)
 		body = finalResponse
 		// Correct tool calls in final response
 		body = s.correctToolCallsInResponseBody(body)
@@ -3937,6 +3946,10 @@ func (s *OpenAIGatewayService) handleNonStreamingResponse(ctx context.Context, r
 		}
 	}
 
+	if shouldRetryOpenAIEmptyNonStreamingResponse(account, body) {
+		return nil, errOpenAINonStreamingEmptyOutput
+	}
+
 	usageValue, usageOK := extractOpenAIUsageFromJSONBytes(body)
 	if !usageOK {
 		return nil, fmt.Errorf("parse response: invalid json response")
@@ -3962,6 +3975,60 @@ func (s *OpenAIGatewayService) handleNonStreamingResponse(ctx context.Context, r
 	return usage, nil
 }
 
+func shouldRetryOpenAIEmptyNonStreamingResponse(account *Account, body []byte) bool {
+	if account == nil || account.Type != AccountTypeAPIKey {
+		return false
+	}
+	if strings.TrimSpace(account.GetCredential("base_url")) == "" {
+		return false
+	}
+	if len(body) == 0 || !gjson.ValidBytes(body) {
+		return false
+	}
+	if gjson.GetBytes(body, "usage.output_tokens").Int() > 0 {
+		return false
+	}
+
+	output := gjson.GetBytes(body, "output")
+	if !output.Exists() || output.Type != gjson.JSON {
+		return false
+	}
+
+	items := output.Array()
+	if len(items) == 0 {
+		return false
+	}
+
+	messageFound := false
+	for _, item := range items {
+		itemType := strings.TrimSpace(item.Get("type").String())
+		switch itemType {
+		case "message":
+			messageFound = true
+			parts := item.Get("content").Array()
+			for _, part := range parts {
+				if strings.TrimSpace(part.Get("text").String()) != "" {
+					return false
+				}
+			}
+		case "reasoning":
+			for _, summary := range item.Get("summary").Array() {
+				if strings.TrimSpace(summary.Get("text").String()) != "" {
+					return false
+				}
+			}
+		case "function_call":
+			if strings.TrimSpace(item.Get("call_id").String()) != "" ||
+				strings.TrimSpace(item.Get("name").String()) != "" ||
+				strings.TrimSpace(item.Get("arguments").String()) != "" {
+				return false
+			}
+		}
+	}
+
+	return messageFound
+}
+
 func isEventStreamResponse(header http.Header) bool {
 	contentType := strings.ToLower(header.Get("Content-Type"))
 	return strings.Contains(contentType, "text/event-stream")
@@ -3976,16 +4043,7 @@ func (s *OpenAIGatewayService) handleSSEToJSON(resp *http.Response, c *gin.Conte
 		if parsedUsage, parsed := extractOpenAIUsageFromJSONBytes(finalResponse); parsed {
 			*usage = parsedUsage
 		}
-		// When the terminal event has an empty output array, reconstruct
-		// output from accumulated delta events so the client gets full content.
-		// gjson Array() returns empty slice for null, missing, or empty arrays.
-		if len(gjson.GetBytes(finalResponse, "output").Array()) == 0 {
-			if outputJSON, reconstructed := reconstructResponseOutputFromSSE(bodyText); reconstructed {
-				if patched, err := sjson.SetRawBytes(finalResponse, "output", outputJSON); err == nil {
-					finalResponse = patched
-				}
-			}
-		}
+		finalResponse = supplementResponseOutputFromSSE(finalResponse, bodyText)
 		body = finalResponse
 		if originalModel != mappedModel {
 			body = s.replaceModelInResponseBody(body, mappedModel, originalModel)
@@ -4085,6 +4143,46 @@ func extractCodexFinalResponse(body string) ([]byte, bool) {
 		}
 	}
 	return nil, false
+}
+
+func supplementResponseOutputFromSSE(finalResponse []byte, bodyText string) []byte {
+	if len(finalResponse) == 0 || len(bodyText) == 0 {
+		return finalResponse
+	}
+
+	resp := &apicompat.ResponsesResponse{}
+	output := gjson.GetBytes(finalResponse, "output")
+	if output.Exists() && output.Type == gjson.JSON && output.Raw != "" {
+		_ = json.Unmarshal([]byte(output.Raw), &resp.Output)
+	}
+
+	acc := apicompat.NewBufferedResponseAccumulator()
+	lines := strings.Split(bodyText, "\n")
+	for _, line := range lines {
+		data, ok := extractOpenAISSEDataLine(line)
+		if !ok || data == "" || data == "[DONE]" {
+			continue
+		}
+		var event apicompat.ResponsesStreamEvent
+		if err := json.Unmarshal([]byte(data), &event); err != nil {
+			continue
+		}
+		acc.ProcessEvent(&event)
+	}
+
+	if !acc.SupplementResponseOutput(resp) {
+		return finalResponse
+	}
+
+	outputJSON, err := json.Marshal(resp.Output)
+	if err != nil {
+		return finalResponse
+	}
+	patched, err := sjson.SetRawBytes(finalResponse, "output", outputJSON)
+	if err != nil {
+		return finalResponse
+	}
+	return patched
 }
 
 // reconstructResponseOutputFromSSE scans raw SSE body text for delta events and
