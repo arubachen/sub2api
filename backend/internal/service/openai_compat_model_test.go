@@ -44,24 +44,24 @@ func TestNormalizeOpenAICompatRequestedModel(t *testing.T) {
 func TestBuildOpenAICompatModelCatalogEntry(t *testing.T) {
 	t.Parallel()
 
-	t.Run("prefixes openai models for client-side grouping", func(t *testing.T) {
+	t.Run("returns bare openai model id and infers owner", func(t *testing.T) {
 		got := BuildOpenAICompatModelCatalogEntry("gpt-5.4")
-		require.Equal(t, "openai/gpt-5.4", got.ID)
+		require.Equal(t, "gpt-5.4", got.ID)
 		require.Equal(t, "gpt-5.4", got.Name)
 		require.Equal(t, "openai", got.OwnedBy)
 		require.Equal(t, "gpt-5.4", got.DisplayName)
 		require.Equal(t, "model", got.Object)
 	})
 
-	t.Run("prefixes grok models as x-ai for client-side grouping", func(t *testing.T) {
+	t.Run("returns bare grok model id with x-ai owner", func(t *testing.T) {
 		got := BuildOpenAICompatModelCatalogEntry("grok-4.20-0309-non-reasoning")
-		require.Equal(t, "x-ai/grok-4.20-0309-non-reasoning", got.ID)
+		require.Equal(t, "grok-4.20-0309-non-reasoning", got.ID)
 		require.Equal(t, "grok-4.20-0309-non-reasoning", got.Name)
 		require.Equal(t, "x-ai", got.OwnedBy)
 		require.Equal(t, "grok-4.20-0309-non-reasoning", got.DisplayName)
 	})
 
-	t.Run("preserves already prefixed ids", func(t *testing.T) {
+	t.Run("preserves ids that already contain a slash", func(t *testing.T) {
 		got := BuildOpenAICompatModelCatalogEntry("deepseek/deepseek-chat")
 		require.Equal(t, "deepseek/deepseek-chat", got.ID)
 		require.Equal(t, "deepseek", got.OwnedBy)
