@@ -26,7 +26,7 @@ func BuildOpenAICompatModelCatalogEntry(model string) openaipkg.Model {
 	owner := inferOpenAICompatModelOwner(rawModel)
 
 	return openaipkg.Model{
-		ID:          rawModel,
+		ID:          buildPresentedOpenAICompatModelID(rawModel),
 		Name:        rawModel,
 		Object:      "model",
 		Created:     1704067200, // 2024-01-01T00:00:00Z
@@ -34,6 +34,19 @@ func BuildOpenAICompatModelCatalogEntry(model string) openaipkg.Model {
 		Type:        "model",
 		DisplayName: rawModel,
 	}
+}
+
+func buildPresentedOpenAICompatModelID(model string) string {
+	trimmed := strings.TrimSpace(model)
+	if trimmed == "" || strings.Contains(trimmed, "/") {
+		return trimmed
+	}
+
+	owner := inferOpenAICompatModelOwner(trimmed)
+	if owner == "" {
+		return trimmed
+	}
+	return owner + "/" + trimmed
 }
 
 func stripPresentedOpenAICompatModelPrefix(model string) string {

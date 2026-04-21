@@ -870,9 +870,9 @@ func (h *GatewayHandler) Models(c *gin.Context) {
 
 	if len(availableModels) > 0 {
 		// Build model list from whitelist.
-		// Return bare model IDs; OpenAI-compatible clients like Cherry Studio now
-		// group models by the owned_by field, so a provider-prefixed ID would show
-		// up as a redundant "openai/" before the model name.
+		// OpenAI-compatible clients such as Cherry Studio infer model grouping from
+		// slash-prefixed IDs (e.g. openai/gpt-5.4, x-ai/grok-4). Returning the raw
+		// bare IDs causes every model to collapse under the provider UUID bucket.
 		if platform == service.PlatformOpenAI {
 			models := make([]openai.Model, 0, len(availableModels))
 			for _, modelID := range availableModels {
