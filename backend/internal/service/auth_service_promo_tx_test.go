@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 	"testing"
+	"time"
 
 	dbent "github.com/Wei-Shaw/sub2api/ent"
 	"github.com/Wei-Shaw/sub2api/ent/enttest"
@@ -76,12 +77,36 @@ func (r *entUserRepoForAuthPromoTest) Delete(context.Context, int64) error {
 	panic("unexpected Delete call")
 }
 
+func (r *entUserRepoForAuthPromoTest) GetUserAvatar(context.Context, int64) (*UserAvatar, error) {
+	panic("unexpected GetUserAvatar call")
+}
+
+func (r *entUserRepoForAuthPromoTest) UpsertUserAvatar(context.Context, int64, UpsertUserAvatarInput) (*UserAvatar, error) {
+	panic("unexpected UpsertUserAvatar call")
+}
+
+func (r *entUserRepoForAuthPromoTest) DeleteUserAvatar(context.Context, int64) error {
+	panic("unexpected DeleteUserAvatar call")
+}
+
 func (r *entUserRepoForAuthPromoTest) List(context.Context, pagination.PaginationParams) ([]User, *pagination.PaginationResult, error) {
 	panic("unexpected List call")
 }
 
 func (r *entUserRepoForAuthPromoTest) ListWithFilters(context.Context, pagination.PaginationParams, UserListFilters) ([]User, *pagination.PaginationResult, error) {
 	panic("unexpected ListWithFilters call")
+}
+
+func (r *entUserRepoForAuthPromoTest) GetLatestUsedAtByUserIDs(context.Context, []int64) (map[int64]*time.Time, error) {
+	panic("unexpected GetLatestUsedAtByUserIDs call")
+}
+
+func (r *entUserRepoForAuthPromoTest) GetLatestUsedAtByUserID(context.Context, int64) (*time.Time, error) {
+	panic("unexpected GetLatestUsedAtByUserID call")
+}
+
+func (r *entUserRepoForAuthPromoTest) UpdateUserLastActiveAt(context.Context, int64, time.Time) error {
+	panic("unexpected UpdateUserLastActiveAt call")
 }
 
 func (r *entUserRepoForAuthPromoTest) UpdateBalance(ctx context.Context, id int64, amount float64) error {
@@ -119,6 +144,14 @@ func (r *entUserRepoForAuthPromoTest) AddGroupToAllowedGroups(context.Context, i
 
 func (r *entUserRepoForAuthPromoTest) RemoveGroupFromUserAllowedGroups(context.Context, int64, int64) error {
 	panic("unexpected RemoveGroupFromUserAllowedGroups call")
+}
+
+func (r *entUserRepoForAuthPromoTest) ListUserAuthIdentities(context.Context, int64) ([]UserAuthIdentityRecord, error) {
+	panic("unexpected ListUserAuthIdentities call")
+}
+
+func (r *entUserRepoForAuthPromoTest) UnbindUserAuthProvider(context.Context, int64, string) error {
+	panic("unexpected UnbindUserAuthProvider call")
 }
 
 func (r *entUserRepoForAuthPromoTest) UpdateTotpSecret(context.Context, int64, *string) error {

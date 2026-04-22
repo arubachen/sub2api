@@ -52,7 +52,6 @@ func TestAPIContracts(t *testing.T) {
 					"email": "alice@example.com",
 					"email_bound": true,
 					"username": "alice",
-					"avatar_url": "",
 					"role": "user",
 					"balance": 12.5,
 					"concurrency": 5,

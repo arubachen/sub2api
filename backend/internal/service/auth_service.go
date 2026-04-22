@@ -284,19 +284,14 @@ func (s *AuthService) registerWithPromoCodeTx(ctx context.Context, email, passwo
 		return "", nil, fmt.Errorf("hash password: %w", err)
 	}
 
-	defaultBalance := s.cfg.Default.UserBalance
-	defaultConcurrency := s.cfg.Default.UserConcurrency
-	if s.settingService != nil {
-		defaultBalance = s.settingService.GetDefaultBalance(txCtx)
-		defaultConcurrency = s.settingService.GetDefaultConcurrency(txCtx)
-	}
+	grantPlan := s.resolveSignupGrantPlan(txCtx, "email")
 
 	user := &User{
 		Email:        email,
 		PasswordHash: hashedPassword,
 		Role:         RoleUser,
-		Balance:      defaultBalance,
-		Concurrency:  defaultConcurrency,
+		Balance:      grantPlan.Balance,
+		Concurrency:  grantPlan.Concurrency,
 		Status:       StatusActive,
 	}
 	if err := s.userRepo.Create(txCtx, user); err != nil {
@@ -332,7 +327,8 @@ func (s *AuthService) registerWithPromoCodeTx(ctx context.Context, email, passwo
 	}
 
 	s.promoService.postApplyPromoCode(ctx, user.ID, lockedPromo.BonusAmount)
-	s.assignDefaultSubscriptions(ctx, user.ID)
+	s.postAuthUserBootstrap(ctx, user, "email", true)
+	s.assignSubscriptions(ctx, user.ID, grantPlan.Subscriptions, "auto assigned by signup defaults")
 
 	token, err := s.GenerateToken(user)
 	if err != nil {
