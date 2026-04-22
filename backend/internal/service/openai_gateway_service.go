@@ -4197,34 +4197,6 @@ func supplementResponseOutputFromSSE(finalResponse []byte, bodyText string) []by
 	return patched
 }
 
-// reconstructResponseOutputFromSSE scans raw SSE body text for delta events and
-// returns a JSON-encoded output array reconstructed from accumulated deltas.
-// Returns (nil, false) if no content was found in deltas.
-func reconstructResponseOutputFromSSE(bodyText string) ([]byte, bool) {
-	acc := apicompat.NewBufferedResponseAccumulator()
-	lines := strings.Split(bodyText, "\n")
-	for _, line := range lines {
-		data, ok := extractOpenAISSEDataLine(line)
-		if !ok || data == "" || data == "[DONE]" {
-			continue
-		}
-		var event apicompat.ResponsesStreamEvent
-		if err := json.Unmarshal([]byte(data), &event); err != nil {
-			continue
-		}
-		acc.ProcessEvent(&event)
-	}
-	if !acc.HasContent() {
-		return nil, false
-	}
-	output := acc.BuildOutput()
-	outputJSON, err := json.Marshal(output)
-	if err != nil {
-		return nil, false
-	}
-	return outputJSON, true
-}
-
 func (s *OpenAIGatewayService) parseSSEUsageFromBody(body string) *OpenAIUsage {
 	usage := &OpenAIUsage{}
 	lines := strings.Split(body, "\n")

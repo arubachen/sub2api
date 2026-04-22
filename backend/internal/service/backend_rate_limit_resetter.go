@@ -73,7 +73,9 @@ func (r *HTTPBackendRateLimitResetter) ResetRateLimit(ctx context.Context, accou
 	if err != nil {
 		return fmt.Errorf("call clear rate limit sync endpoint: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode/100 != 2 {
 		respBody, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
