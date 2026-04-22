@@ -1606,7 +1606,7 @@ func (h *AccountHandler) ClearRateLimit(c *gin.Context) {
 		return
 	}
 
-	err = h.rateLimitService.ClearRateLimit(c.Request.Context(), accountID)
+	err = h.rateLimitService.ClearRateLimitWithBackendSync(c.Request.Context(), accountID)
 	if err != nil {
 		response.ErrorFrom(c, err)
 		return

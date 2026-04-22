@@ -217,6 +217,7 @@ func ProvideRateLimitService(
 	svc.SetTimeoutCounterCache(timeoutCounterCache)
 	svc.SetSettingService(settingService)
 	svc.SetTokenCacheInvalidator(tokenCacheInvalidator)
+	svc.SetBackendRateLimitResetter(NewHTTPBackendRateLimitResetter(nil))
 	return svc
 }
 
