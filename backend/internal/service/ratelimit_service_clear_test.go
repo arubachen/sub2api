@@ -72,6 +72,11 @@ type recoverTokenInvalidatorStub struct {
 	err      error
 }
 
+type backendRateLimitResetterStub struct {
+	accounts []*Account
+	err      error
+}
+
 func (c *tempUnschedCacheRecorder) SetTempUnsched(ctx context.Context, accountID int64, state *TempUnschedState) error {
 	return nil
 }
@@ -86,6 +91,11 @@ func (c *tempUnschedCacheRecorder) DeleteTempUnsched(ctx context.Context, accoun
 }
 
 func (s *recoverTokenInvalidatorStub) InvalidateToken(ctx context.Context, account *Account) error {
+	s.accounts = append(s.accounts, account)
+	return s.err
+}
+
+func (s *backendRateLimitResetterStub) ResetRateLimit(ctx context.Context, account *Account) error {
 	s.accounts = append(s.accounts, account)
 	return s.err
 }
@@ -198,6 +208,52 @@ func TestRateLimitService_ClearRateLimit_WithoutTempUnschedCache(t *testing.T) {
 	require.Equal(t, 1, repo.clearAntigravityCalls)
 	require.Equal(t, 1, repo.clearModelRateLimitCalls)
 	require.Equal(t, 1, repo.clearTempUnschedCalls)
+}
+
+func TestRateLimitService_ClearRateLimitWithBackendSync_ResetsBackendBeforeLocalClear(t *testing.T) {
+	account := &Account{
+		ID: 42,
+		Credentials: map[string]any{
+			clearRateLimitSyncCredential: true,
+			"base_url":                   "http://grok2api:8000/v1",
+			"api_key":                    "test-key",
+		},
+	}
+	repo := &rateLimitClearRepoStub{getByIDAccount: account}
+	cache := &tempUnschedCacheRecorder{}
+	resetter := &backendRateLimitResetterStub{}
+	svc := NewRateLimitService(repo, nil, &config.Config{}, nil, cache)
+	svc.SetBackendRateLimitResetter(resetter)
+
+	err := svc.ClearRateLimitWithBackendSync(context.Background(), 42)
+	require.NoError(t, err)
+
+	require.Equal(t, 1, repo.getByIDCalls)
+	require.Len(t, resetter.accounts, 1)
+	require.Same(t, account, resetter.accounts[0])
+	require.Equal(t, 1, repo.clearRateLimitCalls)
+	require.Equal(t, []int64{42}, cache.deletedIDs)
+}
+
+func TestRateLimitService_ClearRateLimitWithBackendSync_ResetFailureStopsLocalClear(t *testing.T) {
+	account := &Account{
+		ID: 7,
+		Credentials: map[string]any{
+			clearRateLimitSyncCredential: true,
+			"base_url":                   "http://grok2api:8000/v1",
+			"api_key":                    "test-key",
+		},
+	}
+	repo := &rateLimitClearRepoStub{getByIDAccount: account}
+	resetter := &backendRateLimitResetterStub{err: errors.New("sync failed")}
+	svc := NewRateLimitService(repo, nil, &config.Config{}, nil, nil)
+	svc.SetBackendRateLimitResetter(resetter)
+
+	err := svc.ClearRateLimitWithBackendSync(context.Background(), 7)
+	require.Error(t, err)
+
+	require.Equal(t, 1, repo.getByIDCalls)
+	require.Equal(t, 0, repo.clearRateLimitCalls)
 }
 
 func TestRateLimitService_RecoverAccountAfterSuccessfulTest_ClearsErrorAndRateLimitRelatedState(t *testing.T) {

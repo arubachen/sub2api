@@ -21,6 +21,7 @@ type RateLimitService struct {
 	usageRepo             UsageLogRepository
 	cfg                   *config.Config
 	geminiQuotaService    *GeminiQuotaService
+	backendResetter       BackendRateLimitResetter
 	tempUnschedCache      TempUnschedCache
 	timeoutCounterCache   TimeoutCounterCache
 	settingService        *SettingService
@@ -77,6 +78,11 @@ func (s *RateLimitService) SetSettingService(settingService *SettingService) {
 // SetTokenCacheInvalidator 设置 token 缓存清理器（可选依赖）
 func (s *RateLimitService) SetTokenCacheInvalidator(invalidator TokenCacheInvalidator) {
 	s.tokenCacheInvalidator = invalidator
+}
+
+// SetBackendRateLimitResetter 设置外部后端限流状态重置器（可选依赖）
+func (s *RateLimitService) SetBackendRateLimitResetter(resetter BackendRateLimitResetter) {
+	s.backendResetter = resetter
 }
 
 // ErrorPolicyResult 表示错误策略检查的结果
@@ -1222,6 +1228,20 @@ func (s *RateLimitService) ClearRateLimit(ctx context.Context, accountID int64) 
 		}
 	}
 	return nil
+}
+
+// ClearRateLimitWithBackendSync 先同步清理外部后端运行时状态，再清理本地限流状态。
+func (s *RateLimitService) ClearRateLimitWithBackendSync(ctx context.Context, accountID int64) error {
+	if s.backendResetter != nil {
+		account, err := s.accountRepo.GetByID(ctx, accountID)
+		if err != nil {
+			return err
+		}
+		if err := s.backendResetter.ResetRateLimit(ctx, account); err != nil {
+			return err
+		}
+	}
+	return s.ClearRateLimit(ctx, accountID)
 }
 
 // RecoverAccountState 按需恢复账号的可恢复运行时状态。
