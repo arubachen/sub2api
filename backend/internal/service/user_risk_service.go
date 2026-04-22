@@ -502,7 +502,9 @@ func (s *UserRiskService) loadRecentUsageRows(ctx context.Context, userID int64,
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	result := make([]userRiskUsageRow, 0, 256)
 	for rows.Next() {
@@ -640,7 +642,7 @@ func validateUserRiskSettings(settings UserRiskSettings) error {
 	if settings.ReviewThreshold < 1 || settings.ThrottleThreshold < 1 || settings.FreezeThreshold < 1 {
 		return infraerrors.BadRequest("USER_RISK_THRESHOLD_INVALID", "risk thresholds must be positive integers")
 	}
-	if !(settings.ReviewThreshold < settings.ThrottleThreshold && settings.ThrottleThreshold < settings.FreezeThreshold) {
+	if settings.ReviewThreshold >= settings.ThrottleThreshold || settings.ThrottleThreshold >= settings.FreezeThreshold {
 		return infraerrors.BadRequest("USER_RISK_THRESHOLD_INVALID", "review/throttle/freeze thresholds must be strictly increasing")
 	}
 	if settings.AutoThrottleCap < 1 {
@@ -706,7 +708,9 @@ func (s *UserRiskService) loadIPInfoLiteBatch(ctx context.Context, ips []string,
 			return nil, fmt.Errorf("request ip intel: %w", err)
 		}
 		func() {
-			defer resp.Body.Close()
+			defer func() {
+				_ = resp.Body.Close()
+			}()
 			if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 				payload, _ := io.ReadAll(io.LimitReader(resp.Body, 2048))
 				err = fmt.Errorf("ip intel request failed: status=%d body=%s", resp.StatusCode, strings.TrimSpace(string(payload)))
