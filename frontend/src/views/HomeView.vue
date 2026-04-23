@@ -15,7 +15,7 @@
   <!-- Default Home Page -->
   <div
     v-else
-    class="relative flex min-h-screen flex-col overflow-hidden bg-gradient-to-br from-gray-50 via-primary-50/30 to-gray-100 dark:from-dark-950 dark:via-dark-900 dark:to-dark-950"
+    class="relative flex min-h-screen flex-col overflow-hidden bg-gradient-to-br from-slate-50 via-primary-50/30 to-slate-100 dark:from-dark-950 dark:via-dark-900 dark:to-dark-950"
   >
     <!-- Background Decorations -->
     <div class="pointer-events-none absolute inset-0 overflow-hidden">
@@ -37,10 +37,10 @@
     </div>
 
     <!-- Header -->
-    <header class="relative z-20 px-6 py-4">
+    <header class="relative z-20 px-6 py-3.5">
       <nav class="mx-auto flex max-w-6xl items-center justify-between">
-        <router-link to="/home" class="flex items-center gap-3">
-          <div class="h-11 w-11 overflow-hidden rounded-2xl bg-white/90 p-1 shadow-[0_14px_32px_-20px_rgba(15,23,42,0.22)] dark:bg-dark-900/80">
+        <router-link to="/home" class="flex min-h-10 items-center gap-3 rounded-full px-1 py-1">
+          <div class="h-10 w-10 overflow-hidden rounded-2xl bg-white/90 p-1 shadow-[0_14px_32px_-20px_rgba(15,23,42,0.22)] dark:bg-dark-900/80">
             <img :src="siteLogo || '/logo.png'" alt="Logo" class="h-full w-full object-contain" />
           </div>
           <div class="hidden sm:block">
@@ -48,7 +48,7 @@
               JULIU
             </p>
             <p class="text-base font-semibold text-gray-900 dark:text-white">
-              {{ siteName }}
+              {{ headerBrandName }}
             </p>
           </div>
         </router-link>
@@ -64,10 +64,10 @@
             :href="docUrl"
             target="_blank"
             rel="noopener noreferrer"
-            class="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-dark-400 dark:hover:bg-dark-800 dark:hover:text-white"
-            :title="t('home.viewDocs')"
+            class="hidden items-center rounded-full px-4 text-sm font-medium transition-colors sm:inline-flex"
+            :class="isDark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'"
           >
-            <Icon name="book" size="md" />
+            {{ t('home.viewDocs') }}
           </a>
 
           <!-- Theme Toggle -->
@@ -118,7 +118,7 @@
           <!-- Left: Text Content -->
           <div class="flex-1 text-center lg:text-left">
             <h1
-              class="mb-4 text-4xl font-bold text-gray-900 dark:text-white md:text-5xl lg:text-6xl"
+              class="mb-4 text-4xl font-bold tracking-tight text-gray-900 dark:text-white md:text-5xl lg:text-6xl"
             >
               {{ siteName }}
             </h1>
@@ -425,6 +425,7 @@ const siteLogo = computed(() => appStore.cachedPublicSettings?.site_logo || appS
 const siteSubtitle = computed(() => appStore.cachedPublicSettings?.site_subtitle || DEFAULT_SITE_SUBTITLE)
 const docUrl = computed(() => appStore.cachedPublicSettings?.doc_url || appStore.docUrl || '')
 const homeContent = computed(() => appStore.cachedPublicSettings?.home_content || '')
+const headerBrandName = computed(() => siteName.value || DEFAULT_SITE_NAME)
 
 // Check if homeContent is a URL (for iframe display)
 const isHomeContentUrl = computed(() => {
@@ -448,7 +449,7 @@ const userInitial = computed(() => {
 // Current year for footer
 const currentYear = computed(() => new Date().getFullYear())
 
-useTheme()
+const { isDark } = useTheme()
 
 onMounted(() => {
   // Check auth state
