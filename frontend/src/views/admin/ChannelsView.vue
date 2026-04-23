@@ -1403,7 +1403,7 @@ async function handleSubmit() {
     if (editingChannel.value) {
       const req: UpdateChannelRequest = {
         name: form.name.trim(),
-        description: form.description.trim() || undefined,
+        description: form.description.trim(),
         status: form.status,
         group_ids,
         model_pricing,
