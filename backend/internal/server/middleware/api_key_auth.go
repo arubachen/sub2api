@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"errors"
+	"net/http"
 	"strings"
 
 	"github.com/Wei-Shaw/sub2api/internal/config"
@@ -138,8 +139,10 @@ func apiKeyAuthWithSubscription(apiKeyService *service.APIKeyService, subscripti
 
 		// ── 5. 加载订阅（订阅模式时始终加载） ───────────────────────
 
-		// skipBilling: /v1/usage 只需鉴权，跳过所有计费执行
-		skipBilling := c.Request.URL.Path == "/v1/usage"
+		// skipBilling: 只做鉴权，不做余额/订阅/配额拦截。
+		// 模型元数据接口需要允许余额不足的 key 先拿到模型列表，否则很多客户端会在初始化时
+		// 因 /v1/models 被 403 拦截而表现成“获取不到模型信息”。
+		skipBilling := shouldSkipBillingForRequest(c.Request)
 
 		var subscription *service.UserSubscription
 		isSubscriptionType := apiKey.Group != nil && apiKey.Group.IsSubscriptionType()
@@ -240,6 +243,27 @@ func GetAPIKeyFromContext(c *gin.Context) (*service.APIKey, bool) {
 	}
 	apiKey, ok := value.(*service.APIKey)
 	return apiKey, ok
+}
+
+func shouldSkipBillingForRequest(r *http.Request) bool {
+	if r == nil || r.URL == nil || r.Method != http.MethodGet {
+		return false
+	}
+
+	switch path := r.URL.Path; {
+	case path == "/v1/usage",
+		path == "/v1/models",
+		path == "/antigravity/models",
+		path == "/antigravity/v1/models",
+		path == "/v1beta/models",
+		path == "/antigravity/v1beta/models":
+		return true
+	case strings.HasPrefix(path, "/v1beta/models/"),
+		strings.HasPrefix(path, "/antigravity/v1beta/models/"):
+		return true
+	default:
+		return false
+	}
 }
 
 // GetSubscriptionFromContext 从上下文中获取订阅信息
