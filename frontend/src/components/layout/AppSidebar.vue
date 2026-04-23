@@ -95,7 +95,11 @@
               "
               @click="handleMenuItemClick(item.path)"
             >
-              <span v-if="item.iconSvg" class="h-5 w-5 flex-shrink-0 sidebar-svg-icon" v-html="sanitizeSvg(item.iconSvg)"></span>
+              <span
+                v-if="item.iconSvg"
+                :class="['h-5 w-5 flex-shrink-0 sidebar-svg-icon', item.iconSvgClass]"
+                v-html="sanitizeSvg(item.iconSvg)"
+              ></span>
               <component v-else :is="item.icon" class="h-5 w-5 flex-shrink-0" />
               <span class="sidebar-label" :class="{ 'sidebar-label-collapsed': sidebarCollapsed }" :aria-hidden="sidebarCollapsed ? 'true' : 'false'">{{ item.label }}</span>
             </router-link>
@@ -120,7 +124,11 @@
             :data-tour="item.path === '/keys' ? 'sidebar-my-keys' : undefined"
             @click="handleMenuItemClick(item.path)"
           >
-            <span v-if="item.iconSvg" class="h-5 w-5 flex-shrink-0 sidebar-svg-icon" v-html="sanitizeSvg(item.iconSvg)"></span>
+            <span
+              v-if="item.iconSvg"
+              :class="['h-5 w-5 flex-shrink-0 sidebar-svg-icon', item.iconSvgClass]"
+              v-html="sanitizeSvg(item.iconSvg)"
+            ></span>
             <component v-else :is="item.icon" class="h-5 w-5 flex-shrink-0" />
             <span class="sidebar-label" :class="{ 'sidebar-label-collapsed': sidebarCollapsed }" :aria-hidden="sidebarCollapsed ? 'true' : 'false'">{{ item.label }}</span>
           </router-link>
@@ -140,7 +148,11 @@
             :data-tour="item.path === '/keys' ? 'sidebar-my-keys' : undefined"
             @click="handleMenuItemClick(item.path)"
           >
-            <span v-if="item.iconSvg" class="h-5 w-5 flex-shrink-0 sidebar-svg-icon" v-html="sanitizeSvg(item.iconSvg)"></span>
+            <span
+              v-if="item.iconSvg"
+              :class="['h-5 w-5 flex-shrink-0 sidebar-svg-icon', item.iconSvgClass]"
+              v-html="sanitizeSvg(item.iconSvg)"
+            ></span>
             <component v-else :is="item.icon" class="h-5 w-5 flex-shrink-0" />
             <span class="sidebar-label" :class="{ 'sidebar-label-collapsed': sidebarCollapsed }" :aria-hidden="sidebarCollapsed ? 'true' : 'false'">{{ item.label }}</span>
           </router-link>
@@ -189,6 +201,7 @@ interface NavItem {
   label: string
   icon: unknown
   iconSvg?: string
+  iconSvgClass?: string
   hideInSimpleMode?: boolean
   children?: NavItem[]
 }
@@ -388,9 +401,6 @@ const ServerIcon = {
 }
 
 const opsSidebarIcon = developerModeTvOutlineRoundedIcon
-  .replace('<svg ', '<svg fill="currentColor" aria-hidden="true" ')
-  .replace(/fill="#[^"]*"/g, 'fill="currentColor"')
-  .replace(/<path(?![^>]*fill=)/g, '<path fill="currentColor"')
 
 const BellIcon = {
   render: () =>
@@ -613,7 +623,13 @@ const adminNavItems = computed((): NavItem[] => {
   const baseItems: NavItem[] = [
     { path: '/admin/dashboard', label: t('nav.dashboard'), icon: DashboardIcon },
     ...(adminSettingsStore.opsMonitoringEnabled
-      ? [{ path: '/admin/ops', label: t('nav.ops'), icon: null, iconSvg: opsSidebarIcon }]
+      ? [{
+          path: '/admin/ops',
+          label: t('nav.ops'),
+          icon: null,
+          iconSvg: opsSidebarIcon,
+          iconSvgClass: 'sidebar-shell-icon'
+        }]
       : []),
     { path: '/admin/risk', label: t('nav.risk'), icon: ShieldIcon, hideInSimpleMode: true },
     { path: '/admin/users', label: t('nav.users'), icon: UsersIcon, hideInSimpleMode: true },
@@ -856,5 +872,15 @@ onMounted(() => {
   display: block;
   width: 1.25rem;
   height: 1.25rem;
+}
+
+.sidebar-shell-icon :deep(svg),
+.sidebar-shell-icon :deep(path),
+.sidebar-shell-icon :deep([fill]:not([fill='none'])) {
+  fill: currentColor !important;
+}
+
+.sidebar-shell-icon :deep([stroke]:not([stroke='none'])) {
+  stroke: currentColor !important;
 }
 </style>

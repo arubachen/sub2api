@@ -44,6 +44,7 @@ describe('AppSidebar shell polish', () => {
     expect(componentSource).toContain("developer-mode-tv-outline-rounded.svg?raw")
     expect(componentSource).toContain("path: '/admin/ops'")
     expect(componentSource).toContain('iconSvg: opsSidebarIcon')
-    expect(componentSource).toContain('fill="currentColor"')
+    expect(componentSource).toContain("iconSvgClass: 'sidebar-shell-icon'")
+    expect(componentSource).toContain(".sidebar-shell-icon :deep([fill]:not([fill='none']))")
   })
 })
