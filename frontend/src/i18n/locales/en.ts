@@ -105,6 +105,71 @@ export default {
       description: 'Sign up now and get free trial credits to experience seamless AI access',
       button: 'Sign Up Free'
     },
+    juliu: {
+      nav: {
+        features: 'Capabilities',
+        flow: 'Flow',
+        models: 'Models'
+      },
+      heroBadge: '聚流',
+      fallbackSubtitle: 'A one-stop AI token hub connecting leading models worldwide. Gather access, unify routing, and scale with confidence.',
+      primaryCta: 'Start now',
+      secondaryCta: 'Explore capabilities',
+      scrollCta: 'Scroll down',
+      capabilityEyebrow: 'Capability',
+      capabilityTitle: 'Bring scattered model access into one stable production flow',
+      flowEyebrow: 'Flow',
+      flowTitle: 'From access to orchestration to delivery, every step stays clearer',
+      flowDescription: 'Use one entrypoint for GPT, Claude, Gemini, and other upstream accounts, then keep routing, auth, billing, and monitoring in a single control plane.',
+      modelsEyebrow: 'Models',
+      modelsTitle: 'Offer one unified gateway for everyday models',
+      modelsDescription: 'Ideal for combining multi-account pools, subscription quotas, and different upstream protocols behind a single OpenAI-compatible endpoint.',
+      finalEyebrow: 'Start now',
+      finalTitle: 'Ready to turn your AI access layer into Juliu?',
+      finalDescription: 'Bring model onboarding, quota control, user provisioning, and usage analytics into one operational system you can ship with immediately.',
+      finalPrimaryCta: 'Join free',
+      tags: {
+        unifiedAccess: 'Unified access',
+        stableRouting: 'Stable routing',
+        usageBilling: 'Granular billing'
+      },
+      features: {
+        speed: {
+          title: 'Fast response',
+          desc: 'Give multi-account upstream pools one shared entry and move requests quickly through a stable OpenAI-compatible gateway.'
+        },
+        stability: {
+          title: 'Safe and reliable',
+          desc: 'Centralize account status, available quota, and call policies so high-frequency production traffic stays controllable.'
+        },
+        aggregation: {
+          title: 'Model aggregation',
+          desc: 'Unify GPT, Claude, Gemini, and other major model families behind the same integration surface.'
+        },
+        analytics: {
+          title: 'Detailed analytics',
+          desc: 'Bring usage, cost, and user distribution into one backend so operations and billing are visible at a glance.'
+        }
+      },
+      flowSteps: {
+        connect: {
+          title: 'Connect upstream accounts and quota',
+          desc: 'Bring subscriptions, tokens, account pools, and proxy capabilities into one backend and manage different sources together.'
+        },
+        orchestrate: {
+          title: 'Unify routing, auth, and billing',
+          desc: 'Handle auth, grouping, quotas, rate limits, and cost analytics in one system instead of stitching extra layers together.'
+        },
+        serve: {
+          title: 'Expose one consistent API',
+          desc: 'Provide frontend apps, automation scripts, and business systems with a single OpenAI-style interface that is easier to integrate.'
+        }
+      },
+      providers: {
+        openaiCompatible: 'OpenAI-Compatible',
+        multiAccountPool: 'Multi-account Pool'
+      }
+    },
     footer: {
       allRightsReserved: 'All rights reserved.'
     }

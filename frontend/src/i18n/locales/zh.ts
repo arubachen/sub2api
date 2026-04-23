@@ -105,6 +105,71 @@ export default {
       description: '注册即可获得免费试用额度，体验一站式 AI 服务',
       button: '免费注册'
     },
+    juliu: {
+      nav: {
+        features: '能力',
+        flow: '流程',
+        models: '模型'
+      },
+      heroBadge: '聚流',
+      fallbackSubtitle: '一站式大模型 API Token 汇聚平台。连接全球顶尖模型，聚沙成塔，汇流成海。',
+      primaryCta: '立即开始',
+      secondaryCta: '浏览能力',
+      scrollCta: '向下浏览',
+      capabilityEyebrow: 'Capability',
+      capabilityTitle: '把分散的模型入口，汇成一条稳定的生产链路',
+      flowEyebrow: 'Flow',
+      flowTitle: '从接入、聚合到分发，每一步都更清晰',
+      flowDescription: '用统一入口接住 GPT、Claude、Gemini 等上游账号与额度，把路由、鉴权、计费、监控全部收拢到一个后台里。',
+      modelsEyebrow: 'Models',
+      modelsTitle: '为常用模型提供统一出口',
+      modelsDescription: '适合把多账号池、订阅额度和不同上游协议整合进同一套 OpenAI 兼容入口，减少前端与业务层的切换成本。',
+      finalEyebrow: 'Start now',
+      finalTitle: '准备好把你的 AI 调用入口整合成聚流了吗？',
+      finalDescription: '把模型接入、额度管理、用户发放和调用统计汇成一套可运营的系统，直接开始上线使用。',
+      finalPrimaryCta: '免费加入',
+      tags: {
+        unifiedAccess: '统一入口',
+        stableRouting: '稳定路由',
+        usageBilling: '精细计费'
+      },
+      features: {
+        speed: {
+          title: '极速响应',
+          desc: '为多上游账号池提供统一入口，把模型请求快速汇总到稳定的 OpenAI 兼容出口。'
+        },
+        stability: {
+          title: '安全稳定',
+          desc: '集中管理账号状态、可用额度与调用策略，让高频生产流量更可控。'
+        },
+        aggregation: {
+          title: '模型汇聚',
+          desc: '把 GPT、Claude、Gemini 等主流大模型统一到一套接入方式中。'
+        },
+        analytics: {
+          title: '精细统计',
+          desc: '把调用量、消耗与用户发放收拢到同一后台，让运营和计费一眼可见。'
+        }
+      },
+      flowSteps: {
+        connect: {
+          title: '接入上游账号与额度',
+          desc: '把订阅、Token、账号池与代理能力接入后台，统一管理不同来源的资源。'
+        },
+        orchestrate: {
+          title: '聚合路由、鉴权与计费',
+          desc: '在一个系统里处理鉴权、分组、配额、限流和成本统计，减少额外拼装。'
+        },
+        serve: {
+          title: '对外输出统一 API',
+          desc: '给前端、自动化脚本和业务系统提供一致的 OpenAI 风格接口，降低集成复杂度。'
+        }
+      },
+      providers: {
+        openaiCompatible: 'OpenAI-Compatible',
+        multiAccountPool: '多账号池'
+      }
+    },
     footer: {
       allRightsReserved: '保留所有权利。'
     }

@@ -1,404 +1,309 @@
 <template>
-  <!-- Custom Home Content: Full Page Mode -->
   <div v-if="homeContent" class="min-h-screen">
-    <!-- iframe mode -->
     <iframe
       v-if="isHomeContentUrl"
       :src="homeContent.trim()"
       class="h-screen w-full border-0"
       allowfullscreen
     ></iframe>
-    <!-- HTML mode - SECURITY: homeContent is admin-only setting, XSS risk is acceptable -->
     <div v-else v-html="homeContent"></div>
   </div>
 
-  <!-- Default Home Page -->
   <div
     v-else
-    class="relative flex min-h-screen flex-col overflow-hidden bg-gradient-to-br from-slate-50 via-primary-50/30 to-slate-100 dark:from-dark-950 dark:via-dark-900 dark:to-dark-950"
+    :class="[
+      'juliu-home relative min-h-screen overflow-hidden transition-colors duration-300',
+      isDark ? 'theme-dark bg-slate-950 text-white' : 'theme-light bg-slate-100 text-slate-950'
+    ]"
   >
-    <!-- Background Decorations -->
-    <div class="pointer-events-none absolute inset-0 overflow-hidden">
-      <div
-        class="absolute -right-40 -top-40 h-96 w-96 rounded-full bg-primary-400/20 blur-3xl"
-      ></div>
-      <div
-        class="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-primary-500/15 blur-3xl"
-      ></div>
-      <div
-        class="absolute left-1/3 top-1/4 h-72 w-72 rounded-full bg-primary-300/10 blur-3xl"
-      ></div>
-      <div
-        class="absolute bottom-1/4 right-1/4 h-64 w-64 rounded-full bg-primary-400/10 blur-3xl"
-      ></div>
-      <div
-        class="absolute inset-0 bg-[linear-gradient(rgba(20,184,166,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(20,184,166,0.03)_1px,transparent_1px)] bg-[size:64px_64px]"
-      ></div>
+    <div class="pointer-events-none absolute inset-0">
+      <div class="hero-grid absolute inset-0"></div>
+      <div class="hero-noise absolute inset-0"></div>
+      <div class="hero-orb hero-orb-cyan absolute left-1/2 top-24 h-[28rem] w-[28rem] -translate-x-1/2 rounded-full"></div>
+      <div class="hero-orb hero-orb-emerald absolute bottom-0 right-[-8rem] h-[24rem] w-[24rem] rounded-full"></div>
+      <div class="hero-beam absolute left-1/2 top-1/2 h-[22rem] w-[22rem] -translate-x-1/2 -translate-y-1/2 rounded-full"></div>
     </div>
 
-    <!-- Header -->
-    <header class="relative z-20 px-6 py-3.5">
-      <nav class="mx-auto flex max-w-6xl items-center justify-between">
+    <header
+      :class="[
+        'fixed inset-x-0 top-0 z-30 border-b backdrop-blur-xl transition-colors duration-300',
+        isDark
+          ? 'border-white/10 bg-slate-950/70'
+          : 'border-slate-300/80 bg-white/88'
+      ]"
+    >
+      <nav class="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
         <router-link to="/home" class="flex min-h-10 items-center gap-3 rounded-full px-1 py-1">
-          <div class="h-10 w-10 overflow-hidden rounded-2xl bg-white/90 p-1 shadow-[0_14px_32px_-20px_rgba(15,23,42,0.22)] dark:bg-dark-900/80">
-            <img :src="siteLogo || '/logo.png'" alt="Logo" class="h-full w-full object-contain" />
+          <div
+            :class="[
+              'flex h-10 w-10 items-center justify-center rounded-2xl transition-all duration-300',
+              isDark
+                ? 'bg-white/[0.06] shadow-[0_18px_38px_-24px_rgba(34,211,238,0.18)]'
+                : 'bg-white shadow-[0_14px_32px_-22px_rgba(15,23,42,0.22)]'
+            ]"
+          >
+            <img
+              v-if="siteLogo"
+              :src="siteLogo"
+              alt="Logo"
+              class="h-7 w-7 object-contain"
+            />
+            <JuliuFlowLogo v-else class="h-7 w-7" />
           </div>
-          <div class="hidden sm:block">
-            <p class="text-sm font-semibold tracking-[0.18em] text-primary-600 dark:text-primary-400">
-              JULIU
-            </p>
-            <p class="text-base font-semibold text-gray-900 dark:text-white">
-              {{ headerBrandName }}
-            </p>
+          <div class="flex min-h-10 items-center">
+            <p :class="['text-base font-semibold leading-none transition-colors duration-300', isDark ? 'text-white' : 'text-slate-950']">{{ headerBrandName }}</p>
           </div>
         </router-link>
 
-        <!-- Nav Actions -->
-        <div class="flex items-center gap-3">
-          <!-- Language Switcher -->
-          <LocaleSwitcher />
+        <div :class="['hidden items-center gap-8 text-sm md:flex', isDark ? 'text-slate-300' : 'text-slate-600']">
+          <a href="#features" :class="navLinkClass">{{ t('home.juliu.nav.features') }}</a>
+          <a href="#flow" :class="navLinkClass">{{ t('home.juliu.nav.flow') }}</a>
+          <a href="#providers" :class="navLinkClass">{{ t('home.juliu.nav.models') }}</a>
+        </div>
 
-          <!-- Doc Link -->
+        <div class="flex items-center gap-3">
+          <LocaleSwitcher />
+          <ThemeToggleButton />
           <a
             v-if="docUrl"
             :href="docUrl"
             target="_blank"
             rel="noopener noreferrer"
-            class="hidden items-center rounded-full px-4 text-sm font-medium transition-colors sm:inline-flex"
-            :class="isDark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'"
+            :class="['hidden h-10 items-center rounded-full px-4 text-sm font-medium transition-colors sm:inline-flex', isDark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900']"
           >
-            {{ t('home.viewDocs') }}
+            {{ t('home.docs') }}
           </a>
-
-          <!-- Theme Toggle -->
-          <ThemeToggleButton />
-
-          <!-- Login / Dashboard Button -->
           <router-link
-            v-if="isAuthenticated"
-            :to="dashboardPath"
-            class="inline-flex items-center gap-1.5 rounded-full bg-gray-900 py-1 pl-1 pr-2.5 transition-colors hover:bg-gray-800 dark:bg-gray-800 dark:hover:bg-gray-700"
+            :to="isAuthenticated ? dashboardPath : '/login'"
+            :class="[
+              'inline-flex h-10 items-center rounded-full border px-4 text-sm font-semibold transition-all',
+              isDark
+                ? 'border-cyan-400/30 bg-cyan-400/10 text-cyan-100 hover:border-cyan-300 hover:bg-cyan-400/20'
+                : 'border-cyan-500/20 bg-cyan-50 text-cyan-700 hover:border-cyan-500/40 hover:bg-cyan-100'
+            ]"
           >
-            <span
-              class="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-primary-400 to-primary-600 text-[10px] font-semibold text-white"
-            >
-              {{ userInitial }}
-            </span>
-            <span class="text-xs font-medium text-white">{{ t('home.dashboard') }}</span>
-            <svg
-              class="h-3 w-3 text-gray-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25"
-              />
-            </svg>
-          </router-link>
-          <router-link
-            v-else
-            to="/login"
-            class="inline-flex items-center rounded-full bg-gray-900 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-gray-800 dark:bg-gray-800 dark:hover:bg-gray-700"
-          >
-            {{ t('home.login') }}
+            {{ isAuthenticated ? t('home.dashboard') : t('home.login') }}
           </router-link>
         </div>
       </nav>
     </header>
 
-    <!-- Main Content -->
-    <main class="relative z-10 flex-1 px-6 py-16">
-      <div class="mx-auto max-w-6xl">
-        <!-- Hero Section - Left/Right Layout -->
-        <div class="mb-12 flex flex-col items-center justify-between gap-12 lg:flex-row lg:gap-16">
-          <!-- Left: Text Content -->
-          <div class="flex-1 text-center lg:text-left">
-            <h1
-              class="mb-4 text-4xl font-bold tracking-tight text-gray-900 dark:text-white md:text-5xl lg:text-6xl"
-            >
-              {{ siteName }}
-            </h1>
-            <p class="mb-8 text-lg text-gray-600 dark:text-dark-300 md:text-xl">
-              {{ siteSubtitle }}
-            </p>
-
-            <!-- CTA Button -->
-            <div>
-              <router-link
-                :to="isAuthenticated ? dashboardPath : '/login'"
-                class="btn btn-primary px-8 py-3 text-base shadow-lg shadow-primary-500/30"
-              >
-                {{ isAuthenticated ? t('home.goToDashboard') : t('home.getStarted') }}
-                <Icon name="arrowRight" size="md" class="ml-2" :stroke-width="2" />
-              </router-link>
-            </div>
+    <main class="relative z-10">
+      <section class="flex min-h-screen items-center justify-center px-6 pb-20 pt-28 text-center">
+        <div class="mx-auto flex max-w-5xl flex-col items-center">
+          <div
+            :class="[
+              'signal-shell mb-10 flex h-40 w-40 items-center justify-center rounded-full border backdrop-blur-md transition-colors duration-300 md:h-48 md:w-48',
+              isDark
+                ? 'border-white/10 bg-white/5 shadow-[0_0_120px_rgba(34,211,238,0.14)]'
+                : 'border-white/80 bg-white/80 shadow-[0_18px_60px_-30px_rgba(34,211,238,0.22)]'
+            ]"
+          >
+            <img
+              v-if="siteLogo"
+              :src="siteLogo"
+              alt="Logo"
+              class="h-24 w-24 object-contain md:h-28 md:w-28"
+            />
+            <JuliuFlowLogo v-else class="h-24 w-24 md:h-28 md:w-28" />
           </div>
 
-          <!-- Right: Terminal Animation -->
-          <div class="flex flex-1 justify-center lg:justify-end">
-            <div class="terminal-container">
-              <div class="terminal-window">
-                <!-- Window header -->
-                <div class="terminal-header">
-                  <div class="terminal-buttons">
-                    <span class="btn-close"></span>
-                    <span class="btn-minimize"></span>
-                    <span class="btn-maximize"></span>
-                  </div>
-                  <span class="terminal-title">terminal</span>
-                </div>
-                <!-- Terminal content -->
-                <div class="terminal-body">
-                  <div class="code-line line-1">
-                    <span class="code-prompt">$</span>
-                    <span class="code-cmd">curl</span>
-                    <span class="code-flag">-X POST</span>
-                    <span class="code-url">/v1/messages</span>
-                  </div>
-                  <div class="code-line line-2">
-                    <span class="code-comment"># Routing to upstream...</span>
-                  </div>
-                  <div class="code-line line-3">
-                    <span class="code-success">200 OK</span>
-                    <span class="code-response">{ "content": "Hello!" }</span>
-                  </div>
-                  <div class="code-line line-4">
-                    <span class="code-prompt">$</span>
-                    <span class="cursor"></span>
-                  </div>
+          <h1 :class="['max-w-4xl text-5xl font-semibold tracking-tight md:text-7xl', isDark ? 'text-white' : 'text-slate-950']">
+            {{ brandName }}
+          </h1>
+          <p :class="['mt-6 max-w-3xl text-lg leading-8 md:text-2xl md:leading-10', isDark ? 'text-slate-300' : 'text-slate-600']">
+            <template v-if="heroSubtitleLines.length > 1">
+              <span
+                v-for="line in heroSubtitleLines"
+                :key="line"
+                class="block"
+              >
+                {{ line }}
+              </span>
+            </template>
+            <template v-else>
+              {{ heroSubtitle }}
+            </template>
+          </p>
+
+          <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <router-link
+              :to="isAuthenticated ? dashboardPath : '/login'"
+              class="inline-flex items-center justify-center rounded-full bg-cyan-500 px-8 py-4 text-base font-semibold text-slate-950 shadow-[0_0_30px_rgba(6,182,212,0.28)] transition-all hover:bg-cyan-300"
+            >
+              {{ isAuthenticated ? t('home.goToDashboard') : t('home.juliu.primaryCta') }}
+              <Icon name="arrowRight" size="md" class="ml-2" :stroke-width="2" />
+            </router-link>
+
+            <a
+              :href="secondaryActionHref"
+              :target="secondaryActionTarget"
+              :rel="secondaryActionTarget ? 'noopener noreferrer' : undefined"
+              :class="[
+                'inline-flex items-center justify-center rounded-full border px-8 py-4 text-base font-semibold transition-all',
+                isDark
+                  ? 'border-white/15 bg-white/5 text-white hover:border-white/30 hover:bg-white/10'
+                  : 'border-slate-300 bg-slate-200/80 text-slate-900 hover:border-slate-400 hover:bg-slate-200'
+              ]"
+            >
+              {{ secondaryActionLabel }}
+            </a>
+          </div>
+
+          <div class="mt-10 flex flex-wrap items-center justify-center gap-3">
+            <span
+              v-for="tag in valueTags"
+              :key="tag"
+              :class="[
+                'rounded-full border px-4 py-2 text-sm backdrop-blur-sm transition-colors duration-300',
+                isDark
+                  ? 'border-white/12 bg-white/5 text-slate-200'
+                  : 'border-slate-300 bg-slate-200/80 text-slate-800 shadow-sm'
+              ]"
+            >
+              {{ tag }}
+            </span>
+          </div>
+
+          <a
+            href="#features"
+            :class="['mt-14 inline-flex items-center gap-2 text-sm font-medium transition-colors', isDark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900']"
+          >
+            {{ t('home.juliu.scrollCta') }}
+            <Icon name="arrowDown" size="sm" />
+          </a>
+        </div>
+      </section>
+
+      <section :class="['border-t px-6 py-20', isDark ? 'border-white/8' : 'border-slate-200/80']" id="features">
+        <div class="mx-auto max-w-6xl">
+          <div class="mx-auto max-w-4xl text-center">
+            <p :class="['text-sm font-semibold uppercase tracking-[0.4em]', isDark ? 'text-cyan-300/70' : 'text-cyan-700']">{{ t('home.juliu.capabilityEyebrow') }}</p>
+            <h2 :class="['mt-4 text-3xl font-semibold leading-tight md:text-4xl lg:text-5xl', isDark ? 'text-white' : 'text-slate-950']">
+              <span :class="capabilityTitleClass">{{ t('home.juliu.capabilityTitle') }}</span>
+            </h2>
+          </div>
+
+          <div class="mt-16 grid gap-10 md:grid-cols-2 xl:grid-cols-4">
+            <article
+              v-for="feature in features"
+              :key="feature.title"
+              :class="['group border-t pt-6 transition-colors duration-300', isDark ? 'border-white/12' : 'border-slate-200']"
+            >
+              <div
+                :class="[
+                  'mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl border transition-all',
+                  isDark
+                    ? 'border-white/10 bg-white/5 text-cyan-300 group-hover:border-cyan-300/40 group-hover:bg-cyan-400/10 group-hover:text-cyan-100'
+                    : 'border-slate-300 bg-slate-100 text-cyan-800 shadow-sm group-hover:border-cyan-300 group-hover:bg-cyan-100/80 group-hover:text-cyan-900'
+                ]"
+              >
+                <Icon :name="feature.icon" size="lg" />
+              </div>
+              <h3 :class="['text-xl font-semibold', isDark ? 'text-white' : 'text-slate-900']">{{ feature.title }}</h3>
+              <p :class="['mt-3 text-sm leading-7', isDark ? 'text-slate-300' : 'text-slate-600']">{{ feature.desc }}</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section :class="['border-t px-6 py-20', isDark ? 'border-white/8' : 'border-slate-200/80']" id="flow">
+        <div class="mx-auto grid max-w-6xl gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+          <div>
+            <p :class="['text-sm font-semibold uppercase tracking-[0.4em]', isDark ? 'text-emerald-300/70' : 'text-emerald-700']">{{ t('home.juliu.flowEyebrow') }}</p>
+            <h2 :class="['mt-4 text-3xl font-semibold md:text-5xl', isDark ? 'text-white' : 'text-slate-950']">{{ t('home.juliu.flowTitle') }}</h2>
+            <p :class="['mt-6 max-w-xl text-base leading-8', isDark ? 'text-slate-300' : 'text-slate-600']">
+              {{ t('home.juliu.flowDescription') }}
+            </p>
+          </div>
+
+          <div class="space-y-8">
+            <article
+              v-for="step in flowSteps"
+              :key="step.index"
+              :class="[
+                'rounded-3xl border p-6 backdrop-blur-sm transition-all',
+                isDark
+                  ? 'border-white/10 bg-white/5 hover:border-cyan-300/30 hover:bg-white/[0.07]'
+                  : 'border-slate-300 bg-slate-100/90 shadow-sm hover:border-cyan-300 hover:bg-cyan-100/70'
+              ]"
+            >
+              <div class="flex flex-col gap-4 sm:flex-row sm:items-start">
+                <span :class="['text-sm font-semibold tracking-[0.35em]', isDark ? 'text-cyan-300' : 'text-cyan-700']">{{ step.index }}</span>
+                <div>
+                  <h3 :class="['text-xl font-semibold', isDark ? 'text-white' : 'text-slate-900']">{{ step.title }}</h3>
+                  <p :class="['mt-3 text-sm leading-7', isDark ? 'text-slate-300' : 'text-slate-600']">{{ step.desc }}</p>
                 </div>
               </div>
-            </div>
+            </article>
           </div>
         </div>
+      </section>
 
-        <!-- Feature Tags - Centered -->
-        <div class="mb-12 flex flex-wrap items-center justify-center gap-4 md:gap-6">
-          <div
-            class="inline-flex items-center gap-2.5 rounded-full border border-gray-200/50 bg-white/80 px-5 py-2.5 shadow-sm backdrop-blur-sm dark:border-dark-700/50 dark:bg-dark-800/80"
-          >
-            <Icon name="swap" size="sm" class="text-primary-500" />
-            <span class="text-sm font-medium text-gray-700 dark:text-dark-200">{{
-              t('home.tags.subscriptionToApi')
-            }}</span>
-          </div>
-          <div
-            class="inline-flex items-center gap-2.5 rounded-full border border-gray-200/50 bg-white/80 px-5 py-2.5 shadow-sm backdrop-blur-sm dark:border-dark-700/50 dark:bg-dark-800/80"
-          >
-            <Icon name="shield" size="sm" class="text-primary-500" />
-            <span class="text-sm font-medium text-gray-700 dark:text-dark-200">{{
-              t('home.tags.stickySession')
-            }}</span>
-          </div>
-          <div
-            class="inline-flex items-center gap-2.5 rounded-full border border-gray-200/50 bg-white/80 px-5 py-2.5 shadow-sm backdrop-blur-sm dark:border-dark-700/50 dark:bg-dark-800/80"
-          >
-            <Icon name="chart" size="sm" class="text-primary-500" />
-            <span class="text-sm font-medium text-gray-700 dark:text-dark-200">{{
-              t('home.tags.realtimeBilling')
-            }}</span>
-          </div>
-        </div>
-
-        <!-- Features Grid -->
-        <div class="mb-12 grid gap-6 md:grid-cols-3">
-          <!-- Feature 1: Unified Gateway -->
-          <div
-            class="group rounded-2xl border border-gray-200/50 bg-white/60 p-6 backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:shadow-primary-500/10 dark:border-dark-700/50 dark:bg-dark-800/60"
-          >
-            <div
-              class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/30 transition-transform group-hover:scale-110"
-            >
-              <Icon name="server" size="lg" class="text-white" />
+      <section :class="['border-t px-6 py-20', isDark ? 'border-white/8' : 'border-slate-200/80']" id="providers">
+        <div class="mx-auto max-w-6xl">
+          <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p :class="['text-sm font-semibold uppercase tracking-[0.4em]', isDark ? 'text-cyan-300/70' : 'text-cyan-700']">{{ t('home.juliu.modelsEyebrow') }}</p>
+              <h2 :class="['mt-4 text-3xl font-semibold md:text-5xl', isDark ? 'text-white' : 'text-slate-950']">{{ t('home.juliu.modelsTitle') }}</h2>
             </div>
-            <h3 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
-              {{ t('home.features.unifiedGateway') }}
-            </h3>
-            <p class="text-sm leading-relaxed text-gray-600 dark:text-dark-400">
-              {{ t('home.features.unifiedGatewayDesc') }}
+            <p :class="['max-w-xl text-sm leading-7', isDark ? 'text-slate-300' : 'text-slate-600']">
+              {{ t('home.juliu.modelsDescription') }}
             </p>
           </div>
 
-          <!-- Feature 2: Account Pool -->
-          <div
-            class="group rounded-2xl border border-gray-200/50 bg-white/60 p-6 backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:shadow-primary-500/10 dark:border-dark-700/50 dark:bg-dark-800/60"
-          >
-            <div
-              class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 shadow-lg shadow-primary-500/30 transition-transform group-hover:scale-110"
+          <div class="mt-12 flex flex-wrap gap-3">
+            <span
+              v-for="provider in providers"
+              :key="provider"
+              :class="[
+                'rounded-full border px-5 py-3 text-sm backdrop-blur-sm transition-colors duration-300',
+                isDark
+                  ? 'border-white/12 bg-white/5 text-slate-100'
+                  : 'border-slate-300 bg-slate-100 text-slate-800 shadow-sm'
+              ]"
             >
-              <svg
-                class="h-6 w-6 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="1.5"
+              {{ provider }}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <section class="px-6 pb-24 pt-8">
+        <div class="mx-auto max-w-6xl overflow-hidden rounded-[2rem] border border-cyan-300/15 bg-[linear-gradient(135deg,rgba(8,47,73,0.95),rgba(15,23,42,0.95)_40%,rgba(6,95,70,0.92))] p-8 shadow-[0_0_80px_rgba(6,182,212,0.12)] md:p-12">
+          <div class="flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
+            <div class="max-w-2xl">
+              <p class="text-sm font-semibold uppercase tracking-[0.4em] text-cyan-200/80">{{ t('home.juliu.finalEyebrow') }}</p>
+              <h2 class="mt-4 text-3xl font-semibold text-white md:text-5xl">{{ t('home.juliu.finalTitle') }}</h2>
+              <p class="mt-6 text-base leading-8 text-cyan-50/80">
+                {{ t('home.juliu.finalDescription') }}
+              </p>
+            </div>
+
+            <div class="flex flex-col gap-4 sm:flex-row lg:flex-col">
+              <router-link
+                :to="isAuthenticated ? dashboardPath : '/login'"
+                class="inline-flex items-center justify-center rounded-full bg-white px-8 py-4 text-base font-semibold text-slate-950 transition-all hover:bg-cyan-100"
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"
-                />
-              </svg>
-            </div>
-            <h3 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
-              {{ t('home.features.multiAccount') }}
-            </h3>
-            <p class="text-sm leading-relaxed text-gray-600 dark:text-dark-400">
-              {{ t('home.features.multiAccountDesc') }}
-            </p>
-          </div>
-
-          <!-- Feature 3: Billing & Quota -->
-          <div
-            class="group rounded-2xl border border-gray-200/50 bg-white/60 p-6 backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:shadow-primary-500/10 dark:border-dark-700/50 dark:bg-dark-800/60"
-          >
-            <div
-              class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg shadow-purple-500/30 transition-transform group-hover:scale-110"
-            >
-              <svg
-                class="h-6 w-6 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="1.5"
+                {{ isAuthenticated ? t('home.goToDashboard') : t('home.juliu.finalPrimaryCta') }}
+              </router-link>
+              <a
+                :href="secondaryActionHref"
+                :target="secondaryActionTarget"
+                :rel="secondaryActionTarget ? 'noopener noreferrer' : undefined"
+                class="inline-flex items-center justify-center rounded-full border border-white/20 px-8 py-4 text-base font-semibold text-white transition-all hover:bg-white/10"
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"
-                />
-              </svg>
+                {{ secondaryActionLabel }}
+              </a>
             </div>
-            <h3 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
-              {{ t('home.features.balanceQuota') }}
-            </h3>
-            <p class="text-sm leading-relaxed text-gray-600 dark:text-dark-400">
-              {{ t('home.features.balanceQuotaDesc') }}
-            </p>
           </div>
         </div>
-
-        <!-- Supported Providers -->
-        <div class="mb-8 text-center">
-          <h2 class="mb-3 text-2xl font-bold text-gray-900 dark:text-white">
-            {{ t('home.providers.title') }}
-          </h2>
-          <p class="text-sm text-gray-600 dark:text-dark-400">
-            {{ t('home.providers.description') }}
-          </p>
-        </div>
-
-        <div class="mb-16 flex flex-wrap items-center justify-center gap-4">
-          <!-- Claude - Supported -->
-          <div
-            class="flex items-center gap-2 rounded-xl border border-primary-200 bg-white/60 px-5 py-3 ring-1 ring-primary-500/20 backdrop-blur-sm dark:border-primary-800 dark:bg-dark-800/60"
-          >
-            <div
-              class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-orange-400 to-orange-500"
-            >
-              <span class="text-xs font-bold text-white">C</span>
-            </div>
-            <span class="text-sm font-medium text-gray-700 dark:text-dark-200">{{ t('home.providers.claude') }}</span>
-            <span
-              class="rounded bg-primary-100 px-1.5 py-0.5 text-[10px] font-medium text-primary-600 dark:bg-primary-900/30 dark:text-primary-400"
-              >{{ t('home.providers.supported') }}</span
-            >
-          </div>
-          <!-- GPT - Supported -->
-          <div
-            class="flex items-center gap-2 rounded-xl border border-primary-200 bg-white/60 px-5 py-3 ring-1 ring-primary-500/20 backdrop-blur-sm dark:border-primary-800 dark:bg-dark-800/60"
-          >
-            <div
-              class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-green-500 to-green-600"
-            >
-              <span class="text-xs font-bold text-white">G</span>
-            </div>
-            <span class="text-sm font-medium text-gray-700 dark:text-dark-200">GPT</span>
-            <span
-              class="rounded bg-primary-100 px-1.5 py-0.5 text-[10px] font-medium text-primary-600 dark:bg-primary-900/30 dark:text-primary-400"
-              >{{ t('home.providers.supported') }}</span
-            >
-          </div>
-          <!-- Gemini - Supported -->
-          <div
-            class="flex items-center gap-2 rounded-xl border border-primary-200 bg-white/60 px-5 py-3 ring-1 ring-primary-500/20 backdrop-blur-sm dark:border-primary-800 dark:bg-dark-800/60"
-          >
-            <div
-              class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600"
-            >
-              <span class="text-xs font-bold text-white">G</span>
-            </div>
-            <span class="text-sm font-medium text-gray-700 dark:text-dark-200">{{ t('home.providers.gemini') }}</span>
-            <span
-              class="rounded bg-primary-100 px-1.5 py-0.5 text-[10px] font-medium text-primary-600 dark:bg-primary-900/30 dark:text-primary-400"
-              >{{ t('home.providers.supported') }}</span
-            >
-          </div>
-          <!-- Antigravity - Supported -->
-          <div
-            class="flex items-center gap-2 rounded-xl border border-primary-200 bg-white/60 px-5 py-3 ring-1 ring-primary-500/20 backdrop-blur-sm dark:border-primary-800 dark:bg-dark-800/60"
-          >
-            <div
-              class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-rose-500 to-pink-600"
-            >
-              <span class="text-xs font-bold text-white">A</span>
-            </div>
-            <span class="text-sm font-medium text-gray-700 dark:text-dark-200">{{ t('home.providers.antigravity') }}</span>
-            <span
-              class="rounded bg-primary-100 px-1.5 py-0.5 text-[10px] font-medium text-primary-600 dark:bg-primary-900/30 dark:text-primary-400"
-              >{{ t('home.providers.supported') }}</span
-            >
-          </div>
-          <!-- More - Coming Soon -->
-          <div
-            class="flex items-center gap-2 rounded-xl border border-gray-200/50 bg-white/40 px-5 py-3 opacity-60 backdrop-blur-sm dark:border-dark-700/50 dark:bg-dark-800/40"
-          >
-            <div
-              class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-gray-500 to-gray-600"
-            >
-              <span class="text-xs font-bold text-white">+</span>
-            </div>
-            <span class="text-sm font-medium text-gray-700 dark:text-dark-200">{{ t('home.providers.more') }}</span>
-            <span
-              class="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-500 dark:bg-dark-700 dark:text-dark-400"
-              >{{ t('home.providers.soon') }}</span
-            >
-          </div>
-        </div>
-      </div>
+      </section>
     </main>
 
-    <!-- Footer -->
-    <footer class="relative z-10 border-t border-gray-200/50 px-6 py-8 dark:border-dark-800/50">
-      <div
-        class="mx-auto flex max-w-6xl flex-col items-center justify-center gap-4 text-center sm:flex-row sm:text-left"
-      >
-        <p class="text-sm text-gray-500 dark:text-dark-400">
-          &copy; {{ currentYear }} {{ siteName }}. {{ t('home.footer.allRightsReserved') }}
-        </p>
-        <div class="flex items-center gap-4">
-          <a
-            v-if="docUrl"
-            :href="docUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-dark-400 dark:hover:text-white"
-          >
-            {{ t('home.docs') }}
-          </a>
-          <a
-            :href="githubUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-dark-400 dark:hover:text-white"
-          >
-            GitHub
-          </a>
-        </div>
+    <footer :class="['relative z-10 border-t px-6 py-8', isDark ? 'border-white/8' : 'border-slate-200/80']">
+      <div class="mx-auto flex max-w-6xl items-center justify-center text-center text-sm">
+        <p :class="[isDark ? 'text-slate-400' : 'text-slate-600']">&copy; {{ currentYear }} {{ brandName }}. {{ t('home.footer.allRightsReserved') }}</p>
       </div>
     </footer>
   </div>
@@ -410,52 +315,140 @@ import { useI18n } from 'vue-i18n'
 import { useAuthStore, useAppStore } from '@/stores'
 import ThemeToggleButton from '@/components/common/ThemeToggleButton.vue'
 import LocaleSwitcher from '@/components/common/LocaleSwitcher.vue'
+import JuliuFlowLogo from '@/components/common/JuliuFlowLogo.vue'
 import { DEFAULT_SITE_NAME, DEFAULT_SITE_SUBTITLE } from '@/constants/branding'
 import Icon from '@/components/icons/Icon.vue'
 import { useTheme } from '@/composables/useTheme'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const authStore = useAuthStore()
 const appStore = useAppStore()
+const { isDark } = useTheme()
 
-// Site settings - directly from appStore (already initialized from injected config)
 const siteName = computed(() => appStore.cachedPublicSettings?.site_name || appStore.siteName || DEFAULT_SITE_NAME)
 const siteLogo = computed(() => appStore.cachedPublicSettings?.site_logo || appStore.siteLogo || '')
 const siteSubtitle = computed(() => appStore.cachedPublicSettings?.site_subtitle || DEFAULT_SITE_SUBTITLE)
 const docUrl = computed(() => appStore.cachedPublicSettings?.doc_url || appStore.docUrl || '')
 const homeContent = computed(() => appStore.cachedPublicSettings?.home_content || '')
-const headerBrandName = computed(() => siteName.value || DEFAULT_SITE_NAME)
 
-// Check if homeContent is a URL (for iframe display)
 const isHomeContentUrl = computed(() => {
   const content = homeContent.value.trim()
   return content.startsWith('http://') || content.startsWith('https://')
 })
 
-// GitHub URL
-const githubUrl = 'https://github.com/Wei-Shaw/sub2api'
-
-// Auth state
 const isAuthenticated = computed(() => authStore.isAuthenticated)
 const isAdmin = computed(() => authStore.isAdmin)
-const dashboardPath = computed(() => isAdmin.value ? '/admin/dashboard' : '/dashboard')
-const userInitial = computed(() => {
-  const user = authStore.user
-  if (!user || !user.email) return ''
-  return user.email.charAt(0).toUpperCase()
-})
-
-// Current year for footer
+const dashboardPath = computed(() => (isAdmin.value ? '/admin/dashboard' : '/dashboard'))
 const currentYear = computed(() => new Date().getFullYear())
 
-const { isDark } = useTheme()
+const brandName = computed(() => (siteName.value === DEFAULT_SITE_NAME ? DEFAULT_SITE_NAME : siteName.value))
+const headerBrandName = computed(() => brandName.value.trim())
+
+const heroSubtitleFallbacks = [
+  DEFAULT_SITE_SUBTITLE,
+  '一站式大模型 API Token 汇聚平台。连接全球顶尖模型，聚沙成塔，汇流成海。',
+  'A one-stop AI token hub connecting leading models worldwide. Gather access, unify routing, and scale with confidence.'
+]
+
+const heroSubtitle = computed(() => {
+  const subtitle = siteSubtitle.value.trim()
+  if (!subtitle || heroSubtitleFallbacks.includes(subtitle)) {
+    return t('home.juliu.fallbackSubtitle')
+  }
+  return subtitle
+})
+
+const heroSubtitleLines = computed(() => {
+  const subtitle = heroSubtitle.value.trim()
+  if (!subtitle) return []
+
+  if (locale.value.startsWith('zh') && subtitle === t('home.juliu.fallbackSubtitle')) {
+    return [
+      '一站式大模型 API Token 汇聚平台',
+      '连接全球顶尖模型，聚沙成塔，汇流成海'
+    ]
+  }
+
+  return subtitle
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+})
+
+const capabilityTitleClass = computed(() =>
+  locale.value.startsWith('zh') ? 'lg:whitespace-nowrap' : ''
+)
+
+const secondaryActionHref = computed(() => docUrl.value || '#features')
+const secondaryActionTarget = computed(() => (docUrl.value ? '_blank' : undefined))
+const secondaryActionLabel = computed(() => (docUrl.value ? t('home.docs') : t('home.juliu.secondaryCta')))
+
+const navLinkClass = computed(() =>
+  isDark.value ? 'transition-colors hover:text-white' : 'transition-colors hover:text-slate-900'
+)
+
+const valueTags = computed(() => [
+  t('home.juliu.tags.unifiedAccess'),
+  t('home.juliu.tags.stableRouting'),
+  t('home.juliu.tags.usageBilling')
+])
+
+const features = computed<
+  Array<{ icon: 'bolt' | 'shield' | 'cpu' | 'chart'; title: string; desc: string }>
+>(() => [
+  {
+    icon: 'bolt',
+    title: t('home.juliu.features.speed.title'),
+    desc: t('home.juliu.features.speed.desc')
+  },
+  {
+    icon: 'shield',
+    title: t('home.juliu.features.stability.title'),
+    desc: t('home.juliu.features.stability.desc')
+  },
+  {
+    icon: 'cpu',
+    title: t('home.juliu.features.aggregation.title'),
+    desc: t('home.juliu.features.aggregation.desc')
+  },
+  {
+    icon: 'chart',
+    title: t('home.juliu.features.analytics.title'),
+    desc: t('home.juliu.features.analytics.desc')
+  }
+])
+
+const flowSteps = computed(() => [
+  {
+    index: '01',
+    title: t('home.juliu.flowSteps.connect.title'),
+    desc: t('home.juliu.flowSteps.connect.desc'),
+  },
+  {
+    index: '02',
+    title: t('home.juliu.flowSteps.orchestrate.title'),
+    desc: t('home.juliu.flowSteps.orchestrate.desc'),
+  },
+  {
+    index: '03',
+    title: t('home.juliu.flowSteps.serve.title'),
+    desc: t('home.juliu.flowSteps.serve.desc'),
+  },
+])
+
+const providers = computed(() => [
+  'GPT-5',
+  'Claude',
+  'Gemini',
+  'Codex',
+  t('home.juliu.providers.openaiCompatible'),
+  t('home.juliu.providers.multiAccountPool'),
+])
 
 onMounted(() => {
-  // Check auth state
   authStore.checkAuth()
 
-  // Ensure public settings are loaded (will use cache if already loaded from injected config)
   if (!appStore.publicSettingsLoaded) {
     appStore.fetchPublicSettings()
   }
@@ -463,164 +456,52 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Terminal Container */
-.terminal-container {
+.juliu-home {
+  background-image:
+    radial-gradient(circle at 20% 18%, rgba(34, 211, 238, 0.18), transparent 22%),
+    radial-gradient(circle at 82% 76%, rgba(52, 211, 153, 0.18), transparent 28%);
+}
+
+.hero-grid {
+  background-image: linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.85), transparent 88%);
+}
+
+.hero-noise {
+  background-image: radial-gradient(circle at center, rgba(255, 255, 255, 0.14) 0.8px, transparent 0.8px);
+  background-size: 18px 18px;
+  opacity: 0.1;
+}
+
+.hero-orb {
+  filter: blur(80px);
+  opacity: 0.7;
+}
+
+.hero-orb-cyan {
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.45), transparent 65%);
+}
+
+.hero-orb-emerald {
+  background: radial-gradient(circle, rgba(52, 211, 153, 0.38), transparent 68%);
+}
+
+.hero-beam {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.22), transparent 70%);
+  filter: blur(72px);
+}
+
+.signal-shell {
   position: relative;
-  display: inline-block;
 }
 
-/* Terminal Window */
-.terminal-window {
-  width: 420px;
-  background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
-  border-radius: 14px;
-  box-shadow:
-    0 25px 50px -12px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(255, 255, 255, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  overflow: hidden;
-  transform: perspective(1000px) rotateX(2deg) rotateY(-2deg);
-  transition: transform 0.3s ease;
-}
-
-.terminal-window:hover {
-  transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(-4px);
-}
-
-/* Terminal Header */
-.terminal-header {
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  background: rgba(30, 41, 59, 0.8);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.terminal-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.terminal-buttons span {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-}
-
-.btn-close {
-  background: #ef4444;
-}
-.btn-minimize {
-  background: #eab308;
-}
-.btn-maximize {
-  background: #22c55e;
-}
-
-.terminal-title {
-  flex: 1;
-  text-align: center;
-  font-size: 12px;
-  font-family: ui-monospace, monospace;
-  color: #64748b;
-  margin-right: 52px;
-}
-
-/* Terminal Body */
-.terminal-body {
-  padding: 20px 24px;
-  font-family: ui-monospace, 'Fira Code', monospace;
-  font-size: 14px;
-  line-height: 2;
-}
-
-.code-line {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  opacity: 0;
-  animation: line-appear 0.5s ease forwards;
-}
-
-.line-1 {
-  animation-delay: 0.3s;
-}
-.line-2 {
-  animation-delay: 1s;
-}
-.line-3 {
-  animation-delay: 1.8s;
-}
-.line-4 {
-  animation-delay: 2.5s;
-}
-
-@keyframes line-appear {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.code-prompt {
-  color: #22c55e;
-  font-weight: bold;
-}
-.code-cmd {
-  color: #38bdf8;
-}
-.code-flag {
-  color: #a78bfa;
-}
-.code-url {
-  color: #14b8a6;
-}
-.code-comment {
-  color: #64748b;
-  font-style: italic;
-}
-.code-success {
-  color: #22c55e;
-  background: rgba(34, 197, 94, 0.15);
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-weight: 600;
-}
-.code-response {
-  color: #fbbf24;
-}
-
-/* Blinking Cursor */
-.cursor {
-  display: inline-block;
-  width: 8px;
-  height: 16px;
-  background: #22c55e;
-  animation: blink 1s step-end infinite;
-}
-
-@keyframes blink {
-  0%,
-  50% {
-    opacity: 1;
-  }
-  51%,
-  100% {
-    opacity: 0;
-  }
-}
-
-/* Dark mode adjustments */
-:deep(.dark) .terminal-window {
-  box-shadow:
-    0 25px 50px -12px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(20, 184, 166, 0.2),
-    0 0 40px rgba(20, 184, 166, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+.signal-shell::before {
+  content: '';
+  position: absolute;
+  inset: 14%;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.18), transparent 68%);
+  filter: blur(30px);
 }
 </style>
