@@ -729,6 +729,7 @@ export default {
     quota: 'Quota',
     lastUsedAt: 'Last Used',
     useKey: 'Use Key',
+    openWebUi: 'Open WebUI',
     useKeyModal: {
       title: 'Use API Key',
       description:
