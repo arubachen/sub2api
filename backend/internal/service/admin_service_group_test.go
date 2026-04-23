@@ -326,6 +326,27 @@ func TestAdminService_UpdateGroup_NormalizesMessagesDispatchModelConfig(t *testi
 	}, repo.updated.MessagesDispatchModelConfig)
 }
 
+func TestAdminService_UpdateGroup_AllowsClearingDescription(t *testing.T) {
+	existingGroup := &Group{
+		ID:          1,
+		Name:        "existing-group",
+		Description: "to-be-cleared",
+		Platform:    PlatformOpenAI,
+		Status:      StatusActive,
+	}
+	repo := &groupRepoStubForAdmin{getByID: existingGroup}
+	svc := &adminServiceImpl{groupRepo: repo}
+
+	emptyDescription := ""
+	group, err := svc.UpdateGroup(context.Background(), 1, &UpdateGroupInput{
+		Description: &emptyDescription,
+	})
+	require.NoError(t, err)
+	require.NotNil(t, group)
+	require.NotNil(t, repo.updated)
+	require.Empty(t, repo.updated.Description)
+}
+
 func TestAdminService_CreateGroup_ClearsMessagesDispatchFieldsForNonOpenAIPlatform(t *testing.T) {
 	repo := &groupRepoStubForAdmin{}
 	svc := &adminServiceImpl{groupRepo: repo}

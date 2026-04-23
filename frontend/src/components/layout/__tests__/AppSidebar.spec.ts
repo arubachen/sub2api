@@ -40,9 +40,10 @@ describe('AppSidebar shell polish', () => {
     expect(componentSource).not.toContain('ThemeToggleButton')
   })
 
-  it('uses the provided developer-mode tv svg for the ops icon with shell-colored contrast', () => {
+  it('uses the provided developer-mode tv svg for the model-health custom menu item with shell-colored contrast', () => {
     expect(componentSource).toContain("developer-mode-tv-outline-rounded.svg?raw")
-    expect(componentSource).toContain("path: '/admin/ops'")
+    expect(componentSource).toContain('isModelHealthCustomMenuItem')
+    expect(componentSource).toContain("url.includes('check.juliu.one')")
     expect(componentSource).toContain('iconSvg: opsSidebarIcon')
     expect(componentSource).toContain("iconSvgClass: 'sidebar-shell-icon'")
     expect(componentSource).toContain(".sidebar-shell-icon :deep([fill]:not([fill='none']))")

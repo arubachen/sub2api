@@ -556,12 +556,7 @@ const userNavItems = computed((): NavItem[] => {
       : []),
     { path: '/redeem', label: t('nav.redeem'), icon: GiftIcon, hideInSimpleMode: true },
     { path: '/profile', label: t('nav.profile'), icon: UserCircleIcon },
-    ...customMenuItemsForUser.value.map((item): NavItem => ({
-      path: `/custom/${item.id}`,
-      label: item.label,
-      icon: null,
-      iconSvg: item.icon_svg,
-    })),
+    ...customMenuItemsForUser.value.map((item): NavItem => buildCustomMenuNavItem(item)),
   ]
   return authStore.isSimpleMode ? items.filter(item => !item.hideInSimpleMode) : items
 })
@@ -594,12 +589,7 @@ const personalNavItems = computed((): NavItem[] => {
       : []),
     { path: '/redeem', label: t('nav.redeem'), icon: GiftIcon, hideInSimpleMode: true },
     { path: '/profile', label: t('nav.profile'), icon: UserCircleIcon },
-    ...customMenuItemsForUser.value.map((item): NavItem => ({
-      path: `/custom/${item.id}`,
-      label: item.label,
-      icon: null,
-      iconSvg: item.icon_svg,
-    })),
+    ...customMenuItemsForUser.value.map((item): NavItem => buildCustomMenuNavItem(item)),
   ]
   return authStore.isSimpleMode ? items.filter(item => !item.hideInSimpleMode) : items
 })
@@ -618,18 +608,46 @@ const customMenuItemsForAdmin = computed(() => {
     .sort((a, b) => a.sort_order - b.sort_order)
 })
 
+function isModelHealthCustomMenuItem(item: { label?: string | null; url?: string | null }) {
+  const label = (item.label || '').trim()
+  const url = (item.url || '').trim().toLowerCase()
+  return (
+    label.includes('模型检测') ||
+    label.includes('模型健康') ||
+    url.includes('check.juliu.one')
+  )
+}
+
+function buildCustomMenuNavItem(item: {
+  id: string
+  label: string
+  icon_svg: string
+  url?: string | null
+}): NavItem {
+  if (isModelHealthCustomMenuItem(item)) {
+    return {
+      path: `/custom/${item.id}`,
+      label: item.label,
+      icon: null,
+      iconSvg: opsSidebarIcon,
+      iconSvgClass: 'sidebar-shell-icon'
+    }
+  }
+
+  return {
+    path: `/custom/${item.id}`,
+    label: item.label,
+    icon: null,
+    iconSvg: item.icon_svg,
+  }
+}
+
 // Admin navigation items
 const adminNavItems = computed((): NavItem[] => {
   const baseItems: NavItem[] = [
     { path: '/admin/dashboard', label: t('nav.dashboard'), icon: DashboardIcon },
     ...(adminSettingsStore.opsMonitoringEnabled
-      ? [{
-          path: '/admin/ops',
-          label: t('nav.ops'),
-          icon: null,
-          iconSvg: opsSidebarIcon,
-          iconSvgClass: 'sidebar-shell-icon'
-        }]
+      ? [{ path: '/admin/ops', label: t('nav.ops'), icon: ChartBarIcon }]
       : []),
     { path: '/admin/risk', label: t('nav.risk'), icon: ShieldIcon, hideInSimpleMode: true },
     { path: '/admin/users', label: t('nav.users'), icon: UsersIcon, hideInSimpleMode: true },
@@ -666,7 +684,7 @@ const adminNavItems = computed((): NavItem[] => {
     filtered.push({ path: '/admin/settings', label: t('nav.settings'), icon: CogIcon })
     // Add admin custom menu items after settings
     for (const cm of customMenuItemsForAdmin.value) {
-      filtered.push({ path: `/custom/${cm.id}`, label: cm.label, icon: null, iconSvg: cm.icon_svg })
+      filtered.push(buildCustomMenuNavItem(cm))
     }
     return filtered
   }
@@ -674,7 +692,7 @@ const adminNavItems = computed((): NavItem[] => {
   baseItems.push({ path: '/admin/settings', label: t('nav.settings'), icon: CogIcon })
   // Add admin custom menu items after settings
   for (const cm of customMenuItemsForAdmin.value) {
-    baseItems.push({ path: `/custom/${cm.id}`, label: cm.label, icon: null, iconSvg: cm.icon_svg })
+    baseItems.push(buildCustomMenuNavItem(cm))
   }
   return baseItems
 })
