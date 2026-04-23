@@ -39,4 +39,11 @@ describe('AppSidebar shell polish', () => {
   it('does not render a duplicate sidebar theme toggle anymore', () => {
     expect(componentSource).not.toContain('ThemeToggleButton')
   })
+
+  it('uses the provided developer-mode tv svg for the ops icon with shell-colored contrast', () => {
+    expect(componentSource).toContain("developer-mode-tv-outline-rounded.svg?raw")
+    expect(componentSource).toContain("path: '/admin/ops'")
+    expect(componentSource).toContain('iconSvg: opsSidebarIcon')
+    expect(componentSource).toContain('fill="currentColor"')
+  })
 })

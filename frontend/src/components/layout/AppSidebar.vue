@@ -182,6 +182,7 @@ import { useAdminSettingsStore, useAppStore, useAuthStore, useOnboardingStore } 
 import VersionBadge from '@/components/common/VersionBadge.vue'
 import Icon from '@/components/icons/Icon.vue'
 import { sanitizeSvg } from '@/utils/sanitize'
+import developerModeTvOutlineRoundedIcon from '@/assets/icons/developer-mode-tv-outline-rounded.svg?raw'
 
 interface NavItem {
   path: string
@@ -386,9 +387,10 @@ const ServerIcon = {
     )
 }
 
-const CpuIcon = {
-  render: () => h(Icon, { name: 'cpu', size: 'md' }),
-}
+const opsSidebarIcon = developerModeTvOutlineRoundedIcon
+  .replace('<svg ', '<svg fill="currentColor" aria-hidden="true" ')
+  .replace(/fill="#[^"]*"/g, 'fill="currentColor"')
+  .replace(/<path(?![^>]*fill=)/g, '<path fill="currentColor"')
 
 const BellIcon = {
   render: () =>
@@ -611,7 +613,7 @@ const adminNavItems = computed((): NavItem[] => {
   const baseItems: NavItem[] = [
     { path: '/admin/dashboard', label: t('nav.dashboard'), icon: DashboardIcon },
     ...(adminSettingsStore.opsMonitoringEnabled
-      ? [{ path: '/admin/ops', label: t('nav.ops'), icon: CpuIcon }]
+      ? [{ path: '/admin/ops', label: t('nav.ops'), icon: null, iconSvg: opsSidebarIcon }]
       : []),
     { path: '/admin/risk', label: t('nav.risk'), icon: ShieldIcon, hideInSimpleMode: true },
     { path: '/admin/users', label: t('nav.users'), icon: UsersIcon, hideInSimpleMode: true },
