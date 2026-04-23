@@ -27,7 +27,14 @@ function updateFavicon(iconUrl: string) {
     link.rel = 'icon'
     document.head.appendChild(link)
   }
-  link.type = iconUrl.endsWith('.svg') ? 'image/svg+xml' : 'image/x-icon'
+  const normalizedIconUrl = iconUrl.split('?')[0].toLowerCase()
+  if (normalizedIconUrl.endsWith('.svg') || iconUrl.startsWith('data:image/svg+xml')) {
+    link.type = 'image/svg+xml'
+  } else if (normalizedIconUrl.endsWith('.png') || iconUrl.startsWith('data:image/png')) {
+    link.type = 'image/png'
+  } else {
+    link.type = 'image/x-icon'
+  }
   link.href = iconUrl
 }
 
@@ -35,7 +42,7 @@ function updateFavicon(iconUrl: string) {
 watch(
   () => appStore.siteLogo,
   (newLogo) => {
-    updateFavicon(newLogo || '/logo.png')
+    updateFavicon(newLogo || '/favicon.svg')
   },
   { immediate: true }
 )

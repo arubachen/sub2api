@@ -30,3 +30,13 @@ describe('AppSidebar header styles', () => {
     expect(sidebarBrandBlockMatch?.[0]).not.toContain('overflow: hidden;')
   })
 })
+
+describe('AppSidebar shell polish', () => {
+  it('uses the Juliu fallback logo asset outside the home page shell', () => {
+    expect(componentSource).toContain("siteLogo || '/logo-light.svg'")
+  })
+
+  it('does not render a duplicate sidebar theme toggle anymore', () => {
+    expect(componentSource).not.toContain('ThemeToggleButton')
+  })
+})

@@ -1,6 +1,6 @@
 <template>
-  <header class="sticky top-0 z-30 border-b border-gray-200/70 bg-white/90 backdrop-blur-xl dark:border-dark-800 dark:bg-dark-950/90">
-    <div class="mx-auto flex h-[72px] max-w-[1560px] items-center justify-between px-4 md:px-6">
+  <header class="glass sticky top-0 z-30 border-b border-gray-200/50 dark:border-dark-700/50">
+    <div class="flex h-16 items-center justify-between px-4 md:px-6">
       <!-- Left: Mobile Menu Toggle + Page Title -->
       <div class="flex items-center gap-4">
         <button
@@ -32,17 +32,17 @@
           :href="docUrl"
           target="_blank"
           rel="noopener noreferrer"
-          class="hidden items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:border-gray-300 hover:text-gray-900 dark:border-dark-700 dark:bg-dark-900 dark:text-dark-300 dark:hover:border-dark-600 dark:hover:text-white sm:flex"
+          class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-dark-400 dark:hover:bg-dark-800 dark:hover:text-white"
         >
           <Icon name="book" size="sm" />
-          <span>{{ t('nav.docs') }}</span>
+          <span class="hidden sm:inline">{{ t('nav.docs') }}</span>
         </a>
 
         <!-- Language Switcher -->
         <LocaleSwitcher />
 
         <!-- Theme Toggle -->
-        <ThemeToggleButton button-class="hidden sm:inline-flex border border-gray-200 bg-white px-3 py-2 text-slate-700 hover:border-gray-300 hover:text-slate-950 dark:border-dark-700 dark:bg-dark-900 dark:text-slate-200 dark:hover:border-dark-600 dark:hover:text-white" />
+        <ThemeToggleButton button-class="rounded-lg border border-gray-200 bg-white p-2 text-slate-700 shadow-none hover:border-gray-300 hover:bg-gray-100 hover:text-slate-950 dark:border-dark-700 dark:bg-dark-900 dark:text-slate-200 dark:hover:border-dark-600 dark:hover:bg-dark-800 dark:hover:text-white" />
 
         <!-- Subscription Progress (for users with active subscriptions) -->
         <SubscriptionProgressMini v-if="user" />
@@ -50,7 +50,7 @@
         <!-- Balance Display -->
         <div
           v-if="user"
-          class="hidden items-center gap-2 rounded-full border border-primary-100 bg-primary-50/80 px-3 py-2 dark:border-primary-900/40 dark:bg-primary-950/40 sm:flex"
+          class="hidden items-center gap-2 rounded-xl bg-primary-50 px-3 py-1.5 dark:bg-primary-900/20 sm:flex"
         >
           <svg
             class="h-4 w-4 text-primary-600 dark:text-primary-400"
@@ -74,7 +74,7 @@
         <div v-if="user" class="relative" ref="dropdownRef">
           <button
             @click="toggleDropdown"
-            class="flex items-center gap-2 rounded-full border border-transparent p-1.5 pr-2 transition-colors hover:border-gray-200 hover:bg-white dark:hover:border-dark-700 dark:hover:bg-dark-900"
+            class="flex items-center gap-2 rounded-xl p-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-dark-800"
             aria-label="User Menu"
           >
             <UserAvatar

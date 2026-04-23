@@ -1,18 +1,17 @@
 <template>
   <button
     type="button"
-    @click="toggleTheme"
+    @click="cycleThemeMode"
     :class="[
       'inline-flex items-center justify-center rounded-full border border-gray-200/90 bg-white/90 p-2 text-slate-700 shadow-sm transition-all hover:border-gray-300 hover:bg-white hover:text-slate-950 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-white/10 dark:hover:text-white',
       buttonClass,
     ]"
-    :title="toggleTitle"
-    :aria-label="toggleTitle"
+    :title="themeModeLabel"
+    :aria-label="themeModeLabel"
   >
-    <Icon v-if="isDark" name="sun" size="md" class="text-amber-500" />
-    <Icon v-else name="moon" size="md" />
+    <span class="theme-toggle-icon" v-html="themeIconSvg"></span>
     <span v-if="showLabel" class="ml-2 text-sm font-medium">
-      {{ toggleLabel }}
+      {{ themeModeLabel }}
     </span>
   </button>
 </template>
@@ -21,7 +20,9 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTheme } from '@/composables/useTheme'
-import Icon from '@/components/icons/Icon.vue'
+import lightThemeIcon from '@/assets/theme-toggle/light.svg?raw'
+import darkThemeIcon from '@/assets/theme-toggle/dark.svg?raw'
+import systemThemeIcon from '@/assets/theme-toggle/system.svg?raw'
 
 withDefaults(defineProps<{
   showLabel?: boolean
@@ -32,10 +33,42 @@ withDefaults(defineProps<{
 })
 
 const { t } = useI18n()
-const { isDark, toggleTheme } = useTheme()
+const { themeMode, cycleThemeMode } = useTheme()
 
-const toggleLabel = computed(() => (isDark.value ? t('nav.lightMode') : t('nav.darkMode')))
-const toggleTitle = computed(() =>
-  isDark.value ? t('home.switchToLight') : t('home.switchToDark'),
-)
+const themeModeLabel = computed(() => {
+  if (themeMode.value === 'system') return t('home.themeModeSystem')
+  return themeMode.value === 'dark' ? t('home.themeModeDark') : t('home.themeModeLight')
+})
+
+const themeIconSvg = computed(() => {
+  const svg =
+    themeMode.value === 'system'
+      ? systemThemeIcon
+      : themeMode.value === 'dark'
+        ? darkThemeIcon
+        : lightThemeIcon
+
+  return svg
+    .replace('<svg ', '<svg fill="currentColor" aria-hidden="true" ')
+    .replace(/<path /g, '<path fill="currentColor" ')
+})
 </script>
+
+<style scoped>
+.theme-toggle-icon {
+  display: inline-block;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.theme-toggle-icon :deep(svg) {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: currentColor;
+}
+
+.theme-toggle-icon :deep(path) {
+  fill: currentColor;
+}
+</style>

@@ -16,7 +16,7 @@
       <div class="sidebar-logo flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-white to-slate-50 shadow-[0_14px_28px_-18px_rgba(15,23,42,0.18)] dark:bg-[linear-gradient(135deg,rgba(15,23,42,0.92),rgba(2,6,23,0.86))] dark:shadow-[0_18px_36px_-22px_rgba(34,211,238,0.16)]">
         <img
           v-if="settingsLoaded"
-          :src="siteLogo || '/logo.png'"
+          :src="siteLogo || '/logo-light.svg'"
           alt="Logo"
           class="max-h-full max-w-full object-contain p-1.5"
         />
@@ -150,13 +150,6 @@
 
     <!-- Bottom Section -->
     <div class="mt-auto border-t border-gray-200/80 p-3 dark:border-dark-800">
-      <ThemeToggleButton
-        show-label
-        :button-class="[
-          'mb-2 w-full justify-start px-3 py-2 text-sm shadow-none',
-          sidebarCollapsed ? '!justify-center !px-0' : ''
-        ].join(' ')"
-      />
       <!-- Collapse Button -->
       <button
         @click="toggleSidebar"
@@ -186,8 +179,8 @@ import { computed, h, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAdminSettingsStore, useAppStore, useAuthStore, useOnboardingStore } from '@/stores'
-import ThemeToggleButton from '@/components/common/ThemeToggleButton.vue'
 import VersionBadge from '@/components/common/VersionBadge.vue'
+import Icon from '@/components/icons/Icon.vue'
 import { sanitizeSvg } from '@/utils/sanitize'
 
 interface NavItem {
@@ -251,19 +244,8 @@ const KeyIcon = {
     )
 }
 
-const ChartIcon = {
-  render: () =>
-    h(
-      'svg',
-      { fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor', 'stroke-width': '1.5' },
-      [
-        h('path', {
-          'stroke-linecap': 'round',
-          'stroke-linejoin': 'round',
-          d: 'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z'
-        })
-      ]
-    )
+const ChartBarIcon = {
+  render: () => h(Icon, { name: 'chartBar', size: 'md' }),
 }
 
 const GiftIcon = {
@@ -281,19 +263,8 @@ const GiftIcon = {
     )
 }
 
-const UserIcon = {
-  render: () =>
-    h(
-      'svg',
-      { fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor', 'stroke-width': '1.5' },
-      [
-        h('path', {
-          'stroke-linecap': 'round',
-          'stroke-linejoin': 'round',
-          d: 'M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z'
-        })
-      ]
-    )
+const UserCircleIcon = {
+  render: () => h(Icon, { name: 'userCircle', size: 'md' }),
 }
 
 const UsersIcon = {
@@ -326,19 +297,8 @@ const ShieldIcon = {
     )
 }
 
-const FolderIcon = {
-  render: () =>
-    h(
-      'svg',
-      { fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor', 'stroke-width': '1.5' },
-      [
-        h('path', {
-          'stroke-linecap': 'round',
-          'stroke-linejoin': 'round',
-          d: 'M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z'
-        })
-      ]
-    )
+const CubeIcon = {
+  render: () => h(Icon, { name: 'cube', size: 'md' }),
 }
 
 const ChannelIcon = {
@@ -424,6 +384,10 @@ const ServerIcon = {
         })
       ]
     )
+}
+
+const CpuIcon = {
+  render: () => h(Icon, { name: 'cpu', size: 'md' }),
 }
 
 const BellIcon = {
@@ -556,7 +520,7 @@ const userNavItems = computed((): NavItem[] => {
   const items: NavItem[] = [
     { path: '/dashboard', label: t('nav.dashboard'), icon: DashboardIcon },
     { path: '/keys', label: t('nav.apiKeys'), icon: KeyIcon },
-    { path: '/usage', label: t('nav.usage'), icon: ChartIcon, hideInSimpleMode: true },
+    { path: '/usage', label: t('nav.usage'), icon: ChartBarIcon, hideInSimpleMode: true },
     { path: '/subscriptions', label: t('nav.mySubscriptions'), icon: CreditCardIcon, hideInSimpleMode: true },
     ...(appStore.cachedPublicSettings?.payment_enabled
       ? [
@@ -579,7 +543,7 @@ const userNavItems = computed((): NavItem[] => {
         ]
       : []),
     { path: '/redeem', label: t('nav.redeem'), icon: GiftIcon, hideInSimpleMode: true },
-    { path: '/profile', label: t('nav.profile'), icon: UserIcon },
+    { path: '/profile', label: t('nav.profile'), icon: UserCircleIcon },
     ...customMenuItemsForUser.value.map((item): NavItem => ({
       path: `/custom/${item.id}`,
       label: item.label,
@@ -594,7 +558,7 @@ const userNavItems = computed((): NavItem[] => {
 const personalNavItems = computed((): NavItem[] => {
   const items: NavItem[] = [
     { path: '/keys', label: t('nav.apiKeys'), icon: KeyIcon },
-    { path: '/usage', label: t('nav.usage'), icon: ChartIcon, hideInSimpleMode: true },
+    { path: '/usage', label: t('nav.usage'), icon: ChartBarIcon, hideInSimpleMode: true },
     { path: '/subscriptions', label: t('nav.mySubscriptions'), icon: CreditCardIcon, hideInSimpleMode: true },
     ...(appStore.cachedPublicSettings?.payment_enabled
       ? [
@@ -617,7 +581,7 @@ const personalNavItems = computed((): NavItem[] => {
         ]
       : []),
     { path: '/redeem', label: t('nav.redeem'), icon: GiftIcon, hideInSimpleMode: true },
-    { path: '/profile', label: t('nav.profile'), icon: UserIcon },
+    { path: '/profile', label: t('nav.profile'), icon: UserCircleIcon },
     ...customMenuItemsForUser.value.map((item): NavItem => ({
       path: `/custom/${item.id}`,
       label: item.label,
@@ -647,11 +611,11 @@ const adminNavItems = computed((): NavItem[] => {
   const baseItems: NavItem[] = [
     { path: '/admin/dashboard', label: t('nav.dashboard'), icon: DashboardIcon },
     ...(adminSettingsStore.opsMonitoringEnabled
-      ? [{ path: '/admin/ops', label: t('nav.ops'), icon: ChartIcon }]
+      ? [{ path: '/admin/ops', label: t('nav.ops'), icon: CpuIcon }]
       : []),
     { path: '/admin/risk', label: t('nav.risk'), icon: ShieldIcon, hideInSimpleMode: true },
     { path: '/admin/users', label: t('nav.users'), icon: UsersIcon, hideInSimpleMode: true },
-    { path: '/admin/groups', label: t('nav.groups'), icon: FolderIcon, hideInSimpleMode: true },
+    { path: '/admin/groups', label: t('nav.groups'), icon: CubeIcon, hideInSimpleMode: true },
     { path: '/admin/channels', label: t('nav.channels', '渠道管理'), icon: ChannelIcon, hideInSimpleMode: true },
     { path: '/admin/subscriptions', label: t('nav.subscriptions'), icon: CreditCardIcon, hideInSimpleMode: true },
     { path: '/admin/accounts', label: t('nav.accounts'), icon: GlobeIcon },
@@ -667,14 +631,14 @@ const adminNavItems = computed((): NavItem[] => {
             icon: OrderIcon,
             hideInSimpleMode: true,
             children: [
-              { path: '/admin/orders/dashboard', label: t('nav.paymentDashboard'), icon: ChartIcon },
+              { path: '/admin/orders/dashboard', label: t('nav.paymentDashboard'), icon: ChartBarIcon },
               { path: '/admin/orders', label: t('nav.orderManagement'), icon: OrderIcon },
               { path: '/admin/orders/plans', label: t('nav.paymentPlans'), icon: CreditCardIcon },
             ],
           },
         ]
       : []),
-    { path: '/admin/usage', label: t('nav.usage'), icon: ChartIcon }
+    { path: '/admin/usage', label: t('nav.usage'), icon: ChartBarIcon }
   ]
 
   // 简单模式下，在系统设置前插入 API密钥
