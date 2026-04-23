@@ -17,9 +17,9 @@ const announcementStore = useAnnouncementStore()
 
 /**
  * Update favicon dynamically
- * @param logoUrl - URL of the logo to use as favicon
+ * @param iconUrl - URL of the icon to use as favicon
  */
-function updateFavicon(logoUrl: string) {
+function updateFavicon(iconUrl: string) {
   // Find existing favicon link or create new one
   let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]')
   if (!link) {
@@ -27,17 +27,15 @@ function updateFavicon(logoUrl: string) {
     link.rel = 'icon'
     document.head.appendChild(link)
   }
-  link.type = logoUrl.endsWith('.svg') ? 'image/svg+xml' : 'image/x-icon'
-  link.href = logoUrl
+  link.type = iconUrl.endsWith('.svg') ? 'image/svg+xml' : 'image/x-icon'
+  link.href = iconUrl
 }
 
 // Watch for site settings changes and update favicon/title
 watch(
   () => appStore.siteLogo,
   (newLogo) => {
-    if (newLogo) {
-      updateFavicon(newLogo)
-    }
+    updateFavicon(newLogo || '/logo.png')
   },
   { immediate: true }
 )

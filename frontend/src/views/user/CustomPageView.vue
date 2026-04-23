@@ -44,19 +44,12 @@
         </div>
 
         <div v-else class="custom-embed-shell">
-          <a
-            :href="embeddedUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="btn btn-secondary btn-sm custom-open-fab"
-          >
-            <Icon name="externalLink" size="sm" class="mr-1.5" :stroke-width="2" />
-            {{ t('customPage.openInNewTab') }}
-          </a>
           <iframe
-            :src="embeddedUrl"
+            ref="iframeRef"
+            :src="frameSrc"
             class="custom-embed-frame"
             allowfullscreen
+            @load="handleIframeLoad"
           ></iframe>
         </div>
       </div>
@@ -65,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAppStore } from '@/stores'
@@ -74,6 +67,7 @@ import { useAdminSettingsStore } from '@/stores/adminSettings'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import Icon from '@/components/icons/Icon.vue'
 import { buildEmbeddedUrl, detectTheme } from '@/utils/embedded-url'
+import { THEME_EVENT } from '@/composables/useTheme'
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -82,8 +76,11 @@ const authStore = useAuthStore()
 const adminSettingsStore = useAdminSettingsStore()
 
 const loading = ref(false)
-const pageTheme = ref<'light' | 'dark'>('light')
+const pageTheme = ref<'light' | 'dark'>(detectTheme())
+const iframeRef = ref<HTMLIFrameElement | null>(null)
+const frameSrc = ref('')
 let themeObserver: MutationObserver | null = null
+const EMBEDDED_THEME_MESSAGE_TYPE = 'CHECK_CX_EMBED_THEME'
 
 const menuItemId = computed(() => route.params.id as string)
 
@@ -112,12 +109,62 @@ const embeddedUrl = computed(() => {
 })
 
 const isValidUrl = computed(() => {
-  const url = embeddedUrl.value
+  const url = frameSrc.value || embeddedUrl.value
   return url.startsWith('http://') || url.startsWith('https://')
+})
+
+const iframeOrigin = computed(() => {
+  const src = frameSrc.value || embeddedUrl.value
+  if (!src) return '*'
+
+  try {
+    return new URL(src).origin
+  } catch {
+    return '*'
+  }
+})
+
+const refreshFrameSrc = () => {
+  frameSrc.value = embeddedUrl.value
+}
+
+const postThemeToIframe = (theme: 'light' | 'dark') => {
+  iframeRef.value?.contentWindow?.postMessage(
+    {
+      type: EMBEDDED_THEME_MESSAGE_TYPE,
+      theme,
+    },
+    iframeOrigin.value,
+  )
+}
+
+const handleIframeLoad = () => {
+  postThemeToIframe(pageTheme.value)
+}
+
+watch(
+  [
+    () => menuItem.value?.url,
+    () => authStore.user?.id,
+    () => authStore.token,
+    () => locale.value,
+    () => pageTheme.value,
+  ],
+  () => {
+    refreshFrameSrc()
+  },
+  { immediate: true },
+)
+
+watch(pageTheme, (theme, previousTheme) => {
+  if (!previousTheme || theme === previousTheme) return
+  refreshFrameSrc()
+  postThemeToIframe(theme)
 })
 
 onMounted(async () => {
   pageTheme.value = detectTheme()
+  refreshFrameSrc()
 
   if (typeof document !== 'undefined') {
     themeObserver = new MutationObserver(() => {
@@ -127,6 +174,8 @@ onMounted(async () => {
       attributes: true,
       attributeFilter: ['class'],
     })
+
+    window.addEventListener(THEME_EVENT, handleThemeMessage)
   }
 
   if (appStore.publicSettingsLoaded) return
@@ -143,7 +192,16 @@ onUnmounted(() => {
     themeObserver.disconnect()
     themeObserver = null
   }
+  window.removeEventListener(THEME_EVENT, handleThemeMessage)
 })
+
+function handleThemeMessage(event: Event) {
+  const customEvent = event as CustomEvent<{ dark?: boolean }>
+  if (typeof customEvent.detail?.dark !== 'boolean') return
+  const nextTheme = customEvent.detail.dark ? 'dark' : 'light'
+  if (pageTheme.value === nextTheme) return
+  pageTheme.value = nextTheme
+}
 </script>
 
 <style scoped>
@@ -157,11 +215,6 @@ onUnmounted(() => {
   @apply h-full w-full overflow-hidden rounded-2xl;
   @apply bg-gradient-to-b from-gray-50 to-white dark:from-dark-900 dark:to-dark-950;
   @apply p-0;
-}
-
-.custom-open-fab {
-  @apply absolute right-3 top-3 z-10;
-  @apply shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:bg-dark-800/80;
 }
 
 .custom-embed-frame {

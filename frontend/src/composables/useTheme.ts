@@ -1,5 +1,7 @@
 import { ref } from 'vue'
 
+export const THEME_EVENT = 'SUB2API_THEME_CHANGED'
+
 const isDark = ref(
   typeof document !== 'undefined' && document.documentElement.classList.contains('dark'),
 )
@@ -20,6 +22,11 @@ function applyTheme(nextIsDark: boolean) {
   if (typeof localStorage !== 'undefined') {
     localStorage.setItem('theme', nextIsDark ? 'dark' : 'light')
   }
+  window.dispatchEvent(
+    new CustomEvent(THEME_EVENT, {
+      detail: { dark: nextIsDark },
+    }),
+  )
 }
 
 function toggleTheme() {
