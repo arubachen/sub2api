@@ -319,14 +319,6 @@
                 <Icon name="terminal" size="sm" />
                 <span class="text-xs">{{ t('keys.useKey') }}</span>
               </button>
-              <button
-                v-if="row.group?.platform === 'openai'"
-                @click="openOpenWebUi(row)"
-                class="flex flex-col items-center gap-0.5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-900/20 dark:hover:text-indigo-400"
-              >
-                <Icon name="chat" size="sm" />
-                <span class="text-xs">{{ t('keys.openWebUi') }}</span>
-              </button>
               <!-- Import to CC Switch Button -->
               <button
                 v-if="!publicSettings?.hide_ccs_import_button"
@@ -1080,7 +1072,6 @@ import type { ApiKey, Group, PublicSettings, SubscriptionType, GroupPlatform } f
 import type { Column } from '@/components/common/types'
 import type { BatchApiKeyUsageStats } from '@/api/usage'
 import { formatDateTime } from '@/utils/format'
-import { buildOpenWebUiUrl } from '@/utils/openWebUi'
 import { maskApiKey } from '@/utils/maskApiKey'
 
 // Helper to format date for datetime-local input
@@ -1164,13 +1155,6 @@ const selectedKeyForGroup = computed(() => {
   if (groupSelectorKeyId.value === null) return null
   return apiKeys.value.find((k) => k.id === groupSelectorKeyId.value) || null
 })
-
-const openOpenWebUi = (row: ApiKey) => {
-  if (typeof window === 'undefined') return
-  const baseUrl = publicSettings.value?.api_base_url || `${window.location.origin}/v1`
-  const targetUrl = buildOpenWebUiUrl(baseUrl, row.key)
-  window.open(targetUrl, '_blank', 'noopener,noreferrer')
-}
 
 const setGroupButtonRef = (keyId: number, el: Element | ComponentPublicInstance | null) => {
   if (el instanceof HTMLElement) {
