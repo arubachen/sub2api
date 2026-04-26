@@ -364,9 +364,10 @@ func TestAuthService_RegisterWithVerification_PromoBonusTransaction(t *testing.T
 		nil,
 		promoService,
 		nil,
+		nil,
 	)
 
-	token, user, err := authService.RegisterWithVerification(ctx, "member@company.com", "password", "", "TEAM30", "")
+	token, user, err := authService.RegisterWithVerification(ctx, "member@company.com", "password", "", "TEAM30", "", "")
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 	require.NotNil(t, user)
@@ -380,7 +381,7 @@ func TestAuthService_RegisterWithVerification_PromoBonusTransaction(t *testing.T
 	require.NoError(t, err)
 	require.Equal(t, 1, promoAfter.UsedCount)
 
-	_, _, err = authService.RegisterWithVerification(ctx, "other@gmail.com", "password", "", "TEAM30", "")
+	_, _, err = authService.RegisterWithVerification(ctx, "other@gmail.com", "password", "", "TEAM30", "", "")
 	require.ErrorIs(t, err, ErrPromoCodeEmailSuffixNotAllowed)
 
 	exists, err := userRepo.ExistsByEmail(ctx, "other@gmail.com")

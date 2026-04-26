@@ -392,7 +392,7 @@ func TestAuthService_Register_PromoEmailSuffixNotAllowed(t *testing.T) {
 		SettingKeyPromoCodeEnabled:    "true",
 	}, nil, promoService)
 
-	_, _, err := service.RegisterWithVerification(context.Background(), "user@gmail.com", "password", "", "TEAM30", "")
+	_, _, err := service.RegisterWithVerification(context.Background(), "user@gmail.com", "password", "", "TEAM30", "", "")
 	require.ErrorIs(t, err, ErrPromoCodeEmailSuffixNotAllowed)
 	require.Empty(t, repo.created)
 }
