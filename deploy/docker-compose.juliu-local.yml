@@ -1,0 +1,18 @@
+# Local-only deployment override for the existing juliu-redesign data set.
+#
+# Usage:
+#   docker compose -f docker-compose.local.yml -f docker-compose.juliu-local.yml up -d
+
+services:
+  sub2api:
+    image: ${SUB2API_IMAGE:-sub2api:local-latest}
+    volumes:
+      - ./data-juliu-redesign:/app/data
+
+  postgres:
+    volumes:
+      - ./postgres_data-juliu-redesign:/var/lib/postgresql/data
+
+  redis:
+    volumes:
+      - ./redis_data-juliu-redesign:/data
