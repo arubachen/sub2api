@@ -6,6 +6,15 @@
 services:
   sub2api:
     image: ${SUB2API_IMAGE:-sub2api:local-latest}
+    environment:
+      # Keep the local 217 clone read-only with respect to upstream OAuth tokens.
+      - TOKEN_REFRESH_ENABLED=${TOKEN_REFRESH_ENABLED:-false}
+      # The restored 217 database contains a large production scheduler outbox.
+      # Slow polling and disable lag/backlog-triggered rebuilds for local UI use.
+      - GATEWAY_SCHEDULING_OUTBOX_POLL_INTERVAL_SECONDS=${GATEWAY_SCHEDULING_OUTBOX_POLL_INTERVAL_SECONDS:-3600}
+      - GATEWAY_SCHEDULING_OUTBOX_LAG_WARN_SECONDS=${GATEWAY_SCHEDULING_OUTBOX_LAG_WARN_SECONDS:-0}
+      - GATEWAY_SCHEDULING_OUTBOX_LAG_REBUILD_SECONDS=${GATEWAY_SCHEDULING_OUTBOX_LAG_REBUILD_SECONDS:-0}
+      - GATEWAY_SCHEDULING_OUTBOX_BACKLOG_REBUILD_ROWS=${GATEWAY_SCHEDULING_OUTBOX_BACKLOG_REBUILD_ROWS:-0}
     volumes:
       - ./data-juliu-redesign:/app/data
 
