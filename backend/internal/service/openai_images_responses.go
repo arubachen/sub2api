@@ -204,6 +204,7 @@ func buildOpenAIImagesResponsesRequest(parsed *OpenAIImagesRequest, toolModel st
 	if parsed == nil {
 		return nil, fmt.Errorf("parsed images request is required")
 	}
+	toolModel = NormalizeOpenAICompatRequestedModel(toolModel)
 	prompt := strings.TrimSpace(parsed.Prompt)
 	if prompt == "" {
 		return nil, fmt.Errorf("prompt is required")
@@ -724,9 +725,9 @@ func (s *OpenAIGatewayService) forwardOpenAIImagesOAuth(
 	channelMappedModel string,
 ) (*OpenAIForwardResult, error) {
 	startTime := time.Now()
-	requestModel := strings.TrimSpace(parsed.Model)
+	requestModel := NormalizeOpenAICompatRequestedModel(parsed.Model)
 	if mapped := strings.TrimSpace(channelMappedModel); mapped != "" {
-		requestModel = mapped
+		requestModel = NormalizeOpenAICompatRequestedModel(mapped)
 	}
 	if requestModel == "" {
 		requestModel = "gpt-image-2"

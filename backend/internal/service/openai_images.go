@@ -384,13 +384,14 @@ func applyOpenAIImagesDefaults(req *OpenAIImagesRequest) {
 		req.N = 1
 	}
 	if strings.TrimSpace(req.Model) != "" {
-		req.Model = strings.TrimSpace(req.Model)
+		req.Model = NormalizeOpenAICompatRequestedModel(req.Model)
 		return
 	}
 	req.Model = "gpt-image-2"
 }
 
 func isOpenAIImageGenerationModel(model string) bool {
+	model = stripPresentedOpenAICompatModelPrefix(model)
 	return strings.HasPrefix(strings.ToLower(strings.TrimSpace(model)), "gpt-image-")
 }
 
@@ -508,14 +509,14 @@ func (s *OpenAIGatewayService) forwardOpenAIImagesAPIKey(
 	channelMappedModel string,
 ) (*OpenAIForwardResult, error) {
 	startTime := time.Now()
-	requestModel := strings.TrimSpace(parsed.Model)
+	requestModel := NormalizeOpenAICompatRequestedModel(parsed.Model)
 	if mapped := strings.TrimSpace(channelMappedModel); mapped != "" {
-		requestModel = mapped
+		requestModel = NormalizeOpenAICompatRequestedModel(mapped)
 	}
 	if err := validateOpenAIImagesModel(requestModel); err != nil {
 		return nil, err
 	}
-	upstreamModel := account.GetMappedModel(requestModel)
+	upstreamModel := NormalizeOpenAICompatRequestedModel(account.GetMappedModel(requestModel))
 	if err := validateOpenAIImagesModel(upstreamModel); err != nil {
 		return nil, err
 	}
