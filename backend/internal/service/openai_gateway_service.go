@@ -3194,6 +3194,15 @@ func openAIStreamEventIsPreamble(eventType string) bool {
 	}
 }
 
+func openAIStreamEventShouldDrop(eventType string) bool {
+	switch strings.TrimSpace(eventType) {
+	case "response.image_generation_call.partial_image":
+		return true
+	default:
+		return false
+	}
+}
+
 func openAIStreamDataStartsClientOutput(data, eventType string) bool {
 	trimmed := strings.TrimSpace(data)
 	if trimmed == "" {
@@ -3343,9 +3352,21 @@ func (s *OpenAIGatewayService) handleStreamingResponsePassthrough(
 	defer putSSEScannerBuf64K(scanBuf)
 
 	needModelReplace := strings.TrimSpace(originalModel) != "" && strings.TrimSpace(mappedModel) != "" && strings.TrimSpace(originalModel) != strings.TrimSpace(mappedModel)
+	dropCurrentSSEEvent := false
 
 	for scanner.Scan() {
 		line := scanner.Text()
+		if eventName, ok := extractOpenAISSEEventLine(line); ok && openAIStreamEventShouldDrop(eventName) {
+			dropCurrentSSEEvent = true
+			continue
+		}
+		if dropCurrentSSEEvent && strings.TrimSpace(line) == "" {
+			dropCurrentSSEEvent = false
+			continue
+		}
+		if dropCurrentSSEEvent {
+			continue
+		}
 		lineStartsClientOutput := false
 		forceFlushFailedEvent := false
 		if data, ok := extractOpenAISSEDataLine(line); ok {
@@ -3359,6 +3380,11 @@ func (s *OpenAIGatewayService) handleStreamingResponsePassthrough(
 				}
 			}
 			eventType := strings.TrimSpace(gjson.Get(trimmedData, "type").String())
+			if openAIStreamEventShouldDrop(eventType) {
+				dropCurrentSSEEvent = true
+				s.parseSSEUsageBytes(dataBytes, usage)
+				continue
+			}
 			if eventType == "response.failed" {
 				failedMessage = extractOpenAISSEErrorMessage(dataBytes)
 				if !openAIStreamClientOutputStarted(c, clientOutputStarted) && openAIStreamFailedEventShouldFailover(dataBytes, failedMessage) {
@@ -4070,6 +4096,7 @@ func (s *OpenAIGatewayService) handleStreamingResponse(ctx context.Context, resp
 	}
 
 	needModelReplace := originalModel != mappedModel
+	dropCurrentSSEEvent := false
 	resultWithUsage := func() *openaiStreamingResult {
 		return &openaiStreamingResult{usage: usage, firstTokenMs: firstTokenMs}
 	}
@@ -4141,6 +4168,17 @@ func (s *OpenAIGatewayService) handleStreamingResponse(ctx context.Context, resp
 		if streamFailoverErr != nil {
 			return
 		}
+		if eventName, ok := extractOpenAISSEEventLine(line); ok && openAIStreamEventShouldDrop(eventName) {
+			dropCurrentSSEEvent = true
+			return
+		}
+		if dropCurrentSSEEvent && strings.TrimSpace(line) == "" {
+			dropCurrentSSEEvent = false
+			return
+		}
+		if dropCurrentSSEEvent {
+			return
+		}
 		// Extract data from SSE line (supports both "data: " and "data:" formats)
 		if data, ok := extractOpenAISSEDataLine(line); ok {
 
@@ -4155,6 +4193,11 @@ func (s *OpenAIGatewayService) handleStreamingResponse(ctx context.Context, resp
 				sawTerminalEvent = true
 			}
 			eventType := strings.TrimSpace(gjson.GetBytes(dataBytes, "type").String())
+			if openAIStreamEventShouldDrop(eventType) {
+				dropCurrentSSEEvent = true
+				s.parseSSEUsageBytes(dataBytes, usage)
+				return
+			}
 			forceFlushFailedEvent := false
 			if eventType == "response.failed" {
 				failedMessage = extractOpenAISSEErrorMessage(dataBytes)
@@ -4336,6 +4379,20 @@ func extractOpenAISSEDataLine(line string) (string, bool) {
 		return "", false
 	}
 	start := len("data:")
+	for start < len(line) {
+		if line[start] != ' ' && line[start] != '	' {
+			break
+		}
+		start++
+	}
+	return line[start:], true
+}
+
+func extractOpenAISSEEventLine(line string) (string, bool) {
+	if !strings.HasPrefix(line, "event:") {
+		return "", false
+	}
+	start := len("event:")
 	for start < len(line) {
 		if line[start] != ' ' && line[start] != '	' {
 			break

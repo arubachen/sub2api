@@ -1411,6 +1411,100 @@ func TestOpenAIStreamingPassthroughResponseIncompleteWithoutDoneMarkerStillSucce
 	require.Equal(t, 1, result.usage.CacheReadInputTokens)
 }
 
+func TestOpenAIStreamingDropsImagePartialEvents(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	cfg := &config.Config{
+		Gateway: config.GatewayConfig{
+			StreamDataIntervalTimeout: 0,
+			StreamKeepaliveInterval:   0,
+			MaxLineSize:               defaultMaxLineSize,
+		},
+	}
+	svc := &OpenAIGatewayService{cfg: cfg}
+
+	rec := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(rec)
+	c.Request = httptest.NewRequest(http.MethodPost, "/", nil)
+
+	largePartial := strings.Repeat("A", 140*1024)
+	resp := &http.Response{
+		StatusCode: http.StatusOK,
+		Body: io.NopCloser(strings.NewReader(strings.Join([]string{
+			"event: response.created",
+			`data: {"type":"response.created","response":{"id":"resp_img"}}`,
+			"",
+			"event: response.image_generation_call.partial_image",
+			`data: {"type":"response.image_generation_call.partial_image","partial_image_b64":"` + largePartial + `","partial_image_index":0}`,
+			"",
+			`data: {"type":"response.image_generation_call.partial_image","partial_image_b64":"` + largePartial + `","partial_image_index":1}`,
+			"",
+			"event: response.output_item.done",
+			`data: {"type":"response.output_item.done","item":{"id":"ig_123","type":"image_generation_call","result":"ZmluYWw=","output_format":"png"}}`,
+			"",
+			"event: response.completed",
+			`data: {"type":"response.completed","response":{"id":"resp_img","usage":{"input_tokens":1,"output_tokens":2}}}`,
+			"",
+		}, "\n"))),
+		Header: http.Header{},
+	}
+
+	result, err := svc.handleStreamingResponse(c.Request.Context(), resp, c, &Account{ID: 1}, time.Now(), "model", "model")
+	require.NoError(t, err)
+	require.NotNil(t, result)
+
+	body := rec.Body.String()
+	require.NotContains(t, body, "response.image_generation_call.partial_image")
+	require.NotContains(t, body, largePartial[:64])
+	require.Contains(t, body, "response.output_item.done")
+	require.Contains(t, body, "ZmluYWw=")
+	require.Contains(t, body, "response.completed")
+}
+
+func TestOpenAIStreamingPassthroughDropsImagePartialEvents(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	cfg := &config.Config{
+		Gateway: config.GatewayConfig{
+			MaxLineSize: defaultMaxLineSize,
+		},
+	}
+	svc := &OpenAIGatewayService{cfg: cfg}
+
+	rec := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(rec)
+	c.Request = httptest.NewRequest(http.MethodPost, "/", nil)
+
+	largePartial := strings.Repeat("B", 140*1024)
+	resp := &http.Response{
+		StatusCode: http.StatusOK,
+		Body: io.NopCloser(strings.NewReader(strings.Join([]string{
+			"event: response.created",
+			`data: {"type":"response.created","response":{"id":"resp_img"}}`,
+			"",
+			"event: response.image_generation_call.partial_image",
+			`data: {"type":"response.image_generation_call.partial_image","partial_image_b64":"` + largePartial + `","partial_image_index":0}`,
+			"",
+			"event: response.output_item.done",
+			`data: {"type":"response.output_item.done","item":{"id":"ig_123","type":"image_generation_call","result":"ZmluYWw=","output_format":"png"}}`,
+			"",
+			"event: response.completed",
+			`data: {"type":"response.completed","response":{"id":"resp_img","usage":{"input_tokens":3,"output_tokens":5}}}`,
+			"",
+		}, "\n"))),
+		Header: http.Header{},
+	}
+
+	result, err := svc.handleStreamingResponsePassthrough(c.Request.Context(), resp, c, &Account{ID: 1}, time.Now(), "", "")
+	require.NoError(t, err)
+	require.NotNil(t, result)
+
+	body := rec.Body.String()
+	require.NotContains(t, body, "response.image_generation_call.partial_image")
+	require.NotContains(t, body, largePartial[:64])
+	require.Contains(t, body, "response.output_item.done")
+	require.Contains(t, body, "ZmluYWw=")
+	require.Contains(t, body, "response.completed")
+}
+
 func TestOpenAIStreamingTooLong(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	cfg := &config.Config{
