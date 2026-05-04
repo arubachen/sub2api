@@ -37,16 +37,6 @@ type OpenAIGatewayHandler struct {
 	cfg                     *config.Config
 }
 
-func resolveOpenAIForwardDefaultMappedModel(apiKey *service.APIKey, fallbackModel string) string {
-	if fallbackModel = strings.TrimSpace(fallbackModel); fallbackModel != "" {
-		return fallbackModel
-	}
-	if apiKey == nil || apiKey.Group == nil {
-		return ""
-	}
-	return strings.TrimSpace(apiKey.Group.DefaultMappedModel)
-}
-
 func resolveOpenAIMessagesDispatchMappedModel(apiKey *service.APIKey, requestedModel string) string {
 	if apiKey == nil || apiKey.Group == nil {
 		return ""
@@ -1128,6 +1118,7 @@ func (h *OpenAIGatewayHandler) ResponsesWebSocket(c *gin.Context) {
 		closeOpenAIClientWS(wsConn, coderws.StatusPolicyViolation, "model is required in first response.create payload")
 		return
 	}
+	initialRequestModelForUsage := reqModel
 	normalizedFirstMessage, normalizedModel, _, err := normalizeOpenAICompatModelInBody(firstMessage)
 	if err != nil {
 		closeOpenAIClientWS(wsConn, coderws.StatusPolicyViolation, "failed to normalize request body")
@@ -1261,6 +1252,7 @@ func (h *OpenAIGatewayHandler) ResponsesWebSocket(c *gin.Context) {
 	)
 
 	hooks := &service.OpenAIWSIngressHooks{
+		InitialRequestModel: initialRequestModelForUsage,
 		BeforeTurn: func(turn int) error {
 			if turn == 1 {
 				return nil
