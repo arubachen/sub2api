@@ -126,6 +126,14 @@ func (r *entUserRepoForAuthPromoTest) UpdateConcurrency(context.Context, int64, 
 	panic("unexpected UpdateConcurrency call")
 }
 
+func (r *entUserRepoForAuthPromoTest) BatchSetConcurrency(context.Context, []int64, int) (int, error) {
+	panic("unexpected BatchSetConcurrency call")
+}
+
+func (r *entUserRepoForAuthPromoTest) BatchAddConcurrency(context.Context, []int64, int) (int, error) {
+	panic("unexpected BatchAddConcurrency call")
+}
+
 func (r *entUserRepoForAuthPromoTest) ExistsByEmail(ctx context.Context, email string) (bool, error) {
 	client := r.client
 	if tx := dbent.TxFromContext(ctx); tx != nil {
