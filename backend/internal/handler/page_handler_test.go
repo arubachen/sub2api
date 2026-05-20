@@ -58,8 +58,8 @@ func TestResolvePageImagePath(t *testing.T) {
 	if !ok {
 		t.Fatal("expected direct image path to be accepted")
 	}
-	want := filepath.Join(base, "logo.png")
-	if !sameFilePathForTest(t, got, want) {
+	want := mustEvalSymlinks(t, filepath.Join(base, "logo.png"))
+	if got != want {
 		t.Fatalf("path = %q, want %q", got, want)
 	}
 
@@ -67,24 +67,14 @@ func TestResolvePageImagePath(t *testing.T) {
 	if !ok {
 		t.Fatal("expected nested image path to be accepted")
 	}
-	want = filepath.Join(base, "images", "logo.png")
-	if !sameFilePathForTest(t, got, want) {
+	want = mustEvalSymlinks(t, filepath.Join(base, "images", "logo.png"))
+	if got != want {
 		t.Fatalf("path = %q, want %q", got, want)
 	}
 
 	if got, ok := resolvePageImagePath(pagesDir, base, "../guide.md"); ok {
 		t.Fatalf("expected traversal to be rejected, got %q", got)
 	}
-}
-
-func sameFilePathForTest(t *testing.T, got, want string) bool {
-	t.Helper()
-	gotReal, gotErr := filepath.EvalSymlinks(got)
-	wantReal, wantErr := filepath.EvalSymlinks(want)
-	if gotErr == nil && wantErr == nil {
-		return gotReal == wantReal
-	}
-	return filepath.Clean(got) == filepath.Clean(want)
 }
 
 func TestResolvePageImagePathRejectsSymlinkEscape(t *testing.T) {
@@ -109,4 +99,14 @@ func TestResolvePageImagePathRejectsSymlinkEscape(t *testing.T) {
 	if got, ok := resolvePageImagePath(pagesDir, base, "images/secret.png"); ok {
 		t.Fatalf("expected symlink escape to be rejected, got %q", got)
 	}
+}
+
+func mustEvalSymlinks(t *testing.T, path string) string {
+	t.Helper()
+
+	realPath, err := filepath.EvalSymlinks(path)
+	if err != nil {
+		t.Fatalf("eval symlinks for %q: %v", path, err)
+	}
+	return realPath
 }
