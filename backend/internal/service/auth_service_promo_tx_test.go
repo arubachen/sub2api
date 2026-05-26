@@ -373,6 +373,7 @@ func TestAuthService_RegisterWithVerification_PromoBonusTransaction(t *testing.T
 		promoService,
 		nil,
 		nil,
+		nil,
 	)
 
 	token, user, err := authService.RegisterWithVerification(ctx, "member@company.com", "password", "", "TEAM30", "", "")
