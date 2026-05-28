@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
+
+const wait = (ms: number) => new Promise(resolve => window.setTimeout(resolve, ms))
 import HelpTooltip from '@/components/common/HelpTooltip.vue'
 
 function getTooltipElement(): HTMLDivElement {
@@ -9,6 +11,10 @@ function getTooltipElement(): HTMLDivElement {
     throw new Error('tooltip element not found')
   }
   return tooltip
+}
+
+function expectTooltipVisible(tooltip: HTMLElement, visible: boolean) {
+  expect(tooltip.style.display === 'none').toBe(!visible)
 }
 
 describe('HelpTooltip', () => {
@@ -27,15 +33,16 @@ describe('HelpTooltip', () => {
     const trigger = wrapper.get('.group')
     const tooltip = getTooltipElement()
 
-    expect(tooltip.style.display).toBe('none')
+    expectTooltipVisible(tooltip, false)
 
     await trigger.trigger('mouseenter')
     await nextTick()
-    expect(tooltip.style.display).not.toBe('none')
+    expectTooltipVisible(tooltip, true)
 
     await trigger.trigger('mouseleave')
     await nextTick()
-    expect(tooltip.style.display).toBe('none')
+    await wait(200)
+    expectTooltipVisible(tooltip, false)
 
     wrapper.unmount()
   })
@@ -52,11 +59,11 @@ describe('HelpTooltip', () => {
     const trigger = wrapper.get('.group')
     const tooltip = getTooltipElement()
 
-    expect(tooltip.style.display).toBe('none')
+    expectTooltipVisible(tooltip, false)
 
     await trigger.trigger('click')
     await nextTick()
-    expect(tooltip.style.display).not.toBe('none')
+    expectTooltipVisible(tooltip, true)
     expect(tooltip.textContent).toContain('click details')
 
     const closeButton = tooltip.querySelector('button[aria-label="Close"]')
@@ -65,15 +72,17 @@ describe('HelpTooltip', () => {
     }
     closeButton.click()
     await nextTick()
-    expect(tooltip.style.display).toBe('none')
+    await wait(200)
+    expectTooltipVisible(tooltip, false)
 
     await trigger.trigger('click')
     await nextTick()
-    expect(tooltip.style.display).not.toBe('none')
+    expectTooltipVisible(tooltip, true)
 
     document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }))
     await nextTick()
-    expect(tooltip.style.display).toBe('none')
+    await wait(200)
+    expectTooltipVisible(tooltip, false)
 
     wrapper.unmount()
   })
