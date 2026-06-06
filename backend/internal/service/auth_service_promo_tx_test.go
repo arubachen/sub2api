@@ -61,6 +61,10 @@ func (r *entUserRepoForAuthPromoTest) GetByID(ctx context.Context, id int64) (*U
 	}, nil
 }
 
+func (r *entUserRepoForAuthPromoTest) GetByIDIncludeDeleted(ctx context.Context, id int64) (*User, error) {
+	return r.GetByID(ctx, id)
+}
+
 func (r *entUserRepoForAuthPromoTest) GetByEmail(context.Context, string) (*User, error) {
 	panic("unexpected GetByEmail call")
 }
