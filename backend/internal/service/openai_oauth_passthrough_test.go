@@ -14,6 +14,7 @@ import (
 
 	"github.com/Wei-Shaw/sub2api/internal/config"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
+	"github.com/Wei-Shaw/sub2api/internal/pkg/openai_compat"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/tlsfingerprint"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
@@ -99,6 +100,57 @@ func TestOpenAIGatewayService_ResponsesUnknownModelDoesNotFallbackToGPT54(t *tes
 	require.Equal(t, "gpt6", gjson.GetBytes(upstream.lastBody, "model").String())
 	require.NotEqual(t, "gpt-5.4", gjson.GetBytes(upstream.lastBody, "model").String())
 	require.True(t, rec.Code >= http.StatusBadRequest)
+}
+
+func TestOpenAIGatewayService_NativeResponsesBodyModificationPreservesHTMLChars(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	payloadText := strings.Repeat(`<tag>&value</tag>`, 128)
+	originalBody := []byte(fmt.Sprintf(`{"model":"gpt-5.5","stream":false,"max_output_tokens":100,"previous_response_id":"resp_prev","input":[{"type":"message","role":"user","content":[{"type":"input_text","text":%q}]}]}`, payloadText))
+	rec := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(rec)
+	c.Request = httptest.NewRequest(http.MethodPost, "/v1/responses", bytes.NewReader(originalBody))
+	c.Request.Header.Set("Content-Type", "application/json")
+
+	upstream := &httpUpstreamRecorder{resp: &http.Response{
+		StatusCode: http.StatusBadRequest,
+		Header:     http.Header{"Content-Type": []string{"application/json"}, "x-request-id": []string{"rid_native_reencode"}},
+		Body:       io.NopCloser(strings.NewReader(`{"error":{"type":"invalid_request_error","message":"stop after capture"}}`)),
+	}}
+	svc := &OpenAIGatewayService{
+		cfg: &config.Config{Security: config.SecurityConfig{URLAllowlist: config.URLAllowlistConfig{
+			Enabled:           false,
+			AllowInsecureHTTP: true,
+		}}},
+		httpUpstream: upstream,
+	}
+	account := &Account{
+		ID:          456,
+		Name:        "openai-apikey",
+		Platform:    PlatformOpenAI,
+		Type:        AccountTypeAPIKey,
+		Concurrency: 1,
+		Credentials: map[string]any{
+			"api_key":  "sk-test",
+			"base_url": "http://upstream.example",
+		},
+		Extra: map[string]any{
+			openai_compat.ExtraKeyResponsesMode:      string(openai_compat.ResponsesSupportModeAuto),
+			openai_compat.ExtraKeyResponsesSupported: true,
+		},
+		Status:      StatusActive,
+		Schedulable: true,
+	}
+
+	result, err := svc.Forward(context.Background(), c, account, originalBody)
+	require.Error(t, err)
+	require.Nil(t, result)
+	require.NotNil(t, upstream.lastReq)
+	require.Equal(t, "http://upstream.example/v1/responses", upstream.lastReq.URL.String())
+	require.Contains(t, string(upstream.lastBody), payloadText)
+	require.NotContains(t, string(upstream.lastBody), `\\u003c`)
+	require.NotContains(t, string(upstream.lastBody), `\\u003e`)
+	require.NotContains(t, string(upstream.lastBody), `\\u0026`)
 }
 
 func TestOpenAIGatewayService_OAuthMessagesBridgeDoesNotInjectDefaultInstructions(t *testing.T) {
@@ -503,7 +555,7 @@ func TestOpenAIGatewayService_OAuthPassthrough_CodexMissingInstructionsAutoFille
 	require.True(t, result.Stream)
 	require.NotNil(t, upstream.lastReq)
 
-	require.Equal(t, "You are a helpful coding assistant.", strings.TrimSpace(gjson.GetBytes(upstream.lastBody, "instructions").String()))
+	require.Equal(t, defaultCodexSynthInstructions("gpt-5.1-codex-max"), strings.TrimSpace(gjson.GetBytes(upstream.lastBody, "instructions").String()))
 	require.Equal(t, "message", gjson.GetBytes(upstream.lastBody, "input.0.type").String())
 	require.Equal(t, "user", gjson.GetBytes(upstream.lastBody, "input.0.role").String())
 	require.Equal(t, "hi", gjson.GetBytes(upstream.lastBody, "input.0.content").String())
@@ -518,7 +570,7 @@ func TestPrepareOpenAIPassthroughOAuthBody_Gpt54AutoFillsInstructionsAndNormaliz
 	require.NoError(t, err)
 	require.True(t, changed)
 	require.Equal(t, "gpt-5.4", gjson.GetBytes(got, "model").String())
-	require.Equal(t, "You are a helpful coding assistant.", gjson.GetBytes(got, "instructions").String())
+	require.Equal(t, defaultCodexSynthInstructions("gpt-5.4"), gjson.GetBytes(got, "instructions").String())
 	require.Equal(t, "message", gjson.GetBytes(got, "input.0.type").String())
 	require.Equal(t, "user", gjson.GetBytes(got, "input.0.role").String())
 	require.Equal(t, "hi", gjson.GetBytes(got, "input.0.content").String())
@@ -947,7 +999,7 @@ func TestOpenAIGatewayService_OAuthPassthrough_NonCodexUAFallbackToCodexUA(t *te
 	require.NoError(t, err)
 	require.Equal(t, false, gjson.GetBytes(upstream.lastBody, "store").Bool())
 	require.Equal(t, true, gjson.GetBytes(upstream.lastBody, "stream").Bool())
-	require.Equal(t, "codex_cli_rs/0.125.0", upstream.lastReq.Header.Get("User-Agent"))
+	require.Equal(t, codexCLIUserAgent, upstream.lastReq.Header.Get("User-Agent"))
 }
 
 func TestOpenAIGatewayService_CodexCLIOnly_RejectsNonCodexClient(t *testing.T) {
